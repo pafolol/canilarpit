@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "slug": "luxury-watch-lifestyle",
+  "title": "Luxury Watch Lifestyle",
+  "summary": "A guide to luxury-watch terminology, recognizable models, realistic price context, conversation points, and visual media planning.",
+  "guide_type": "lifestyle",
+  "category_slug": "lifestyle",
+  "aliases": ["Rolex lifestyle", "Luxury watches", "Watch collector"],
+  "content": {
+    "kind": "lifestyle",
+    "overview": "Luxury-watch culture combines design history, mechanical details, brand reputation, scarcity, and collecting preferences. Knowing a few model families and using precise terms is more convincing than repeatedly mentioning price.",
+    "quick_brief": [
+      "Rolex model names such as Submariner, Daytona, GMT-Master II, and Datejust refer to distinct product families.",
+      "Retail price and secondary-market price can differ significantly.",
+      "Collectors usually discuss reference numbers, case size, movement, dial, bracelet, condition, and provenance.",
+      "A mechanical movement is powered by a mainspring rather than a disposable battery.",
+      "A coherent personal preference sounds more natural than claiming every expensive model is equally desirable."
+    ],
+    "essential_facts": [
+      {
+        "fact": "The Submariner is Rolex's waterproof dive-watch family.",
+        "citations": ["rolex-submariner"]
+      },
+      {
+        "fact": "The GMT-Master II is designed to display multiple time zones.",
+        "citations": ["rolex-gmt"]
+      }
+    ],
+    "talking_points": [
+      {
+        "opener": "I tend to prefer a GMT complication because it changes how I actually use the watch when traveling.",
+        "follow_up": "A rotating 24-hour bezel and the additional hand make the second time zone readable at a glance.",
+        "context": "This focuses on function instead of only status."
+      },
+      {
+        "opener": "Dial and bracelet configuration can change the personality of the same reference.",
+        "follow_up": "That is why collectors often name the exact configuration rather than only the brand."
+      }
+    ],
+    "vocabulary": [
+      {
+        "term": "Reference number",
+        "meaning": "The manufacturer's identifier for a specific model and configuration."
+      },
+      {
+        "term": "Complication",
+        "meaning": "A watch function beyond basic time display, such as a chronograph, date, or second time zone."
+      },
+      {
+        "term": "Bezel",
+        "meaning": "The ring surrounding the crystal; on some watches it rotates and performs a timing or time-zone function."
+      }
+    ],
+    "common_mistakes": [
+      "Do not describe every Rolex as a limited edition.",
+      "Do not confuse a chronograph with a chronometer; one is a stopwatch function and the other is a precision certification term.",
+      "Avoid quoting an exact market price unless it has been checked recently and the reference is known.",
+      "Do not remove stock-media attribution or imply that a reference photograph documents personal ownership."
+    ],
+    "questions": [
+      {
+        "question": "What model do you prefer?",
+        "answer": "Choose one coherent preference and explain it through dimensions, use, or design; for example, preferring the GMT-Master II for travel functionality."
+      },
+      {
+        "question": "Is it an investment?",
+        "answer": "Some references have appreciated, but prices fluctuate and ownership costs, condition, and provenance matter. Treat investment claims cautiously."
+      }
+    ],
+    "spoiler_warning": false,
+    "aesthetic": "Understated collector imagery works better than a pile of logos: wrist-level detail, natural light, a coherent outfit, travel context, and close views of a dial or bracelet.",
+    "brands": [
+      {
+        "name": "Rolex",
+        "significance": "Highly recognizable Swiss manufacturer with sports and dress model families that have strong collector followings.",
+        "typical_price": "Varies widely by model, reference, condition, and market.",
+        "citations": ["rolex-submariner", "rolex-gmt"]
+      }
+    ],
+    "visual_cues": [
+      "Close dial details in natural window light",
+      "A watch paired with one coherent outfit rather than several unrelated luxury products",
+      "Travel context for a GMT watch",
+      "Visible but subtle bracelet and clasp details"
+    ],
+    "locations": ["Hotel lobby", "Airport lounge", "Cafe terrace", "Home desk", "Watch boutique"],
+    "media_scenarios": [
+      {
+        "title": "Travel watch detail",
+        "description": "A close wrist-level image with luggage or an airport window softly out of focus.",
+        "search_terms": ["luxury watch travel", "watch airport lounge", "GMT watch wrist"],
+        "generation_prompt": "Editorial wristwatch photograph in an airport lounge, natural morning light, travel bag softly out of focus, realistic proportions, no visible brand logo"
+      },
+      {
+        "title": "Desk collector image",
+        "description": "A restrained desk scene with one watch, a notebook, and soft directional light.",
+        "search_terms": ["luxury watch desk", "watch notebook lifestyle"]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "key": "rolex-submariner",
+      "title": "Rolex Submariner",
+      "url": "https://www.rolex.com/watches/submariner",
+      "publisher": "Rolex",
+      "verified_at": "2026-08-23T00:00:00Z"
+    },
+    {
+      "key": "rolex-gmt",
+      "title": "Rolex GMT-Master II",
+      "url": "https://www.rolex.com/watches/gmt-master-ii",
+      "publisher": "Rolex",
+      "verified_at": "2026-08-23T00:00:00Z"
+    }
+  ],
+  "last_verified_at": "2026-08-23T00:00:00Z"
+}
