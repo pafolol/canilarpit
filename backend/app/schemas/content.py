@@ -104,8 +104,34 @@ class LarpProfile(BaseModel):
         return self
 
 
+IMAGE_PROVIDERS = Literal[
+    "auto", "pexels", "wikimedia", "tmdb", "tvmaze", "anilist", "jikan", "fanart"
+]
+
+
+class ImageQuery(BaseModel):
+    """One picture the guide wants, and where to go and look for it.
+
+    The model writes these, because it is the only part of the pipeline that
+    knows whether the subject is a fictional character with promotional stills
+    or a loaf of bread.
+    """
+
+    provider: IMAGE_PROVIDERS = "auto"
+    query: str = Field(min_length=2, max_length=200)
+    subject: str | None = Field(default=None, max_length=200)
+    role: Literal["hero", "gallery"] = "gallery"
+    note: str | None = Field(default=None, max_length=500)
+
+    @field_validator("query", "subject")
+    @classmethod
+    def tidy(cls, value: str | None) -> str | None:
+        return " ".join(value.split()) if value else value
+
+
 class CommonGuideContent(BaseModel):
     larp: LarpProfile
+    image_brief: list[ImageQuery] = Field(default_factory=list, max_length=8)
     overview: str = Field(min_length=1, max_length=5000)
     quick_brief: list[str] = Field(min_length=1, max_length=20)
     essential_facts: list[FactItem] = Field(default_factory=list, max_length=50)

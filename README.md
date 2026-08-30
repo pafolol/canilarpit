@@ -71,14 +71,53 @@ The admin panel's **Generate** tab takes a topic and produces a complete draft:
    are handed back to the model to repair, up to `AI_MAX_REPAIR_ATTEMPTS` times.
 3. Every source URL is fetched. Dead links are dropped, along with the citations that
    pointed at them, so a published guide never carries a broken reference.
-4. Stock photographs are searched using the image terms the guide itself proposed, and
-   attached to the draft revision.
+4. Images are fetched. The guide's own `image_brief` names a source per picture, and
+   the model chooses it: a character goes to an anime or television database, a loaf of
+   bread goes to a photo library. See **Images** below.
 5. The result is a **draft**. Nothing is published until an admin publishes it.
 
 Set `OPENAI_API_KEY` in `backend/.env` to switch it on; `OPENAI_BASE_URL` and
-`OPENAI_MODEL` point it at any OpenAI-compatible endpoint. Set `PEXELS_API_KEY` for the
-photographs. Without either key everything else still works — the panel says which
-feature is unavailable and why.
+`OPENAI_MODEL` point it at any OpenAI-compatible endpoint. Without it everything else
+still works — the panel says which feature is unavailable and why.
+
+## Images
+
+Pexels has never heard of Walter White. So the backend keeps a registry of image
+providers and the model picks one per picture:
+
+| Provider | Key | Good for | Rights |
+|---|---|---|---|
+| Pexels | yes | Objects, food, drink, places, sport, interiors | Free licence |
+| Wikimedia Commons | no | Real people, buildings, marques, artefacts | CC, varies by file |
+| TMDB | yes | Films, television, actors | Editorial only |
+| TVmaze | no | Series, their characters and episodes | Editorial only |
+| AniList | no | Anime and manga, and their characters | Editorial only |
+| MyAnimeList (Jikan) | no | Anime and characters, as a second opinion | Editorial only |
+| fanart.tv | yes | Transparent logos and clear art | Editorial only |
+
+Four of the seven need no key at all, so guides get illustrated out of the box.
+
+Two rules keep the results honest:
+
+- **Providers substitute only within their family.** Generic photo libraries can cover
+  for each other; a film database cannot degrade to a stock library. Asking TMDB for
+  *Jeanne Dielman* and settling for whatever Commons has under that name gets you an
+  unrelated 1929 portrait, so an unavailable specialist returns nothing instead.
+- **Free-text results are filtered for relevance.** Commons will answer "techno club
+  dancefloor" with a photograph of a Bukharan folk dance, because both mention dancing.
+  Matches below half the query's significant words are dropped, and the rest are ranked.
+
+Everything from TMDB, TVmaze, AniList, Jikan and fanart.tv is copyrighted promotional
+material: fine editorially with credit, but the rights belong to whoever owns the film
+or show. Those assets are stored with `editorial_only` set, the admin panel labels them
+"rights reserved", and the public page prints the credit and licence under every image.
+
+To illustrate guides that have none:
+
+```powershell
+.venv\Scripts\canilarpit.exe backfill-images          # published guides missing images
+.venv\Scripts\canilarpit.exe backfill-images --replace # rebuild all of them
+```
 
 Generation runs inside the API process as a background task. For a separate worker:
 
@@ -104,7 +143,7 @@ themselves when no seeded database is reachable, so the suite is useful either w
 | Search, filters, topic demand | `backend/app/api/routes/public.py` |
 | Editorial CMS and lifecycle | `backend/app/api/routes/admin.py` |
 | Guide generation | `backend/app/services/ai.py`, `services/generation.py` |
-| Stock imagery | `backend/app/services/stock.py` |
+| Image providers | `backend/app/services/images.py` |
 | Frontend API client and types | `frontend/src/api.ts` |
 | Admin panel | `frontend/src/admin/` |
 | Seed content | `backend/content/guides/*.json` |

@@ -169,6 +169,41 @@ def test_an_editor_sees_the_catalog_and_the_ai_status(client: TestClient) -> Non
     status = client.get("/api/v1/admin/ai/status", headers=DEV_HEADERS).json()
     assert status["text_provider"] == "openai"
     assert status["text_configured"] is settings.ai_configured
+    # Wikimedia, TVmaze, AniList and Jikan need no key, so imagery always works.
+    assert status["images_configured"] is True
+    keyless = {p["id"] for p in status["image_providers"] if not p["requires_key"]}
+    assert {"wikimedia", "tvmaze", "anilist", "jikan"} <= keyless
+
+
+def test_the_seeded_guides_are_illustrated(client: TestClient) -> None:
+    """The backfill ran, so a reader lands on pictures with their credits."""
+    body = client.get("/api/v1/guides/prestige-tv").json()
+    assert body["media"], "prestige-tv should carry television stills"
+    hero = body["media"][0]
+    assert hero["url"].startswith("http")
+    assert hero["attribution"], "every image names where it came from"
+    assert hero["license_name"]
+
+
+def test_image_search_routes_a_character_to_a_screen_database(client: TestClient) -> None:
+    found = client.get(
+        "/api/v1/admin/media/image-search",
+        params={"q": "Breaking Bad", "provider": "tvmaze", "limit": 4},
+        headers=DEV_HEADERS,
+    ).json()
+    assert found["provider"] == "tvmaze"
+    assert found["results"]
+    assert all(item["editorial_only"] for item in found["results"])
+    assert any("Walter White" in (item["subject"] or "") for item in found["results"])
+
+
+def test_image_search_rejects_an_unknown_provider(client: TestClient) -> None:
+    response = client.get(
+        "/api/v1/admin/media/image-search",
+        params={"q": "anything", "provider": "getty"},
+        headers=DEV_HEADERS,
+    )
+    assert response.status_code == 422
 
 
 def test_generation_is_refused_without_a_key(client: TestClient) -> None:

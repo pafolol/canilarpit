@@ -44,6 +44,26 @@
         "make": "A backtest that loses money honestly."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "trading floor stock exchange",
+        "subject": "A trading floor",
+        "role": "hero"
+      },
+      {
+        "provider": "pexels",
+        "query": "financial charts monitors",
+        "subject": "Charts on monitors",
+        "role": "gallery"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "New York Stock Exchange building",
+        "subject": "The New York Stock Exchange",
+        "role": "gallery"
+      }
+    ],
     "overview": "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.\n\nThe failure is not social. Anyone in the room who is actually in the field now knows you lied about your job, and they work in an industry that keeps a list and is small enough for the list to matter.\n\nIf money moved on the claim, it stops being a social matter.",
     "quick_brief": [
       "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.",

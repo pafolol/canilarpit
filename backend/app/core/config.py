@@ -39,9 +39,11 @@ class Settings(BaseSettings):
     openai_input_usd_per_million: float = 2.0
     openai_output_usd_per_million: float = 8.0
 
-    # Stock imagery for generated guides.
+    # Imagery. Wikimedia, TVmaze, AniList and Jikan need no key; the rest do.
     pexels_api_key: str | None = None
-    stock_results_per_query: int = 8
+    tmdb_api_key: str | None = None
+    fanart_api_key: str | None = None
+    image_results_per_query: int = 8
 
     s3_endpoint_url: str | None = None
     s3_access_key_id: str | None = None
@@ -63,6 +65,7 @@ class Settings(BaseSettings):
 
     @property
     def stock_configured(self) -> bool:
+        """Kept for the settings validator's sake; the registry is the real answer."""
         return bool(self.pexels_api_key)
 
     @property

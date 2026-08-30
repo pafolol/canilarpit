@@ -67,6 +67,26 @@
         "make": "Handle twenty watches in a shop and write down what you noticed."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "Rolex Submariner",
+        "subject": "A Rolex Submariner",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "mechanical watch movement",
+        "subject": "A mechanical movement",
+        "role": "gallery"
+      },
+      {
+        "provider": "pexels",
+        "query": "wristwatch on wrist close up",
+        "subject": "A watch on the wrist",
+        "role": "gallery"
+      }
+    ],
     "overview": "Luxury-watch culture combines design history, mechanical details, brand reputation, scarcity, and collecting preferences. Knowing a few model families and using precise terms is more convincing than repeatedly mentioning price.",
     "quick_brief": [
       "Rolex model names such as Submariner, Daytona, GMT-Master II, and Datejust refer to distinct product families.",

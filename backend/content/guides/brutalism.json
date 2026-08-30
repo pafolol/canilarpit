@@ -64,6 +64,26 @@
         "make": "Visit three and walk the corridors."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "Barbican Estate London",
+        "subject": "The Barbican Estate",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "Trellick Tower",
+        "subject": "Trellick Tower",
+        "role": "gallery"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "Boston City Hall brutalist",
+        "subject": "Boston City Hall",
+        "role": "gallery"
+      }
+    ],
     "overview": "A building, its architect, and what it was built for. The third item is where larpers stop.\n\nPhotographs carry you a long way here, which is why the clock is generous and the failure is specific.",
     "quick_brief": [
       "Béton brut. The term is about the concrete, not the mood.",

@@ -65,6 +65,26 @@
         "make": "Learn to hear the bass line on ten records."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "John Coltrane",
+        "subject": "John Coltrane",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "Miles Davis",
+        "subject": "Miles Davis",
+        "role": "gallery"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "jazz club performance",
+        "subject": "A jazz club",
+        "role": "gallery"
+      }
+    ],
     "overview": "One album, one player who is not the bandleader, one live recording. Two minutes in total.\n\nThe surface is short here because the record is usually already playing.",
     "quick_brief": [
       "Kind of Blue is the correct entry and the wrong answer to a favourite.",

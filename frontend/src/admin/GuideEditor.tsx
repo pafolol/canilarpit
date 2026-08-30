@@ -8,6 +8,7 @@ import {
   type EntryType,
   type GuideDocument,
   type GuideType,
+  type ImageQuery,
   type Verdict,
 } from "../api";
 import { ErrorState, Loading } from "../components";
@@ -75,15 +76,30 @@ export default function GuideEditor() {
 
   const media = guide?.draft_revision?.media ?? guide?.current_revision?.media ?? [];
 
-  const suggestions = useMemo(() => {
+  // The document's own brief drives the image panel; fall back to whatever
+  // visual direction an older document carries.
+  const brief = useMemo<ImageQuery[]>(() => {
     if (!document) return [];
     const content = document.content;
-    const terms = [
-      ...(content.media_scenarios ?? []).flatMap((scenario) => scenario.search_terms),
-      ...(content.visual_cues ?? []),
-      document.title,
+    if (content.image_brief?.length) return content.image_brief;
+    const inferred = [
+      ...(content.media_scenarios ?? []).flatMap((scenario) =>
+        scenario.search_terms.map((term) => ({ term, subject: scenario.title })),
+      ),
+      ...(content.visual_cues ?? []).map((term) => ({ term, subject: null })),
+      { term: document.title, subject: document.title },
     ];
-    return [...new Set(terms.map((term) => term.trim()).filter(Boolean))];
+    const seen = new Set<string>();
+    return inferred
+      .filter(({ term }) => term.trim() && !seen.has(term.toLowerCase()) && seen.add(term.toLowerCase()))
+      .slice(0, 6)
+      .map(({ term, subject }) => ({
+        provider: "auto" as const,
+        query: term,
+        subject,
+        role: "gallery" as const,
+        note: null,
+      }));
   }, [document]);
 
   if (busy && !guide) return <Loading what="the guide" />;
@@ -399,7 +415,9 @@ export default function GuideEditor() {
           <MediaPanel
             guideId={guide.id}
             media={media}
-            suggestions={suggestions}
+            brief={brief}
+            guideType={document.guide_type}
+            categorySlug={document.category_slug}
             onChanged={() => void load()}
           />
         </div>

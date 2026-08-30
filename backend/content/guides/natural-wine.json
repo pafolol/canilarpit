@@ -66,6 +66,26 @@
         "make": "Drink twelve bottles from six producers. Write one line each."
       }
     },
+    "image_brief": [
+      {
+        "provider": "pexels",
+        "query": "natural wine bar counter bottles",
+        "subject": "A natural wine bar",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "wine bottles cellar",
+        "subject": "A wine cellar",
+        "role": "gallery"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "wine tasting glass",
+        "subject": "Tasting",
+        "role": "gallery"
+      }
+    ],
     "overview": "A producer, a region, and one flaw. Three items is the entire surface layer, and it holds for about six minutes.\n\nOrder by the glass and ask what was opened today. Curiosity outranks knowledge in this room, which is why the bar is survivable and the table is not.",
     "quick_brief": [
       "Gravner. Amphora, oxidative, orange.",

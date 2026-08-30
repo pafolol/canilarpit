@@ -67,6 +67,27 @@
         "make": "Watch twenty episodes in order and write one line about each."
       }
     },
+    "image_brief": [
+      {
+        "provider": "anilist",
+        "query": "Naruto",
+        "subject": "Naruto",
+        "role": "hero",
+        "note": "Series banner"
+      },
+      {
+        "provider": "anilist",
+        "query": "Naruto Shippuden",
+        "subject": "Naruto Shippuden",
+        "role": "gallery"
+      },
+      {
+        "provider": "jikan",
+        "query": "Naruto Uzumaki",
+        "subject": "Naruto Uzumaki",
+        "role": "gallery"
+      }
+    ],
     "overview": "Naruto follows Naruto Uzumaki, an ostracized ninja who carries the Nine-Tailed Fox and wants to become Hokage. The larger story expands from village missions into a conflict over tailed beasts, inherited cycles of violence, and the Fourth Shinobi World War.",
     "quick_brief": [
       "Naruto begins as an isolated prankster seeking recognition and ends as a hero accepted by the village.",

@@ -64,6 +64,26 @@
         "make": "Six loaves. The fourth is where it starts working."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "sourdough bread",
+        "subject": "Sourdough",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "sourdough starter jar",
+        "subject": "A sourdough starter",
+        "role": "gallery"
+      },
+      {
+        "provider": "pexels",
+        "query": "banneton proofing basket dough",
+        "subject": "Dough in a banneton",
+        "role": "gallery"
+      }
+    ],
     "overview": "A hydration number, a flour, and a complaint about your oven. That is the entire first conversation and it renews.\n\nNothing about this scene happens on a deadline, which is why the clock is long.",
     "quick_brief": [
       "Hydration as a percentage. The whole hobby is spoken in percentages.",

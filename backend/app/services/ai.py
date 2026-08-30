@@ -20,7 +20,8 @@ from pydantic import ValidationError
 
 from app.core.config import settings
 from app.db.models import EntryType, GuideType
-from app.schemas.content import GuideDocument
+from app.schemas.content import GuideDocument, ImageQuery
+from app.services import images
 from app.services.text import slugify
 
 CompletionFn = Callable[[list[dict[str, str]]], "Completion"]
@@ -162,6 +163,15 @@ content, for all kinds:
       "make": "<one concrete thing to do or make that ends the pretending>"
     }
   },
+  "image_brief": [
+    {
+      "provider": "<one of: %(providers)s>",
+      "query": "<exactly what to type into that provider's search>",
+      "subject": "<what the picture is of, for the caption>",
+      "role": "<hero for the first image, gallery for the rest>",
+      "note": "<optional: why this picture>"
+    }
+  ],
   "overview": "<2-4 paragraphs of background the reader needs>",
   "quick_brief": ["<4-8 one-sentence facts: the minimum not to embarrass yourself>"],
   "essential_facts": [{"fact": "<verifiable detail>", "citations": []}],
@@ -189,8 +199,18 @@ When kind is "lifestyle", content also has:
 When kind is "general", content also has:
   "key_people" and "timeline" (lists of strings).
 
-Fill `media_scenarios[].search_terms` or, for non-lifestyle guides, make sure
-`larp.crib` names concrete visual references: an editor uses them to pick photographs.
+`image_brief` is 3 to 5 pictures that illustrate the guide, best first. Choosing
+the right provider matters more than the wording of the query:
+
+%(provider_help)s
+
+Name the actual thing. For a film, series or anime, the query is the title, or a
+character's name, not a description of a mood. For anything physical - a drink, a
+loaf, a building, a piece of clothing - the query is a plain description of the
+photograph you want. Never send a fictional character to a stock photography
+provider: it has never heard of them and will return a stranger.
+
+Use "auto" only when you genuinely cannot tell.
 
 A "dont" entry still needs every field. Write `crib` as a single section headed
 "Why this one is different" explaining what the claim actually costs other people,
@@ -280,7 +300,11 @@ def build_prompt(
     if instructions:
         request.append(f"Editor instructions, which override the defaults:\n{instructions}")
 
-    contract = CONTRACT % {"categories": ", ".join(category_slugs)}
+    contract = CONTRACT % {
+        "categories": ", ".join(category_slugs),
+        "providers": ", ".join(provider.id for provider in images.PROVIDERS.values()),
+        "provider_help": provider_guidance(),
+    }
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": "\n\n".join(request) + "\n\n" + contract},
@@ -407,25 +431,44 @@ def _strip_citations(node: Any, dropped: set[str]) -> None:
             _strip_citations(value, dropped)
 
 
-def image_queries(document: GuideDocument, *, limit: int = 3) -> list[str]:
-    """Search terms for stock imagery, best-first."""
-    queries: list[str] = []
-    content = document.content
-    scenarios = getattr(content, "media_scenarios", [])
-    for scenario in scenarios:
-        queries.extend(scenario.search_terms)
-    visual_cues = getattr(content, "visual_cues", [])
-    queries.extend(visual_cues[:3])
-    queries.append(document.title)
+def provider_guidance() -> str:
+    """The registry, rendered for the prompt, so the two can never drift apart."""
+    lines = ["- auto: let the backend choose from the category. A last resort."]
+    for provider in images.PROVIDERS.values():
+        lines.append(f"- {provider.id}: {provider.subjects}")
+    return "\n".join(lines)
+
+
+def image_plan(document: GuideDocument, *, limit: int = 4) -> list[ImageQuery]:
+    """What to fetch, in order. The model's brief wins; otherwise we infer one."""
+    brief = list(document.content.image_brief)
+    if not brief:
+        brief = inferred_brief(document)
 
     seen: set[str] = set()
-    unique: list[str] = []
-    for query in queries:
-        cleaned = " ".join(str(query).split())
-        key = cleaned.lower()
-        if cleaned and key not in seen:
-            seen.add(key)
-            unique.append(cleaned)
-        if len(unique) >= limit:
+    plan: list[ImageQuery] = []
+    for item in brief:
+        key = f"{item.provider}:{item.query.lower()}"
+        if key in seen:
+            continue
+        seen.add(key)
+        plan.append(item)
+        if len(plan) >= limit:
             break
-    return unique
+    if plan:
+        plan[0] = plan[0].model_copy(update={"role": "hero"})
+    return plan
+
+
+def inferred_brief(document: GuideDocument) -> list[ImageQuery]:
+    """A brief for documents written before image_brief existed."""
+    content = document.content
+    queries: list[ImageQuery] = []
+
+    for scenario in getattr(content, "media_scenarios", []):
+        for term in scenario.search_terms:
+            queries.append(ImageQuery(query=term, subject=scenario.title))
+    for cue in getattr(content, "visual_cues", [])[:3]:
+        queries.append(ImageQuery(query=cue, subject=document.title))
+    queries.append(ImageQuery(query=document.title, subject=document.title))
+    return queries

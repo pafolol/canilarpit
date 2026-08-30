@@ -65,6 +65,26 @@
         "make": "Stay until close, once, sober."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "Berghain Berlin",
+        "subject": "Berghain",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "techno DJ nightclub",
+        "subject": "A DJ booth",
+        "role": "gallery"
+      },
+      {
+        "provider": "pexels",
+        "query": "nightclub strobe lights crowd",
+        "subject": "A club under strobes",
+        "role": "gallery"
+      }
+    ],
     "overview": "Rooms and hours, not tracks. Nobody in this scene identifies music on their phone and nobody admits to wanting to.\n\nThe correct answer to what was played is a mood and a time.",
     "quick_brief": [
       "Basic Channel and Chain Reaction. The dub techno lineage.",

@@ -52,6 +52,25 @@ export type GuideCard = {
 
 export type CribSection = { heading: string; lines: string[] };
 
+export type ImageProviderId =
+  | "auto"
+  | "pexels"
+  | "wikimedia"
+  | "tmdb"
+  | "tvmaze"
+  | "anilist"
+  | "jikan"
+  | "fanart";
+
+/** One picture the guide asked for, and which source was told to find it. */
+export type ImageQuery = {
+  provider: ImageProviderId;
+  query: string;
+  subject: string | null;
+  role: "hero" | "gallery";
+  note: string | null;
+};
+
 export type LarpProfile = LarpCard & {
   crib: CribSection[];
   surface: string[];
@@ -69,6 +88,7 @@ export type QuestionAnswer = { question: string; answer: string };
 export type GuideContent = {
   kind: GuideType;
   larp: LarpProfile;
+  image_brief: ImageQuery[];
   overview: string;
   quick_brief: string[];
   essential_facts: FactItem[];
@@ -226,18 +246,28 @@ export type TopicRequestRow = {
   last_requested_at: string;
 };
 
+export type ImageProviderInfo = {
+  id: string;
+  title: string;
+  subjects: string;
+  configured: boolean;
+  requires_key: boolean;
+  editorial_only: boolean;
+};
+
 export type AiStatus = {
   text_provider: string;
   text_model: string;
   text_configured: boolean;
-  stock_provider: string;
-  stock_configured: boolean;
+  image_providers: ImageProviderInfo[];
+  images_configured: boolean;
   storage_configured: boolean;
 };
 
-export type StockImage = {
+export type ImageCandidate = {
   provider: string;
   remote_url: string;
+  preview_url: string | null;
   source_page_url: string | null;
   attribution: string | null;
   license_name: string | null;
@@ -245,7 +275,16 @@ export type StockImage = {
   alt_text: string;
   width: number | null;
   height: number | null;
-  preview_url: string | null;
+  subject: string | null;
+  /** Promotional art: usable with credit, but the rights are someone else's. */
+  editorial_only: boolean;
+};
+
+export type ImageSearchResult = {
+  query: string;
+  provider: string;
+  results: ImageCandidate[];
+  warnings: string[];
 };
 
 /* ---------------------------------------------------------------- plumbing */
@@ -416,9 +455,18 @@ export const api = {
       request<ResearchJob>(`${V1}/admin/research-jobs/${id}/run`, { method: "POST" }, true),
     cancelJob: (id: string) =>
       request<ResearchJob>(`${V1}/admin/research-jobs/${id}/cancel`, { method: "POST" }, true),
-    stockSearch: (q: string, limit = 12) =>
-      request<{ query: string; provider: string; results: StockImage[] }>(
-        `${V1}/admin/media/stock-search${query({ q, limit })}`,
+    imageProviders: () => request<ImageProviderInfo[]>(`${V1}/admin/media/providers`, {}, true),
+    imageSearch: (
+      q: string,
+      options: {
+        provider?: string;
+        guide_type?: string;
+        category?: string;
+        limit?: number;
+      } = {},
+    ) =>
+      request<ImageSearchResult>(
+        `${V1}/admin/media/image-search${query({ q, limit: 12, ...options })}`,
         {},
         true,
       ),

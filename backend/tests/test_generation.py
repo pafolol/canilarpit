@@ -7,7 +7,7 @@ import pytest
 
 from app.core.config import settings
 from app.db.models import EntryType, GuideType
-from app.services import ai
+from app.services import ai, images
 
 CONTENT = Path(__file__).resolve().parent.parent / "content" / "guides"
 CATEGORIES = ["anime", "drink", "film", "general"]
@@ -98,16 +98,36 @@ def test_the_system_prompt_refuses_the_dangerous_ones() -> None:
     assert '"dont"' in ai.SYSTEM_PROMPT
 
 
-def test_image_queries_prefer_the_scenarios_the_model_wrote() -> None:
+def test_the_image_plan_comes_from_the_document_and_names_a_provider() -> None:
     document = ai.generate_guide_document(
         "Natural wine",
         category_slugs=CATEGORIES,
         complete=replay(CONTENT.joinpath("natural-wine.json").read_text(encoding="utf-8")),
     ).document
-    queries = ai.image_queries(document)
-    assert queries
-    assert queries[0] == "cluttered wine bar counter"
-    assert len(queries) == len(set(queries))
+    plan = ai.image_plan(document)
+
+    assert plan
+    assert plan[0].role == "hero", "the first picture is always the hero"
+    assert {item.provider for item in plan} <= set(images.PROVIDERS) | {"auto"}
+    assert len({(item.provider, item.query.lower()) for item in plan}) == len(plan)
+
+
+def test_a_document_without_a_brief_still_gets_one() -> None:
+    payload = json.loads(CONTENT.joinpath("naruto.json").read_text(encoding="utf-8"))
+    payload["content"]["image_brief"] = []
+    document = ai.GuideDocument.model_validate(payload)
+
+    plan = ai.image_plan(document)
+    assert plan, "an unbriefed guide falls back to its title"
+    assert plan[0].role == "hero"
+
+
+def test_the_prompt_lists_every_provider_and_what_it_is_for() -> None:
+    guidance = ai.provider_guidance()
+    for provider in images.PROVIDERS.values():
+        assert provider.id in guidance
+        assert provider.subjects in guidance
+    assert "image_brief" in ai.CONTRACT
 
 
 def test_cost_is_estimated_from_the_configured_rates() -> None:

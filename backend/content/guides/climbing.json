@@ -64,6 +64,26 @@
         "make": "Twelve sessions. Nothing substitutes for the sessions."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "indoor bouldering wall",
+        "subject": "An indoor bouldering wall",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "rock climbing chalk hands",
+        "subject": "Chalked hands on a hold",
+        "role": "gallery"
+      },
+      {
+        "provider": "pexels",
+        "query": "bouldering gym climber",
+        "subject": "A climber mid-problem",
+        "role": "gallery"
+      }
+    ],
     "overview": "Vocabulary lasts about three minutes. Then somebody suggests you get on the wall, and the suggestion is friendly.\n\nThere is no version of this scene that stays verbal.",
     "quick_brief": [
       "V-scale for boulder, French or YDS for rope. Know which the room uses.",

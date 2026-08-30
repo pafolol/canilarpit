@@ -406,6 +406,18 @@ function Figure({ media }: { media: Media }) {
             <span>{media.attribution}</span>
           )
         ) : null}
+        {media.license_name ? (
+          <span className="figure__licence">
+            {" — "}
+            {media.license_url ? (
+              <a href={media.license_url} target="_blank" rel="noreferrer noopener">
+                {media.license_name}
+              </a>
+            ) : (
+              media.license_name
+            )}
+          </span>
+        ) : null}
       </figcaption>
     </figure>
   );

@@ -377,23 +377,39 @@ class GuideGenerateResponse(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
-class StockImageResult(BaseModel):
+class ImageCandidate(BaseModel):
+    """One image a provider offered, with the rights information it came with."""
+
     provider: str
     remote_url: str
-    source_page_url: str | None
-    attribution: str | None
-    license_name: str | None
-    license_url: str | None
-    alt_text: str
-    width: int | None
-    height: int | None
     preview_url: str | None = None
+    source_page_url: str | None = None
+    attribution: str | None = None
+    license_name: str | None = None
+    license_url: str | None = None
+    alt_text: str
+    width: int | None = None
+    height: int | None = None
+    subject: str | None = None
+    # True for promotional stills and cover art: usable editorially with credit,
+    # but the rights belong to whoever owns the film, show or photograph.
+    editorial_only: bool = False
 
 
-class StockImageSearchResponse(BaseModel):
+class ImageProviderInfo(BaseModel):
+    id: str
+    title: str
+    subjects: str
+    configured: bool
+    requires_key: bool
+    editorial_only: bool
+
+
+class ImageSearchResponse(BaseModel):
     query: str
     provider: str
-    results: list[StockImageResult]
+    results: list[ImageCandidate]
+    warnings: list[str] = Field(default_factory=list)
 
 
 class AiStatusResponse(BaseModel):
@@ -402,8 +418,8 @@ class AiStatusResponse(BaseModel):
     text_provider: str
     text_model: str
     text_configured: bool
-    stock_provider: str
-    stock_configured: bool
+    image_providers: list[ImageProviderInfo]
+    images_configured: bool
     storage_configured: bool
 
 

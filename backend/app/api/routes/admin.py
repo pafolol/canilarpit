@@ -32,6 +32,8 @@ from app.schemas.api import (
     GuideMediaLinkCreate,
     GuidePublishRequest,
     GuideValidationResponse,
+    ImageProviderInfo,
+    ImageSearchResponse,
     MediaApprovalUpdate,
     MediaCreate,
     MediaResponse,
@@ -39,14 +41,13 @@ from app.schemas.api import (
     ResearchJobCreate,
     ResearchJobPage,
     ResearchJobResponse,
-    StockImageSearchResponse,
     TopicRequestAdminItem,
     TopicRequestAdminPage,
     UploadPresignRequest,
     UploadPresignResponse,
 )
 from app.schemas.content import GuideDocument
-from app.services import stock
+from app.services import images
 from app.services.audit import add_audit_log
 from app.services.generation import queue_generation_job, run_generation_job
 from app.services.guides import (
@@ -650,12 +651,13 @@ def complete_research_job(
 @router.get("/ai/status", response_model=AiStatusResponse)
 def ai_status(_: User = Depends(require_editor)) -> AiStatusResponse:
     """What the admin panel checks before it offers the generate button."""
+    providers = [ImageProviderInfo(**item) for item in images.available_providers()]
     return AiStatusResponse(
         text_provider="openai",
         text_model=settings.openai_model,
         text_configured=settings.ai_configured,
-        stock_provider=stock.PROVIDER,
-        stock_configured=settings.stock_configured,
+        image_providers=providers,
+        images_configured=any(provider.configured for provider in providers),
         storage_configured=settings.storage_configured,
     )
 
@@ -711,14 +713,33 @@ def run_research_job(
     return job
 
 
-@router.get("/media/stock-search", response_model=StockImageSearchResponse)
-def stock_search(
+@router.get("/media/providers", response_model=list[ImageProviderInfo])
+def list_image_providers(_: User = Depends(require_editor)) -> list[ImageProviderInfo]:
+    """Which image sources this deployment can reach, and what each is good for."""
+    return [ImageProviderInfo(**item) for item in images.available_providers()]
+
+
+@router.get("/media/image-search", response_model=ImageSearchResponse)
+def image_search(
     q: str = Query(min_length=2, max_length=200),
+    provider: str = Query(default="auto"),
+    guide_type: str | None = Query(default=None),
+    category: str | None = Query(default=None),
     limit: int = Query(default=12, ge=1, le=40),
     _: User = Depends(require_editor),
-) -> StockImageSearchResponse:
-    try:
-        results = stock.search_stock_images(q, limit=limit)
-    except stock.StockSearchUnavailable as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-    return StockImageSearchResponse(query=q, provider=stock.PROVIDER, results=results)
+) -> ImageSearchResponse:
+    """Search one provider, or let `auto` pick from the guide's category."""
+    if provider not in {"auto", ""} and provider not in images.PROVIDERS:
+        raise HTTPException(status_code=422, detail=f"Unknown image provider: {provider}")
+
+    results, warnings = images.search_with_fallback(
+        q, provider_id=provider, guide_type=guide_type, category_slug=category, limit=limit
+    )
+    if not results and warnings:
+        raise HTTPException(status_code=503, detail="; ".join(warnings[:3]))
+    return ImageSearchResponse(
+        query=q,
+        provider=results[0].provider if results else provider,
+        results=results,
+        warnings=warnings,
+    )

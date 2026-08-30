@@ -142,13 +142,24 @@ export default function Generate() {
               type="checkbox"
               checked={attachImages}
               onChange={(event) => setAttachImages(event.target.checked)}
-              disabled={!aiStatus?.stock_configured}
+              disabled={aiStatus ? !aiStatus.images_configured : false}
             />
             <span>
-              Attach stock photographs
-              {aiStatus && !aiStatus.stock_configured ? " (no PEXELS_API_KEY set)" : ""}
+              Find and attach images. The model picks a source per picture.
             </span>
           </label>
+
+          {aiStatus && (
+            <ul className="providerList">
+              {aiStatus.image_providers.map((item) => (
+                <li key={item.id} className={item.configured ? "" : "is-off"}>
+                  <span className="providerList__name">{item.title}</span>
+                  <span className="providerList__what">{item.subjects}</span>
+                  {!item.configured && <span className="providerList__off">needs a key</span>}
+                </li>
+              ))}
+            </ul>
+          )}
 
           <button
             className="btn"

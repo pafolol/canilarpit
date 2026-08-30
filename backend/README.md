@@ -117,8 +117,8 @@ background task. The pipeline is in `app/services/generation.py`:
    returned to the model to repair, up to `AI_MAX_REPAIR_ATTEMPTS` times.
 3. Source URLs are fetched. Dead ones are dropped along with the citations that
    referenced them (`AI_VERIFY_SOURCES`).
-4. Stock photographs are fetched for the image terms the guide proposed and attached to
-   the draft revision, unapproved.
+4. Images are fetched. `content.image_brief` names a provider and a query per picture,
+   chosen by the model, and each is attached to the draft revision unapproved.
 5. The job ends in `review` with `created_guide_id` set. Nothing is ever published
    automatically.
 
@@ -126,7 +126,6 @@ background task. The pipeline is in `app/services/generation.py`:
 OPENAI_API_KEY=sk-...
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4.1
-PEXELS_API_KEY=...
 ```
 
 Without `OPENAI_API_KEY` the generate endpoint answers `503` and says so; everything
@@ -142,7 +141,35 @@ canilarpit work --limit 5
 `app.workers.research.claim_next_research_job` claims jobs atomically with
 `SKIP LOCKED` for a worker deployed elsewhere.
 
-## Media
+## Images
+
+`app/services/images.py` is a registry of providers, not a single search. Pexels, TMDB
+and fanart.tv need keys; Wikimedia Commons, TVmaze, AniList and Jikan do not, so guides
+can be illustrated with nothing configured.
+
+```dotenv
+PEXELS_API_KEY=...
+TMDB_API_KEY=...
+FANART_API_KEY=...
+```
+
+The model writes `content.image_brief`, choosing a provider per picture. `auto` falls
+back to a per-category route. A named provider falls back only inside its family
+(generic / screen / anime), so a film database never degrades into a stock library.
+Free-text providers are filtered by term overlap before results are returned.
+
+Assets from TMDB, TVmaze, AniList, Jikan and fanart.tv carry `editorial_only` in their
+metadata: usable with credit, rights held by the copyright owner.
+
+```powershell
+canilarpit backfill-images --replace
+```
+
+attaches images to the current published revision of every published guide. It does not
+create a revision, because a photograph is not an edit to the document, and it approves
+what it attaches because an administrator ran it deliberately.
+
+## Media storage
 
 Stock and external assets use remote HTTPS URLs and carry their attribution and licence.
 Uploaded and generated assets can go to an S3-compatible bucket through a 15-minute

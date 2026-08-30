@@ -64,6 +64,26 @@
         "make": "A one-page thesis you would defend to a stranger."
       }
     },
+    "image_brief": [
+      {
+        "provider": "pexels",
+        "query": "conference panel stage speakers",
+        "subject": "A conference panel",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "technology conference audience",
+        "subject": "A tech conference",
+        "role": "gallery"
+      },
+      {
+        "provider": "pexels",
+        "query": "laptop coworking space",
+        "subject": "A co-working desk",
+        "role": "gallery"
+      }
+    ],
     "overview": "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.\n\nThe surface layer and the actual layer are the same layer. That is why the clock does not run.",
     "quick_brief": [
       "Thesis, allocation, liquid against locked, cliff and vest.",

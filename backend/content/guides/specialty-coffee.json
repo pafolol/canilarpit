@@ -64,6 +64,26 @@
         "make": "Dial in one bean on one grinder across five days."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "espresso machine portafilter",
+        "subject": "An espresso portafilter",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "latte art",
+        "subject": "Latte art",
+        "role": "gallery"
+      },
+      {
+        "provider": "pexels",
+        "query": "pour over coffee brew bar",
+        "subject": "A pour-over brew bar",
+        "role": "gallery"
+      }
+    ],
     "overview": "Order a filter, ask what is on, ask about the process. Three moves and you are inside the conversation.\n\nSay what you taste even when you are wrong. Being wrong out loud is the accepted entry ritual here, which is why the clock runs so long.",
     "quick_brief": [
       "Washed against natural. This one distinction does most of the work.",

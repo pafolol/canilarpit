@@ -538,6 +538,12 @@ Every create, import, draft-save, and export operation uses this top-level shape
 Citation strings in facts, anime events, and lifestyle brands must match a source `key`. Duplicate
 aliases and sources are rejected or normalized. `content.kind` must equal `guide_type`.
 
+`content.image_brief` is a list of up to eight `{provider, query, subject, role, note}`
+objects naming what to illustrate the guide with and where to find it. `provider` is
+`auto` or one of the ids from `GET /admin/media/providers`; `role` is `hero` or
+`gallery`. It may be empty, in which case the backend infers a brief from the title and
+any visual cues.
+
 `content.larp` is required. Its clock rules are enforced at validation time: a `dont`
 verdict must have `exposure_seconds: null`, `unfalsifiable: true` forbids a clock, and
 any other verdict requires `exposure_seconds` of at least 30. A `422` naming
@@ -682,11 +688,23 @@ Success `200`:
   "text_provider": "openai",
   "text_model": "gpt-4.1",
   "text_configured": true,
-  "stock_provider": "pexels",
-  "stock_configured": true,
+  "images_configured": true,
+  "image_providers": [
+    {
+      "id": "tvmaze",
+      "title": "TVmaze",
+      "subjects": "Television series, their characters and their episodes",
+      "configured": true,
+      "requires_key": false,
+      "editorial_only": true
+    }
+  ],
   "storage_configured": false
 }
 ```
+
+`images_configured` is true whenever at least one provider can be reached. Four of the
+seven need no key, so it is normally true even on a fresh install.
 
 ### `POST /api/v1/admin/ai/generate`
 
@@ -707,6 +725,9 @@ Request:
   "attach_images": true
 }
 ```
+
+`attach_images` runs the generated document's own `image_brief` through the provider
+registry and places what it finds on the draft, unapproved.
 
 Every field except `topic` is optional; a null `guide_type`, `entry_type`, or
 `category_slug` lets the model choose.
@@ -730,40 +751,73 @@ Runs an already-queued job now rather than waiting for an external worker.
 
 Success `202`: the job. Failure `409`: the job is not `queued`.
 
-### `GET /api/v1/admin/media/stock-search`
+### `GET /api/v1/admin/media/providers`
 
 Access: Editor.
 
-Searches the stock photography provider. Query parameters are `q` (2-200 characters) and
-`limit` (1-40, default 12).
+Lists the image sources this deployment can reach and what each is good for. The
+`subjects` string is the same text the model is given when it writes an image brief.
+
+Success `200`: an array of `{id, title, subjects, configured, requires_key,
+editorial_only}`.
+
+Providers are `pexels`, `wikimedia`, `tmdb`, `tvmaze`, `anilist`, `jikan` and `fanart`.
+`wikimedia`, `tvmaze`, `anilist` and `jikan` need no key.
+
+### `GET /api/v1/admin/media/image-search`
+
+Access: Editor.
+
+Searches one image provider.
+
+| Parameter | Type | Behavior |
+|---|---|---|
+| `q` | string, 2-200 | The search term |
+| `provider` | enum | A provider id, or `auto` to choose by category |
+| `guide_type` | string, optional | Informs `auto` |
+| `category` | string, optional | Informs `auto` |
+| `limit` | integer | 1 to 40, default 12 |
 
 Success `200`:
 
 ```json
 {
-  "query": "cluttered wine bar counter",
-  "provider": "pexels",
+  "query": "Breaking Bad",
+  "provider": "tvmaze",
   "results": [
     {
-      "provider": "pexels",
-      "remote_url": "https://images.pexels.com/photos/...",
-      "source_page_url": "https://www.pexels.com/photo/...",
-      "attribution": "Photo by Example Creator on Pexels",
-      "license_name": "Pexels License",
-      "license_url": "https://www.pexels.com/license/",
-      "alt_text": "Wine glasses on a bar counter",
-      "width": 1600,
-      "height": 1067,
-      "preview_url": "https://images.pexels.com/photos/...?w=350"
+      "provider": "tvmaze",
+      "remote_url": "https://static.tvmaze.com/uploads/images/original_untouched/0/2404.jpg",
+      "preview_url": "https://static.tvmaze.com/uploads/images/medium_portrait/0/2404.jpg",
+      "source_page_url": "https://www.tvmaze.com/characters/1/breaking-bad-walter-white",
+      "attribution": "Walter White, Breaking Bad, via TVmaze",
+      "license_name": "Editorial use; rights held by the copyright owner",
+      "license_url": "https://www.tvmaze.com/api",
+      "alt_text": "Walter White in Breaking Bad",
+      "width": null,
+      "height": null,
+      "subject": "Walter White",
+      "editorial_only": true
     }
-  ]
+  ],
+  "warnings": ["Pexels is not configured (PEXELS_API_KEY)"]
 }
 ```
 
+`editorial_only` marks promotional material: usable with credit, rights held by the
+copyright owner. The admin panel labels these and the public page prints the licence.
+
+Fallback is constrained by family. `pexels` and `wikimedia` substitute for each other;
+`tmdb`, `tvmaze` and `fanart` substitute for each other; `anilist` and `jikan`
+substitute for each other. A film database never falls back to a photo library, because
+the result would be a picture of the wrong thing. `warnings` explains every provider
+that was tried and skipped.
+
+Failure `422`: unknown provider. Failure `503`: nothing in the family could answer, with
+the reasons in `detail`.
+
 The frontend posts a chosen result to `POST /admin/media` and then places it with
 `POST /admin/guides/{guide_id}/draft/media`.
-
-Failure `503`: `PEXELS_API_KEY` is not configured.
 
 ## Research Jobs
 

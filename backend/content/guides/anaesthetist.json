@@ -44,6 +44,26 @@
         "make": "Medical school. There is no shorter path and that is the point."
       }
     },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "anaesthetic machine",
+        "subject": "An anaesthetic machine",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "operating theatre surgery",
+        "subject": "An operating theatre",
+        "role": "gallery"
+      },
+      {
+        "provider": "pexels",
+        "query": "hospital corridor",
+        "subject": "A hospital corridor",
+        "role": "gallery"
+      }
+    ],
     "overview": "This is the entry that changes category. Claiming a clinical role is not a social bluff, and in most places it stops being only a social matter the moment anyone acts on it.\n\nThe room contains a nurse more often than you expect.\n\nIf somebody collapses at that dinner, the claim becomes the only fact anyone remembers about you.",
     "quick_brief": [
       "This is the entry that changes category. Claiming a clinical role is not a social bluff, and in most places it stops being only a social matter the moment anyone acts on it.",

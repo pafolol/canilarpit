@@ -1,69 +1,102 @@
-import { useState } from "react";
-import { ApiError, api, type Media, type StockImage } from "../api";
+import { useEffect, useState } from "react";
+import {
+  ApiError,
+  api,
+  type ImageCandidate,
+  type ImageProviderInfo,
+  type ImageQuery,
+  type Media,
+} from "../api";
 
 /**
  * Images for one guide.
  *
  * Placements live on the draft revision, assets are reusable, and only approved
- * assets reach the public page. Those three facts drive every control here.
+ * assets reach the public page. Which source to search matters as much as the
+ * words: a fictional character is not in a stock photography library.
  */
 export default function MediaPanel({
   guideId,
   media,
-  suggestions,
+  brief,
+  guideType,
+  categorySlug,
   onChanged,
 }: {
   guideId: string;
   media: Media[];
-  suggestions: string[];
+  brief: ImageQuery[];
+  guideType?: string;
+  categorySlug?: string;
   onChanged: () => void;
 }) {
-  const [query, setQuery] = useState(suggestions[0] ?? "");
-  const [results, setResults] = useState<StockImage[]>([]);
+  const [providers, setProviders] = useState<ImageProviderInfo[]>([]);
+  const [provider, setProvider] = useState<string>(brief[0]?.provider ?? "auto");
+  const [query, setQuery] = useState(brief[0]?.query ?? "");
+  const [results, setResults] = useState<ImageCandidate[]>([]);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [searching, setSearching] = useState(false);
   const [busyUrl, setBusyUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    api.admin.imageProviders().then(setProviders).catch(() => setProviders([]));
+  }, []);
+
   const fail = (cause: unknown, fallback: string) =>
     setError(cause instanceof ApiError ? cause.message : fallback);
 
-  const search = async (term: string) => {
+  const search = async (term: string, providerId: string) => {
     setQuery(term);
+    setProvider(providerId);
     if (!term.trim()) return;
     setSearching(true);
     setError(null);
     try {
-      const found = await api.admin.stockSearch(term.trim());
+      const found = await api.admin.imageSearch(term.trim(), {
+        provider: providerId,
+        guide_type: guideType,
+        category: categorySlug,
+      });
       setResults(found.results);
+      setWarnings(found.warnings);
     } catch (cause) {
       setResults([]);
-      fail(cause, "Stock search failed.");
+      setWarnings([]);
+      fail(cause, "Image search failed.");
     } finally {
       setSearching(false);
     }
   };
 
-  const attach = async (image: StockImage) => {
+  const attach = async (image: ImageCandidate) => {
     setBusyUrl(image.remote_url);
     setError(null);
     try {
       const asset = await api.admin.createMedia({
-        kind: "stock",
+        // Promotional stills are not stock; recording that keeps the rights honest.
+        kind: image.editorial_only ? "external" : "stock",
         provider: image.provider,
         remote_url: image.remote_url,
         source_page_url: image.source_page_url,
         attribution: image.attribution,
         license_name: image.license_name,
         license_url: image.license_url,
-        alt_text: image.alt_text,
+        alt_text: image.alt_text.slice(0, 500),
         width: image.width,
         height: image.height,
-        metadata: { preview_url: image.preview_url, query },
+        metadata: {
+          preview_url: image.preview_url,
+          subject: image.subject,
+          editorial_only: image.editorial_only,
+          query,
+        },
         approval_status: "approved",
       });
       await api.admin.linkMedia(guideId, {
         media_asset_id: asset.id,
         role: media.length === 0 ? "hero" : "gallery",
+        caption: image.subject,
         sort_order: media.length,
       });
       onChanged();
@@ -95,6 +128,8 @@ export default function MediaPanel({
     }
   };
 
+  const chosen = providers.find((item) => item.id === provider);
+
   return (
     <section className="panel">
       <div className="panel__head">
@@ -113,10 +148,15 @@ export default function MediaPanel({
               {item.url ? <img src={item.url} alt={item.alt_text} loading="lazy" /> : null}
               <div className="mediaList__meta">
                 <span className={`pill pill--${item.approval_status}`}>{item.approval_status}</span>
-                <span className="mediaList__role">{item.role ?? "unplaced"}</span>
-                <p className="mediaList__alt">{item.alt_text}</p>
+                <span className="mediaList__role">
+                  {item.provider} · {item.role ?? "unplaced"}
+                </span>
+                <p className="mediaList__alt">{item.caption || item.alt_text}</p>
                 {item.attribution ? (
-                  <p className="mediaList__credit">{item.attribution}</p>
+                  <p className="mediaList__credit">
+                    {item.attribution}
+                    {item.license_name ? ` — ${item.license_name}` : ""}
+                  </p>
                 ) : null}
                 <div className="mediaList__actions">
                   <button
@@ -137,41 +177,70 @@ export default function MediaPanel({
         </ul>
       )}
 
+      {brief.length > 0 && (
+        <div className="mediaBrief">
+          <span className="af__label">The guide asked for</span>
+          <ul className="briefList">
+            {brief.map((item, index) => (
+              <li key={`${item.provider}-${item.query}-${index}`}>
+                <button className="chip" onClick={() => void search(item.query, item.provider)}>
+                  <span className="briefList__provider">{item.provider}</span>
+                  {item.query}
+                </button>
+                {item.subject ? <span className="briefList__subject">{item.subject}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <form
         className="mediaSearch"
         onSubmit={(event) => {
           event.preventDefault();
-          void search(query);
+          void search(query, provider);
         }}
       >
-        <label className="u-sr" htmlFor="stock-q">Stock image search</label>
+        <label className="u-sr" htmlFor="image-provider">Image source</label>
+        <select
+          id="image-provider"
+          className="af__input"
+          value={provider}
+          onChange={(event) => setProvider(event.target.value)}
+        >
+          <option value="auto">Auto — pick from the category</option>
+          {providers.map((item) => (
+            <option key={item.id} value={item.id} disabled={!item.configured}>
+              {item.title}
+              {item.configured ? "" : " (no key)"}
+            </option>
+          ))}
+        </select>
+        <label className="u-sr" htmlFor="image-q">Image search</label>
         <input
-          id="stock-q"
+          id="image-q"
           className="af__input"
           value={query}
-          placeholder="Search stock photographs"
+          placeholder={chosen ? `Search ${chosen.title}` : "Search for an image"}
           onChange={(event) => setQuery(event.target.value)}
         />
         <button className="btn" type="submit" disabled={searching}>
           {searching ? "searching…" : "Search"}
         </button>
+        {chosen ? <p className="af__hint mediaSearch__about">{chosen.subjects}</p> : null}
       </form>
-
-      {suggestions.length > 0 && (
-        <div className="mediaSearch__hints">
-          <span className="af__hint">From the guide:</span>
-          {suggestions.slice(0, 6).map((term) => (
-            <button key={term} className="chip" onClick={() => void search(term)}>
-              {term}
-            </button>
-          ))}
-        </div>
-      )}
 
       {error && (
         <p className="admin__error" role="alert">
           {error}
         </p>
+      )}
+      {warnings.length > 0 && (
+        <ul className="run__warnings">
+          {warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
       )}
 
       {results.length > 0 && (
@@ -179,7 +248,15 @@ export default function MediaPanel({
           {results.map((image) => (
             <figure className="stockGrid__item" key={image.remote_url}>
               <img src={image.preview_url ?? image.remote_url} alt={image.alt_text} loading="lazy" />
-              <figcaption>{image.attribution}</figcaption>
+              <figcaption>
+                <span className="stockGrid__provider">{image.provider}</span>
+                {image.editorial_only ? (
+                  <span className="stockGrid__editorial" title={image.license_name ?? ""}>
+                    rights reserved
+                  </span>
+                ) : null}
+                <span className="stockGrid__subject">{image.subject ?? image.alt_text}</span>
+              </figcaption>
               <button
                 className="chip"
                 disabled={busyUrl === image.remote_url}

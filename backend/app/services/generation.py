@@ -1,6 +1,6 @@
 """The end-to-end generate-a-guide pipeline.
 
-Topic -> model -> validated document -> draft revision -> stock images attached.
+Topic -> model -> validated document -> draft revision -> illustrated.
 Nothing here publishes: the last step of every run is a draft waiting for an editor.
 """
 
@@ -26,9 +26,9 @@ from app.db.models import (
     RevisionStatus,
     User,
 )
-from app.schemas.api import StockImageResult
+from app.schemas.api import ImageCandidate
 from app.schemas.content import GuideDocument
-from app.services import ai, stock
+from app.services import ai, images
 from app.services.audit import add_audit_log
 from app.services.guides import create_guide, save_draft
 from app.services.text import normalize_text, slugify
@@ -73,11 +73,14 @@ def store_document_as_draft(
     return guide, save_draft(db, guide, document, author)
 
 
-def attach_stock_images(
+def attach_images(
     db: Session,
     revision: GuideRevision,
-    results: list[StockImageResult],
+    results: list[tuple[ImageCandidate, str]],
     author: User,
+    *,
+    start_order: int = 0,
+    approve: bool = False,
 ) -> list[tuple[MediaAsset, GuideMedia]]:
     """Register each photo as a media asset and place it on the draft revision.
 
@@ -85,20 +88,25 @@ def attach_stock_images(
     approved media, so a generated guide never ships an image nobody has looked at.
     """
     placed: list[tuple[MediaAsset, GuideMedia]] = []
-    for index, result in enumerate(results):
+    for offset, (result, role) in enumerate(results):
+        index = start_order + offset
         asset = MediaAsset(
-            kind=MediaKind.STOCK,
+            kind=MediaKind.STOCK if not result.editorial_only else MediaKind.EXTERNAL,
             provider=result.provider,
             remote_url=result.remote_url,
             source_page_url=result.source_page_url,
             attribution=result.attribution,
             license_name=result.license_name,
             license_url=result.license_url,
-            alt_text=result.alt_text,
+            alt_text=result.alt_text[:500],
             width=result.width,
             height=result.height,
-            extra_metadata={"preview_url": result.preview_url},
-            approval_status=ApprovalStatus.DRAFT,
+            extra_metadata={
+                "preview_url": result.preview_url,
+                "subject": result.subject,
+                "editorial_only": result.editorial_only,
+            },
+            approval_status=ApprovalStatus.APPROVED if approve else ApprovalStatus.DRAFT,
             created_by_user_id=author.id,
         )
         db.add(asset)
@@ -106,13 +114,42 @@ def attach_stock_images(
         link = GuideMedia(
             guide_revision_id=revision.id,
             media_asset_id=asset.id,
-            role=HERO_ROLE if index == 0 else GALLERY_ROLE,
+            role=role or (HERO_ROLE if index == 0 else GALLERY_ROLE),
             sort_order=index,
+            caption=result.subject,
         )
         db.add(link)
         db.flush()
         placed.append((asset, link))
     return placed
+
+
+def fetch_planned_images(
+    document: GuideDocument, *, limit: int = 4
+) -> tuple[list[tuple[ImageCandidate, str]], list[str]]:
+    """Run the guide's own image brief through the provider registry."""
+    picked: list[tuple[ImageCandidate, str]] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+
+    for item in ai.image_plan(document, limit=limit):
+        results, problems = images.search_with_fallback(
+            item.query,
+            provider_id=item.provider,
+            guide_type=document.guide_type.value,
+            category_slug=document.category_slug,
+            limit=3,
+        )
+        warnings.extend(problems)
+        for candidate in results:
+            if candidate.remote_url in seen:
+                continue
+            seen.add(candidate.remote_url)
+            if item.subject and not candidate.subject:
+                candidate = candidate.model_copy(update={"subject": item.subject})
+            picked.append((candidate, item.role))
+            break
+    return picked, warnings
 
 
 def queue_generation_job(
@@ -202,12 +239,19 @@ def run_generation_job(
 
         attached: list[dict] = []
         if config.get("attach_images", True):
-            try:
-                photos = stock.search_many(ai.image_queries(document), per_query=1)
-                for asset, link in attach_stock_images(db, revision, photos, author):
-                    attached.append({"media_asset_id": str(asset.id), "link_id": str(link.id)})
-            except stock.StockSearchUnavailable as exc:
-                warnings.append(f"No stock images attached: {exc}")
+            picked, image_warnings = fetch_planned_images(document)
+            warnings.extend(image_warnings)
+            for asset, link in attach_images(db, revision, picked, author):
+                attached.append(
+                    {
+                        "media_asset_id": str(asset.id),
+                        "link_id": str(link.id),
+                        "provider": asset.provider,
+                        "subject": link.caption,
+                    }
+                )
+            if not picked:
+                warnings.append("No images were attached; every provider came back empty.")
 
         job.status = ResearchJobStatus.REVIEW
         job.created_guide_id = guide.id
