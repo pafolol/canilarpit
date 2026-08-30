@@ -118,7 +118,10 @@ export default function Dashboard() {
       <section className="panel">
         <div className="panel__head">
           <h2 className="panel__h">Demand</h2>
-          <p className="panel__sub">What readers asked for and nobody has written.</p>
+          <p className="panel__sub">
+            What readers asked for and nobody has written. Topics that now have a
+            published guide drop off on their own.
+          </p>
         </div>
         {topics.length === 0 ? (
           <p className="panel__empty">No unmet requests.</p>
@@ -130,6 +133,19 @@ export default function Dashboard() {
                   {topic.topic}
                 </Link>
                 <span className="demand__n">{topic.request_count}</span>
+                <button
+                  className="demand__drop"
+                  aria-label={`Dismiss ${topic.topic}`}
+                  title="Dismiss: not worth writing"
+                  onClick={() => {
+                    api.admin
+                      .dismissTopicRequest(topic.id)
+                      .then(reload)
+                      .catch(() => undefined);
+                  }}
+                >
+                  ×
+                </button>
               </li>
             ))}
           </ul>

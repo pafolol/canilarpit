@@ -688,8 +688,19 @@ Failure `409`: no editable draft. Failure `404`: link is not part of that draft.
 Access: Editor.
 
 Returns missing topics ordered by highest `request_count`, then most recent request. Query parameters
-are `page` and `page_size`. This is the editorial backlog and does not automatically enqueue paid
-research.
+are `include_written`, `page` and `page_size`. This is the editorial backlog and does not
+automatically enqueue paid research.
+
+A topic drops off the backlog once a published guide answers it, matched the same way
+`POST /topic-requests` matches: the normalized topic as a slug, or one of the guide's
+aliases. Pass `include_written=true` to see them anyway.
+
+### `DELETE /api/v1/admin/topic-requests/{request_id}`
+
+Access: Editor.
+
+Removes a request from the backlog, for topics an editor has decided are not worth
+writing. Idempotent: returns `204` whether or not the row existed.
 
 Each item contains `topic`, `normalized_topic`, `request_count`, `first_requested_at`, and
 `last_requested_at`.

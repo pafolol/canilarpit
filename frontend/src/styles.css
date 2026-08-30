@@ -1431,3 +1431,14 @@ select {
 /* No counter is a finding too, so it is marked rather than hidden. */
 .counter--none { border-left-color: var(--stop); }
 .counter--none .counter__label { color: var(--stop); }
+
+/* A dismissed request is one an editor has decided is not worth writing. */
+.demand li { align-items: baseline; }
+.demand__drop {
+  margin-left: 0.5rem;
+  color: var(--ink-2);
+  font-size: var(--t-15);
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+.demand__drop:hover { color: var(--stop); }

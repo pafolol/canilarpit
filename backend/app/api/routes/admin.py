@@ -3,7 +3,7 @@ import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
-from sqlalchemy import func, select
+from sqlalchemy import exists, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -12,6 +12,7 @@ from app.core.security import require_admin, require_editor
 from app.db.models import (
     ApprovalStatus,
     Guide,
+    GuideAlias,
     GuideMedia,
     GuideRevision,
     GuideStatus,
@@ -475,17 +476,44 @@ def unlink_media_from_draft(
     return Response(status_code=204)
 
 
+def topic_already_written():
+    """True when a published guide now answers this request.
+
+    The backlog is meant to be work, so a topic somebody has since written stops
+    being a request. Matching mirrors POST /topic-requests: the normalized topic
+    as a slug, or any of the guide's aliases.
+    """
+    return exists(
+        select(Guide.id).where(
+            Guide.status == GuideStatus.PUBLISHED,
+            or_(
+                Guide.slug == func.replace(TopicRequest.normalized_topic, " ", "-"),
+                exists(
+                    select(GuideAlias.id).where(
+                        GuideAlias.guide_id == Guide.id,
+                        GuideAlias.normalized_alias == TopicRequest.normalized_topic,
+                    )
+                ),
+            ),
+        )
+    )
+
+
 @router.get("/topic-requests", response_model=TopicRequestAdminPage)
 def list_topic_requests(
+    include_written: bool = Query(default=False),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=settings.default_page_size, ge=1, le=settings.max_page_size),
     db: Session = Depends(get_db),
     _: User = Depends(require_editor),
 ) -> TopicRequestAdminPage:
-    total = db.scalar(select(func.count()).select_from(TopicRequest)) or 0
+    query = select(TopicRequest)
+    if not include_written:
+        query = query.where(~topic_already_written())
+
+    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
     items = db.scalars(
-        select(TopicRequest)
-        .order_by(TopicRequest.request_count.desc(), TopicRequest.last_requested_at.desc())
+        query.order_by(TopicRequest.request_count.desc(), TopicRequest.last_requested_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
     ).all()
@@ -493,6 +521,28 @@ def list_topic_requests(
         items=[TopicRequestAdminItem.model_validate(item) for item in items],
         pagination=pagination(page, page_size, total),
     )
+
+
+@router.delete("/topic-requests/{request_id}", status_code=204)
+def dismiss_topic_request(
+    request_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_editor),
+) -> Response:
+    """Drop a request from the backlog. Idempotent, so a double click is harmless."""
+    topic_request = db.get(TopicRequest, request_id)
+    if topic_request is not None:
+        add_audit_log(
+            db,
+            user,
+            "topic_request.dismissed",
+            "topic_request",
+            topic_request.id,
+            {"topic": topic_request.topic},
+        )
+        db.delete(topic_request)
+        db.commit()
+    return Response(status_code=204)
 
 
 @router.get("/research-jobs", response_model=ResearchJobPage)

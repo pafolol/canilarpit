@@ -455,8 +455,11 @@ export const api = {
       ),
     archive: (id: string) =>
       request<void>(`${V1}/admin/guides/${id}/archive`, { method: "POST" }, true),
-    topicRequests: (params: { page?: number; page_size?: number } = {}) =>
-      request<Page<TopicRequestRow>>(`${V1}/admin/topic-requests${query(params)}`, {}, true),
+    topicRequests: (
+      params: { include_written?: boolean; page?: number; page_size?: number } = {},
+    ) => request<Page<TopicRequestRow>>(`${V1}/admin/topic-requests${query(params)}`, {}, true),
+    dismissTopicRequest: (id: string) =>
+      request<void>(`${V1}/admin/topic-requests/${id}`, { method: "DELETE" }, true),
     jobs: (params: { status?: JobStatus; page?: number; page_size?: number } = {}) =>
       request<Page<ResearchJob>>(`${V1}/admin/research-jobs${query(params)}`, {}, true),
     job: (id: string) => request<ResearchJob>(`${V1}/admin/research-jobs/${id}`, {}, true),

@@ -155,6 +155,41 @@ def test_requesting_an_existing_topic_points_at_the_guide(client: TestClient) ->
     assert body["matching_guide"]["slug"] == "letterboxd"
 
 
+def test_a_written_topic_leaves_the_backlog(client: TestClient) -> None:
+    """The backlog is work to do, so a topic somebody has written is not on it."""
+    client.post("/api/v1/topic-requests", json={"topic": "Natural wine"})
+
+    backlog = client.get("/api/v1/admin/topic-requests", headers=DEV_HEADERS).json()
+    assert not any(item["normalized_topic"] == "natural wine" for item in backlog["items"])
+
+    everything = client.get(
+        "/api/v1/admin/topic-requests",
+        params={"include_written": True},
+        headers=DEV_HEADERS,
+    ).json()
+    assert everything["pagination"]["total"] >= backlog["pagination"]["total"]
+
+
+def test_an_editor_can_dismiss_a_request(client: TestClient) -> None:
+    topic = f"Test topic {uuid.uuid4().hex[:8]}"
+    client.post("/api/v1/topic-requests", json={"topic": topic})
+
+    listed = client.get(
+        "/api/v1/admin/topic-requests", params={"page_size": 100}, headers=DEV_HEADERS
+    ).json()
+    row = next(item for item in listed["items"] if item["topic"] == topic)
+
+    path = f"/api/v1/admin/topic-requests/{row['id']}"
+    assert client.delete(path, headers=DEV_HEADERS).status_code == 204
+    # Idempotent: a second click is not an error.
+    assert client.delete(path, headers=DEV_HEADERS).status_code == 204
+
+    after = client.get(
+        "/api/v1/admin/topic-requests", params={"page_size": 100}, headers=DEV_HEADERS
+    ).json()
+    assert not any(item["topic"] == topic for item in after["items"])
+
+
 def test_admin_routes_refuse_anonymous_callers(client: TestClient) -> None:
     assert client.get("/api/v1/admin/guides").status_code == 401
 

@@ -578,6 +578,17 @@ function Box({
   const [value, setValue] = useState(initialValue);
   const [state, setState] = useState<BoxState>({ kind: "idle" });
   const [outcome, setOutcome] = useState("");
+  const edited = useRef(false);
+
+  // The search box owns this field until the reader types in it directly.
+  // Without this the box keeps whatever the query was when the empty state
+  // first appeared, so finishing "Cowboy Bebop" still submits "cow".
+  useEffect(() => {
+    if (edited.current) return;
+    setValue(initialValue);
+    setState({ kind: "idle" });
+    setOutcome("");
+  }, [initialValue]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -616,7 +627,10 @@ function Box({
             type={type}
             value={value}
             placeholder={placeholder}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => {
+              edited.current = true;
+              setValue(e.target.value);
+            }}
             autoComplete={type === "email" ? "email" : "off"}
           />
           <button className="box__btn" type="submit" disabled={state.kind === "sending"}>
