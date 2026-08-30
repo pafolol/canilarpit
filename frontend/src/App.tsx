@@ -27,7 +27,11 @@ function useOffline() {
 export default function App() {
   const offline = useOffline();
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  useEffect(() => {
+    // Braces matter: a concise body would return whatever scrollTo returns, and
+    // React treats a non-undefined return value as the cleanup function.
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <div className="shell">
