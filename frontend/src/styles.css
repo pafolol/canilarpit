@@ -1442,3 +1442,16 @@ select {
   padding: 0 0.25rem;
 }
 .demand__drop:hover { color: var(--stop); }
+
+/* The one action in the editor that spends money and rewrites the draft. */
+.chip--ai { border-color: var(--signal); color: var(--signal); }
+.editor__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+}

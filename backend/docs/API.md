@@ -776,6 +776,33 @@ The generated revision is a **draft**. Publishing it is a separate, admin-only c
 Failure `503`: `OPENAI_API_KEY` is not configured. Failure `422`: `category_slug` does
 not exist.
 
+### `POST /api/v1/admin/guides/{guide_id}/regenerate`
+
+Access: Editor.
+
+Rewrites an existing guide from its own title. Topic, guide type, entry type and
+category are taken from the guide's current revision, so the rewrite stays the same
+shape; only the steering is in the body.
+
+Request:
+
+```json
+{"instructions": null, "attach_images": true, "replace_images": false}
+```
+
+The generated document's slug is pinned to the guide's own, so a rewrite can never fork
+into a second guide even when the model renames it. The published revision is untouched
+until somebody publishes the new draft; an existing editable draft is replaced, which is
+the point of the button.
+
+Images already on the draft are kept unless `replace_images` is true, and the job's
+`warnings` says so.
+
+Success `202`: the research job. Poll it exactly as for `POST /admin/ai/generate`.
+
+Failure `404`: no such guide. Failure `409`: the guide has no revision to rewrite.
+Failure `503`: `OPENAI_API_KEY` is not configured.
+
 ### `POST /api/v1/admin/research-jobs/{job_id}/run`
 
 Access: Editor.

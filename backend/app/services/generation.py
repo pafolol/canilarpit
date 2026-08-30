@@ -7,7 +7,7 @@ Nothing here publishes: the last step of every run is a draft waiting for an edi
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -162,6 +162,8 @@ def queue_generation_job(
     instructions: str | None,
     attach_images: bool,
     user: User,
+    guide_id: uuid.UUID | None = None,
+    replace_images: bool = False,
 ) -> ResearchJob:
     job = ResearchJob(
         topic=topic.strip(),
@@ -172,6 +174,10 @@ def queue_generation_job(
             "entry_type": entry_type.value if entry_type else None,
             "category_slug": category_slug,
             "attach_images": attach_images,
+            "replace_images": replace_images,
+            # Set when rewriting an existing guide, so the result cannot land
+            # somewhere else because the model chose a different slug.
+            "guide_id": str(guide_id) if guide_id else None,
             "model": settings.openai_model,
         },
         requested_by_user_id=user.id,
@@ -235,10 +241,31 @@ def run_generation_job(
         if forced_category:
             document = document.model_copy(update={"category_slug": slugify(forced_category)})
 
+        target_id = config.get("guide_id")
+        if target_id:
+            target = db.get(Guide, uuid.UUID(target_id))
+            if target is None:
+                raise LookupError("The guide being regenerated no longer exists")
+            # A slug is permanent, and save_draft rejects a change, so pin it.
+            document = document.model_copy(update={"slug": target.slug})
+
         guide, revision = store_document_as_draft(db, document, author)
 
+        if config.get("replace_images"):
+            for link in db.scalars(
+                select(GuideMedia).where(GuideMedia.guide_revision_id == revision.id)
+            ).all():
+                db.delete(link)
+            db.flush()
+
+        existing_media = db.scalar(
+            select(func.count())
+            .select_from(GuideMedia)
+            .where(GuideMedia.guide_revision_id == revision.id)
+        ) or 0
+
         attached: list[dict] = []
-        if config.get("attach_images", True):
+        if config.get("attach_images", True) and not existing_media:
             picked, image_warnings = fetch_planned_images(document)
             warnings.extend(image_warnings)
             for asset, link in attach_images(db, revision, picked, author):
@@ -252,6 +279,11 @@ def run_generation_job(
                 )
             if not picked:
                 warnings.append("No images were attached; every provider came back empty.")
+        elif existing_media:
+            warnings.append(
+                f"Kept the {existing_media} image(s) already on this draft. "
+                "Tick 'replace images' to fetch new ones."
+            )
 
         job.status = ResearchJobStatus.REVIEW
         job.created_guide_id = guide.id

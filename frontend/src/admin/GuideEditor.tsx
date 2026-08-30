@@ -9,6 +9,7 @@ import {
   type GuideDocument,
   type GuideType,
   type ImageQuery,
+  type ResearchJob,
   type Verdict,
 } from "../api";
 import { ErrorState, Loading } from "../components";
@@ -43,6 +44,8 @@ const GUIDE_TYPE_OPTIONS: { value: GuideType; label: string }[] = [
 
 type Notice = { kind: "ok" | "fail"; text: string } | null;
 
+const RUNNING = new Set(["queued", "running"]);
+
 export default function GuideEditor() {
   const { id = "" } = useParams();
   const { account } = useAuth();
@@ -54,6 +57,8 @@ export default function GuideEditor() {
   const [busy, setBusy] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [rewrite, setRewrite] = useState<ResearchJob | null>(null);
+  const [replaceImages, setReplaceImages] = useState(false);
 
   const load = useCallback(() => {
     setBusy(true);
@@ -73,6 +78,28 @@ export default function GuideEditor() {
     void load();
     api.categories().then(setCategories).catch(() => setCategories([]));
   }, [load]);
+
+  // The rewrite runs in the API process, so the only way to see it land is to ask.
+  useEffect(() => {
+    if (!rewrite || !RUNNING.has(rewrite.status)) return;
+    const timer = setInterval(() => {
+      api.admin
+        .job(rewrite.id)
+        .then((next) => {
+          setRewrite(next);
+          if (!RUNNING.has(next.status)) {
+            void load();
+            setNotice(
+              next.status === "failed"
+                ? { kind: "fail", text: next.error_message ?? "The rewrite failed." }
+                : { kind: "ok", text: "Rewritten. Read the draft before publishing it." },
+            );
+          }
+        })
+        .catch(() => undefined);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [rewrite, load]);
 
   const media = guide?.draft_revision?.media ?? guide?.current_revision?.media ?? [];
 
@@ -155,6 +182,7 @@ export default function GuideEditor() {
 
   const larp = document?.content.larp;
   const stop = larp?.verdict === "dont";
+  const rewriting = Boolean(rewrite && RUNNING.has(rewrite.status));
 
   return (
     <div className="editor">
@@ -209,8 +237,46 @@ export default function GuideEditor() {
           >
             Archive
           </button>
+          <button
+            className="chip chip--ai"
+            disabled={saving || rewriting}
+            title="Write this guide again from its title. The published version stays up."
+            onClick={() => {
+              const warning = guide.draft_revision
+                ? `Rewrite "${guide.title}"? This replaces the current draft.`
+                : `Rewrite "${guide.title}"? It lands as a new draft.`;
+              if (!confirm(warning)) return;
+              setNotice(null);
+              api.admin
+                .regenerate(guide.id, { replace_images: replaceImages })
+                .then(setRewrite)
+                .catch((cause) =>
+                  setNotice({
+                    kind: "fail",
+                    text: cause instanceof ApiError ? cause.message : "Could not start it.",
+                  }),
+                );
+            }}
+          >
+            {rewriting ? "rewriting…" : "Regenerate"}
+          </button>
+          <label className="editor__toggle">
+            <input
+              type="checkbox"
+              checked={replaceImages}
+              onChange={(event) => setReplaceImages(event.target.checked)}
+            />
+            <span>new images too</span>
+          </label>
         </div>
       </header>
+
+      {rewriting && (
+        <p className="admin__ok" role="status">
+          Rewriting “{guide.title}” from its title. This takes about a minute; the
+          published version stays up until you publish the new draft.
+        </p>
+      )}
 
       {notice && (
         <p className={notice.kind === "ok" ? "admin__ok" : "admin__error"} role="status">

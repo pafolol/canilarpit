@@ -194,17 +194,34 @@ def search_wikimedia(query: str, limit: int) -> list[ImageCandidate]:
 # ---------------------------------------------------------------- tvmaze
 
 
+def _tvmaze_show(query: str) -> tuple[dict, str]:
+    """Find the show, and hand back whatever the query said after its name.
+
+    A brief often asks for "Mr. Robot Tyrell Wellick", which is a show and a
+    character glued together and matches no show at all. Shortening the query a
+    word at a time finds the show and leaves the character as the remainder.
+    """
+    shows = _get("https://api.tvmaze.com/search/shows", params={"q": query})
+    if shows:
+        return (shows[0].get("show") or {}), ""
+
+    words = query.split()
+    for cut in range(len(words) - 1, 0, -1):
+        shows = _get("https://api.tvmaze.com/search/shows", params={"q": " ".join(words[:cut])})
+        if shows:
+            return (shows[0].get("show") or {}), " ".join(words[cut:])
+    return {}, ""
+
+
 def search_tvmaze(query: str, limit: int) -> list[ImageCandidate]:
     """The show, then the characters in it. TVmaze allows hotlinking; we cache anyway."""
-    shows = _get("https://api.tvmaze.com/search/shows", params={"q": query})
+    top, wanted = _tvmaze_show(query)
     found: list[ImageCandidate] = []
-    if not shows:
+    if not top:
         return found
-
-    top = shows[0].get("show") or {}
     show_name = top.get("name") or query
     image = top.get("image") or {}
-    if image.get("original"):
+    if image.get("original") and not wanted:
         found.append(
             ImageCandidate(
                 provider="tvmaze",
@@ -234,6 +251,10 @@ def search_tvmaze(query: str, limit: int) -> list[ImageCandidate]:
             if not portrait.get("original"):
                 continue
             character_name = character.get("name") or person.get("name") or show_name
+            if wanted:
+                names = f"{character_name} {person.get('name') or ''}"
+                if not _terms(wanted) & _terms(names):
+                    continue
             found.append(
                 ImageCandidate(
                     provider="tvmaze",
@@ -475,10 +496,9 @@ FANART_ART_KEYS = (
 
 def _tvdb_id(query: str) -> tuple[str | None, str]:
     """TVmaze knows a show's TheTVDB id, which is how fanart keys television."""
-    shows = _get("https://api.tvmaze.com/search/shows", params={"q": query})
-    if not shows:
+    show, _ = _tvmaze_show(query)
+    if not show:
         return None, query
-    show = shows[0].get("show") or {}
     externals = show.get("externals") or {}
     tvdb = externals.get("thetvdb")
     return (str(tvdb) if tvdb else None), (show.get("name") or query)

@@ -429,6 +429,19 @@ export const api = {
         { method: "POST", body: JSON.stringify(payload) },
         true,
       ),
+    regenerate: (
+      guideId: string,
+      payload: {
+        instructions?: string | null;
+        attach_images?: boolean;
+        replace_images?: boolean;
+      } = {},
+    ) =>
+      request<ResearchJob>(
+        `${V1}/admin/guides/${guideId}/regenerate`,
+        { method: "POST", body: JSON.stringify(payload) },
+        true,
+      ),
     guides: (params: { status?: GuideStatus; page?: number; page_size?: number } = {}) =>
       request<Page<AdminGuide>>(`${V1}/admin/guides${query(params)}`, {}, true),
     guide: (id: string) => request<AdminGuide>(`${V1}/admin/guides/${id}`, {}, true),

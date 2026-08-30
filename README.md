@@ -133,6 +133,11 @@ To illustrate guides that have none:
 .venv\Scripts\canilarpit.exe backfill-images --replace # rebuild all of them
 ```
 
+The guide editor has a **Regenerate** button that rewrites an existing guide from its
+own title. The slug is pinned, so a rewrite always lands on the same guide as a draft;
+the published version stays up until you publish the new one. Tick *new images too* to
+refetch the pictures as well.
+
 Generation runs inside the API process as a background task. For a separate worker:
 
 ```powershell

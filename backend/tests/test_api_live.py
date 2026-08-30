@@ -11,8 +11,10 @@ The suite writes: it creates an editor account, a guide draft, and a topic
 request. Point DATABASE_URL at a scratch database, not production.
 """
 
+import json
 import uuid
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -23,11 +25,13 @@ from app.core.config import settings
 from app.db.models import Guide, GuideStatus, TopicRequest, User, UserRole
 from app.db.session import SessionLocal
 from app.main import app
+from app.schemas.content import GuideDocument
 
 EDITOR_ID = "test:editor"
 # Everything this suite writes is prefixed so teardown can find and remove it.
 GUIDE_PREFIX = "test-larp-"
 TOPIC_PREFIX = "test topic "
+CONTENT = Path(__file__).resolve().parent.parent / "content" / "guides"
 DEV_HEADERS = {
     "X-Dev-Clerk-User-Id": EDITOR_ID,
     "X-Dev-Email": "editor@example.test",
@@ -188,6 +192,66 @@ def test_an_editor_can_dismiss_a_request(client: TestClient) -> None:
         "/api/v1/admin/topic-requests", params={"page_size": 100}, headers=DEV_HEADERS
     ).json()
     assert not any(item["topic"] == topic for item in after["items"])
+
+
+def test_regenerating_an_unknown_guide_is_a_404(client: TestClient) -> None:
+    response = client.post(
+        f"/api/v1/admin/guides/{uuid.uuid4()}/regenerate", json={}, headers=DEV_HEADERS
+    )
+    assert response.status_code == 404
+
+
+def test_a_rewrite_lands_on_the_same_guide_even_if_the_model_renames_it() -> None:
+    """The slug is pinned, so Regenerate can never fork a guide in two."""
+    from app.db.models import GuideRevision, ResearchJobStatus
+    from app.services import ai
+    from app.services.generation import queue_generation_job, run_generation_job
+    from app.services.guides import create_guide
+
+    source = json.loads(
+        (CONTENT / "letterboxd.json").read_text(encoding="utf-8")
+    )
+    slug = f"{GUIDE_PREFIX}{uuid.uuid4().hex[:8]}"
+
+    with SessionLocal() as db:
+        author = db.scalar(select(User).where(User.clerk_user_id == EDITOR_ID))
+        document = GuideDocument.model_validate({**source, "slug": slug, "title": "Rewrite me"})
+        guide = create_guide(db, document, author)
+        db.commit()
+        guide_id = guide.id
+
+        # The model answers with a different slug, as it well might.
+        renamed = json.dumps({**source, "slug": "somewhere-else", "title": "Somewhere else"})
+
+        job = queue_generation_job(
+            db,
+            topic="Rewrite me",
+            guide_type=document.guide_type,
+            entry_type=document.content.larp.entry_type,
+            category_slug=document.category_slug,
+            instructions=None,
+            attach_images=False,
+            user=author,
+            guide_id=guide_id,
+        )
+        job = run_generation_job(
+            db,
+            job.id,
+            complete=lambda messages: ai.Completion(text=renamed),
+        )
+
+        assert job.status is ResearchJobStatus.REVIEW, job.error_message
+        assert job.created_guide_id == guide_id, "the rewrite forked onto another guide"
+        assert db.scalar(select(Guide).where(Guide.slug == "somewhere-else")) is None
+
+        revisions = db.scalars(
+            select(GuideRevision).where(GuideRevision.guide_id == guide_id)
+        ).all()
+        assert len(revisions) == 1, "an unpublished guide keeps one editable draft"
+        assert revisions[0].content["title"] == "Somewhere else", "the rewrite did land"
+
+        db.execute(delete(Guide).where(Guide.id == guide_id))
+        db.commit()
 
 
 def test_admin_routes_refuse_anonymous_callers(client: TestClient) -> None:

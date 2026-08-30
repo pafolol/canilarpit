@@ -249,6 +249,10 @@ loaf, a building, a piece of clothing - the query is a plain description of the
 photograph you want. Never send a fictional character to a stock photography
 provider: it has never heard of them and will return a stranger.
 
+Query one thing. "Breaking Bad" finds the show, "Walter White" finds the
+character; "Breaking Bad Walter White fsociety mood" finds neither. A subject
+per entry.
+
 Use "auto" only when you genuinely cannot tell.
 
 The counter is the part of the guide that does the most work, so write it last

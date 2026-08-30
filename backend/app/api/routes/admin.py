@@ -32,6 +32,7 @@ from app.schemas.api import (
     GuideGenerateRequest,
     GuideMediaLinkCreate,
     GuidePublishRequest,
+    GuideRegenerateRequest,
     GuideValidationResponse,
     ImageProviderInfo,
     ImageSearchResponse,
@@ -742,6 +743,58 @@ def generate_guide(
         attach_images=payload.attach_images,
         user=user,
     )
+    background_tasks.add_task(run_generation_in_background, job.id)
+    return job
+
+
+@router.post(
+    "/guides/{guide_id}/regenerate", response_model=ResearchJobResponse, status_code=202
+)
+def regenerate_guide(
+    guide_id: uuid.UUID,
+    payload: GuideRegenerateRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_editor),
+) -> ResearchJob:
+    """Rewrite an existing guide from its own title, as a draft.
+
+    The published revision is untouched until somebody publishes the new draft.
+    An editable draft, however, is replaced: that is the point of the button.
+    """
+    if not settings.ai_configured:
+        raise HTTPException(
+            status_code=503,
+            detail="Guide generation is not configured. Set OPENAI_API_KEY.",
+        )
+
+    guide = guide_or_404(db, guide_id)
+    source = db.get(GuideRevision, guide.current_revision_id) if guide.current_revision_id else None
+    if source is None:
+        source = db.scalar(
+            select(GuideRevision)
+            .where(GuideRevision.guide_id == guide.id)
+            .order_by(GuideRevision.revision_number.desc())
+            .limit(1)
+        )
+    if source is None:
+        raise HTTPException(status_code=409, detail="This guide has no revision to rewrite")
+
+    document = revision_document(source)
+    job = queue_generation_job(
+        db,
+        topic=document.title,
+        guide_type=document.guide_type,
+        entry_type=document.content.larp.entry_type,
+        category_slug=document.category_slug,
+        instructions=payload.instructions,
+        attach_images=payload.attach_images,
+        user=user,
+        guide_id=guide.id,
+        replace_images=payload.replace_images,
+    )
+    add_audit_log(db, user, "guide.regenerate_queued", "guide", guide.id, {"job_id": str(job.id)})
+    db.commit()
     background_tasks.add_task(run_generation_in_background, job.id)
     return job
 

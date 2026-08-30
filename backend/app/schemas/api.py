@@ -370,6 +370,18 @@ class GuideGenerateRequest(BaseModel):
         return cleaned
 
 
+class GuideRegenerateRequest(BaseModel):
+    """Rewrite an existing guide in place.
+
+    Topic, type and category come from the guide itself; only the steering is
+    worth asking for. The result is always a draft on the same guide.
+    """
+
+    instructions: str | None = Field(default=None, max_length=5000)
+    attach_images: bool = True
+    replace_images: bool = False
+
+
 class GuideGenerateResponse(BaseModel):
     job: ResearchJobResponse
     guide: AdminGuideResponse | None = None
