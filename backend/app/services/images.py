@@ -9,11 +9,17 @@ model picks which one to ask.
 |-----------|-----|-------------------------------------------------|-----------------|
 | pexels    | yes | Generic subjects: objects, places, food, people | Free licence    |
 | wikimedia | no  | Real people, places, objects, marques           | CC, varies      |
-| tmdb      | yes | Films, television, actors                       | Editorial only  |
 | tvmaze    | no  | Television shows, characters, episodes          | Editorial only  |
 | anilist   | no  | Anime and manga, plus their characters          | Editorial only  |
 | jikan     | no  | Anime and its characters, via MyAnimeList       | Editorial only  |
-| fanart    | yes | Logos, banners and clear art (resolved via TMDB)| Editorial only  |
+
+| fanart    | yes | Transparent logos, banners and clear art        | Editorial only  |
+
+TMDB was here and is not any more: it charges for commercial use, and this site
+intends to be one. Film imagery therefore comes from Commons - directors,
+premieres, locations - rather than from posters, which are somebody's property
+anyway. fanart.tv stays, and resolves its ids through TVmaze for television and
+Wikidata for film, neither of which costs anything.
 
 "Editorial only" means the rights stay with whoever owns the film, show or
 photograph. We record the attribution and the page it came from, and the admin
@@ -77,7 +83,7 @@ def keep_relevant(
 
     Commons will happily answer "techno club dancefloor" with a photograph of a
     Bukharan folk dance, because both mention dancing. Providers that search by
-    title - TMDB, TVmaze, AniList - do not need this; free-text ones do.
+    title - TVmaze, AniList - do not need this; free-text ones do.
     """
     wanted = _terms(query)
     if not wanted:
@@ -183,56 +189,6 @@ def search_wikimedia(query: str, limit: int) -> list[ImageCandidate]:
             )
         )
     return keep_relevant(query, found)
-
-
-# ---------------------------------------------------------------- tmdb
-
-TMDB_IMAGE = "https://image.tmdb.org/t/p"
-TMDB_NOTICE = (
-    "Image via TMDB. This product uses the TMDB API "
-    "but is not endorsed or certified by TMDB."
-)
-
-
-def _tmdb_get(path: str, **params: Any) -> Any:
-    if not settings.tmdb_api_key:
-        raise ImageSearchUnavailable("TMDB_API_KEY is not configured")
-    return _get(
-        f"https://api.themoviedb.org/3{path}",
-        params={"api_key": settings.tmdb_api_key, **params},
-    )
-
-
-def search_tmdb(query: str, limit: int) -> list[ImageCandidate]:
-    """Films, television and the actors in them, in one search."""
-    body = _tmdb_get("/search/multi", query=query, include_adult="false")
-    found: list[ImageCandidate] = []
-    for item in (body.get("results") or [])[: max(1, limit)]:
-        media_type = item.get("media_type")
-        name = item.get("title") or item.get("name") or query
-        if media_type == "person":
-            path, kind = item.get("profile_path"), "person"
-        else:
-            path, kind = item.get("backdrop_path") or item.get("poster_path"), media_type
-        if not path or kind not in {"movie", "tv", "person"}:
-            continue
-        found.append(
-            ImageCandidate(
-                provider="tmdb",
-                remote_url=f"{TMDB_IMAGE}/w1280{path}",
-                preview_url=f"{TMDB_IMAGE}/w300{path}",
-                source_page_url=f"https://www.themoviedb.org/{kind}/{item.get('id')}",
-                attribution=TMDB_NOTICE,
-                license_name=EDITORIAL_LICENCE,
-                license_url="https://www.themoviedb.org/terms-of-use",
-                alt_text=_clip(None, f"{name} — promotional image"),
-                width=None,
-                height=None,
-                subject=name,
-                editorial_only=True,
-            )
-        )
-    return found
 
 
 # ---------------------------------------------------------------- tvmaze
@@ -505,64 +461,133 @@ def search_jikan(query: str, limit: int) -> list[ImageCandidate]:
 
 # ---------------------------------------------------------------- fanart
 
+FANART_ART_KEYS = (
+    ("hdtvlogo", "logo"),
+    ("hdmovielogo", "logo"),
+    ("clearlogo", "logo"),
+    ("showbackground", "background"),
+    ("moviebackground", "background"),
+    ("tvthumb", "thumbnail"),
+    ("moviethumb", "thumbnail"),
+    ("hdclearart", "clear art"),
+)
+
+
+def _tvdb_id(query: str) -> tuple[str | None, str]:
+    """TVmaze knows a show's TheTVDB id, which is how fanart keys television."""
+    shows = _get("https://api.tvmaze.com/search/shows", params={"q": query})
+    if not shows:
+        return None, query
+    show = shows[0].get("show") or {}
+    externals = show.get("externals") or {}
+    tvdb = externals.get("thetvdb")
+    return (str(tvdb) if tvdb else None), (show.get("name") or query)
+
+
+def _imdb_id(query: str) -> tuple[str | None, str]:
+    """Wikidata knows a film's IMDb id (P345), which is how fanart keys film."""
+    found = _get(
+        "https://www.wikidata.org/w/api.php",
+        params={
+            "action": "wbsearchentities",
+            "search": query,
+            "language": "en",
+            "format": "json",
+            "type": "item",
+            "limit": 5,
+        },
+    )
+    ids = [item["id"] for item in (found.get("search") or []) if item.get("id")]
+    if not ids:
+        return None, query
+
+    entities = _get(
+        "https://www.wikidata.org/w/api.php",
+        params={
+            "action": "wbgetentities",
+            "ids": "|".join(ids),
+            "props": "claims|labels",
+            "languages": "en",
+            "format": "json",
+        },
+    ).get("entities") or {}
+
+    for entity_id in ids:
+        entity = entities.get(entity_id) or {}
+        claims = entity.get("claims") or {}
+        # P31 instance-of Q11424 film, so a director with the same name is skipped.
+        kinds = {
+            (((claim.get("mainsnak") or {}).get("datavalue") or {}).get("value") or {}).get("id")
+            for claim in claims.get("P31") or []
+        }
+        if "Q11424" not in kinds:
+            continue
+        for claim in claims.get("P345") or []:
+            value = ((claim.get("mainsnak") or {}).get("datavalue") or {}).get("value")
+            if value:
+                label = ((entity.get("labels") or {}).get("en") or {}).get("value") or query
+                return str(value), label
+    return None, query
+
 
 def search_fanart(query: str, limit: int) -> list[ImageCandidate]:
-    """Logos and clear art. Fanart is keyed by TMDB id, so TMDB resolves the title first."""
+    """Logos and clear art. fanart is keyed by id, so the title is resolved first."""
     if not settings.fanart_api_key:
         raise ImageSearchUnavailable("FANART_API_KEY is not configured")
-    if not settings.tmdb_api_key:
-        raise ImageSearchUnavailable("Fanart lookups need TMDB_API_KEY to resolve the title")
 
-    body = _tmdb_get("/search/multi", query=query, include_adult="false")
-    target = next(
-        (
-            item
-            for item in (body.get("results") or [])
-            if item.get("media_type") in {"movie", "tv"}
-        ),
-        None,
-    )
-    if target is None:
-        return []
+    tvdb, name = _tvdb_id(query)
+    art: dict[str, Any] = {}
+    if tvdb:
+        try:
+            art = _get(
+                f"https://webservice.fanart.tv/v3/tv/{tvdb}",
+                params={"api_key": settings.fanart_api_key},
+            )
+        except ImageSearchUnavailable:
+            art = {}
 
-    kind = "movies" if target.get("media_type") == "movie" else "tv"
-    name = target.get("title") or target.get("name") or query
-    art = _get(
-        f"https://webservice.fanart.tv/v3/{kind}/{target.get('id')}",
-        params={"api_key": settings.fanart_api_key},
-    )
+    if not art:
+        imdb, name = _imdb_id(query)
+        if not imdb:
+            return []
+        try:
+            art = _get(
+                f"https://webservice.fanart.tv/v3/movies/{imdb}",
+                params={"api_key": settings.fanart_api_key},
+            )
+        except ImageSearchUnavailable:
+            return []
+
+    # Round-robin the art types, so three logos do not crowd out the background
+    # and the thumbnail. Depth in one type is rarely what a guide wants.
+    buckets = [
+        [item for item in (art.get(key) or []) if item.get("url")]
+        for key, _ in FANART_ART_KEYS
+    ]
+    ordered: list[tuple[dict, str]] = []
+    for depth in range(max((len(bucket) for bucket in buckets), default=0)):
+        for bucket, (_, label) in zip(buckets, FANART_ART_KEYS, strict=True):
+            if depth < len(bucket):
+                ordered.append((bucket[depth], label))
 
     found: list[ImageCandidate] = []
-    for key, label in (
-        ("hdmovielogo", "logo"),
-        ("hdtvlogo", "logo"),
-        ("moviebackground", "background"),
-        ("showbackground", "background"),
-        ("moviethumb", "thumbnail"),
-        ("tvthumb", "thumbnail"),
-    ):
-        for item in art.get(key) or []:
-            if len(found) >= limit:
-                return found
-            url = item.get("url")
-            if not url:
-                continue
-            found.append(
-                ImageCandidate(
-                    provider="fanart",
-                    remote_url=url,
-                    preview_url=url,
-                    source_page_url=f"https://fanart.tv/?s={name}",
-                    attribution=f"{name} {label} via fanart.tv",
-                    license_name=EDITORIAL_LICENCE,
-                    license_url="https://fanart.tv/terms-of-service/",
-                    alt_text=_clip(None, f"{name} — {label}"),
-                    width=None,
-                    height=None,
-                    subject=name,
-                    editorial_only=True,
-                )
+    for item, label in ordered[:limit]:
+        found.append(
+            ImageCandidate(
+                provider="fanart",
+                remote_url=item["url"],
+                preview_url=item["url"],
+                source_page_url="https://fanart.tv/",
+                attribution=f"{name} {label} via fanart.tv",
+                license_name=EDITORIAL_LICENCE,
+                license_url="https://fanart.tv/terms-of-service/",
+                alt_text=_clip(None, f"{name} - {label}"),
+                width=None,
+                height=None,
+                subject=name,
+                editorial_only=True,
             )
+        )
     return found
 
 
@@ -582,8 +607,6 @@ class Provider:
     def configured(self) -> bool:
         if self.key_setting is None:
             return True
-        if self.id == "fanart":
-            return bool(settings.fanart_api_key and settings.tmdb_api_key)
         return bool(getattr(settings, self.key_setting, None))
 
 
@@ -605,14 +628,6 @@ PROVIDERS: dict[str, Provider] = {
             search_wikimedia,
             None,
             False,
-        ),
-        Provider(
-            "tmdb",
-            "TMDB",
-            "Films, television series and the actors in them",
-            search_tmdb,
-            "tmdb_api_key",
-            True,
         ),
         Provider(
             "tvmaze",
@@ -652,9 +667,9 @@ PROVIDERS: dict[str, Provider] = {
 # What "auto" means, by the kind of thing the guide is about. First configured
 # provider in the list wins, so a missing key degrades instead of failing.
 ROUTES: dict[str, list[str]] = {
-    "anime": ["anilist", "jikan", "tmdb"],
-    "film": ["tmdb", "wikimedia"],
-    "series": ["tmdb", "tvmaze", "wikimedia"],
+    "anime": ["anilist", "jikan"],
+    "film": ["wikimedia", "pexels"],
+    "series": ["tvmaze", "fanart", "wikimedia"],
     "gaming": ["wikimedia", "pexels"],
     "books": ["wikimedia", "pexels"],
     "music": ["wikimedia", "pexels"],
@@ -668,12 +683,12 @@ ROUTES: dict[str, list[str]] = {
 }
 DEFAULT_ROUTE = ["pexels", "wikimedia"]
 
-# Providers substitute for each other only within a family. Asking TMDB for a
-# film and settling for whatever Commons has under that title is how you end up
-# illustrating "Jeanne Dielman" with an unrelated 1929 portrait.
+# Providers substitute for each other only within a family. Asking a screen
+# database for a film and settling for whatever Commons has under that title is
+# how you illustrate "Jeanne Dielman" with an unrelated 1929 portrait.
 FAMILIES: dict[str, list[str]] = {
     "generic": ["pexels", "wikimedia"],
-    "screen": ["tmdb", "tvmaze", "fanart"],
+    "screen": ["tvmaze", "fanart"],
     "anime": ["anilist", "jikan"],
 }
 FAMILY_OF = {name: family for family, names in FAMILIES.items() for name in names}

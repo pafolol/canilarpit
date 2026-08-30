@@ -151,13 +151,13 @@ canilarpit work --limit 5
 
 ## Images
 
-`app/services/images.py` is a registry of providers, not a single search. Pexels, TMDB
-and fanart.tv need keys; Wikimedia Commons, TVmaze, AniList and Jikan do not, so guides
-can be illustrated with nothing configured.
+`app/services/images.py` is a registry of providers, not a single search. Pexels and fanart.tv
+need keys; Wikimedia Commons, TVmaze, AniList and Jikan do not, so guides can be
+illustrated with nothing configured. TMDB is absent on purpose: it charges for
+commercial use, and fanart resolves ids through TVmaze and Wikidata instead.
 
 ```dotenv
 PEXELS_API_KEY=...
-TMDB_API_KEY=...
 FANART_API_KEY=...
 ```
 
@@ -166,7 +166,7 @@ back to a per-category route. A named provider falls back only inside its family
 (generic / screen / anime), so a film database never degrades into a stock library.
 Free-text providers are filtered by term overlap before results are returned.
 
-Assets from TMDB, TVmaze, AniList, Jikan and fanart.tv carry `editorial_only` in their
+Assets from TVmaze, AniList, Jikan and fanart.tv carry `editorial_only` in their
 metadata: usable with credit, rights held by the copyright owner.
 
 ```powershell

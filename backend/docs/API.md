@@ -794,7 +794,7 @@ Lists the image sources this deployment can reach and what each is good for. The
 Success `200`: an array of `{id, title, subjects, configured, requires_key,
 editorial_only}`.
 
-Providers are `pexels`, `wikimedia`, `tmdb`, `tvmaze`, `anilist`, `jikan` and `fanart`.
+Providers are `pexels`, `wikimedia`, `tvmaze`, `anilist`, `jikan` and `fanart`.
 `wikimedia`, `tvmaze`, `anilist` and `jikan` need no key.
 
 ### `GET /api/v1/admin/media/image-search`
@@ -841,7 +841,7 @@ Success `200`:
 copyright owner. The admin panel labels these and the public page prints the licence.
 
 Fallback is constrained by family. `pexels` and `wikimedia` substitute for each other;
-`tmdb`, `tvmaze` and `fanart` substitute for each other; `anilist` and `jikan`
+`tvmaze` and `fanart` substitute for each other; `anilist` and `jikan`
 substitute for each other. A film database never falls back to a photo library, because
 the result would be a picture of the wrong thing. `warnings` explains every provider
 that was tried and skipped.

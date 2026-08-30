@@ -126,7 +126,7 @@ class LarpProfile(BaseModel):
 
 
 IMAGE_PROVIDERS = Literal[
-    "auto", "pexels", "wikimedia", "tmdb", "tvmaze", "anilist", "jikan", "fanart"
+    "auto", "pexels", "wikimedia", "tvmaze", "anilist", "jikan", "fanart"
 ]
 
 

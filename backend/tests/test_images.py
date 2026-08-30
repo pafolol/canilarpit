@@ -35,11 +35,18 @@ def test_keyless_providers_are_always_available() -> None:
     assert images.PROVIDERS["pexels"].configured is bool(settings.pexels_api_key)
 
 
-def test_fanart_needs_tmdb_as_well_as_its_own_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "fanart_api_key", "fanart-key")
-    monkeypatch.setattr(settings, "tmdb_api_key", None)
+def test_tmdb_is_gone_because_it_charges_for_commercial_use() -> None:
+    assert "tmdb" not in images.PROVIDERS
+    assert "tmdb" not in images.FAMILY_OF
+    assert not any("tmdb" in names for names in images.ROUTES.values())
+    assert not hasattr(settings, "tmdb_api_key")
+
+
+def test_fanart_needs_only_its_own_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ids come from TVmaze and Wikidata now, so there is no second key."""
+    monkeypatch.setattr(settings, "fanart_api_key", None)
     assert images.PROVIDERS["fanart"].configured is False
-    monkeypatch.setattr(settings, "tmdb_api_key", "tmdb-key")
+    monkeypatch.setattr(settings, "fanart_api_key", "fanart-key")
     assert images.PROVIDERS["fanart"].configured is True
 
 
@@ -48,19 +55,20 @@ def test_routing_sends_anime_to_anime_databases() -> None:
 
 
 def test_routing_falls_through_unconfigured_providers(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "tmdb_api_key", None)
-    # film routes to tmdb first, which has no key, so wikimedia answers instead.
-    assert images.route_for(None, "film") == ["wikimedia"]
-    monkeypatch.setattr(settings, "tmdb_api_key", "tmdb-key")
-    assert images.route_for(None, "film") == ["tmdb", "wikimedia"]
+    monkeypatch.setattr(settings, "fanart_api_key", None)
+    # series routes through fanart, which has no key, so it is skipped.
+    assert images.route_for(None, "series") == ["tvmaze", "wikimedia"]
+    monkeypatch.setattr(settings, "fanart_api_key", "fanart-key")
+    assert images.route_for(None, "series") == ["tvmaze", "fanart", "wikimedia"]
 
 
 def test_a_named_provider_only_falls_back_within_its_family() -> None:
-    """A film is not in a stock library, so TMDB must never degrade to Pexels."""
+    """A film is not in a stock library, so a screen database must not degrade to Pexels."""
     screen = images.FAMILIES["screen"]
     generic = images.FAMILIES["generic"]
     assert set(screen).isdisjoint(generic)
-    assert images.FAMILY_OF["tmdb"] == "screen"
+    assert images.FAMILY_OF["tvmaze"] == "screen"
+    assert images.FAMILY_OF["fanart"] == "screen"
     assert images.FAMILY_OF["anilist"] == "anime"
     assert images.FAMILY_OF["pexels"] == "generic"
 

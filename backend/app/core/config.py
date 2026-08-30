@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     openai_output_usd_per_million: float = 8.0
 
     # Imagery. Wikimedia, TVmaze, AniList and Jikan need no key; the rest do.
+    # TMDB is deliberately absent: it charges for commercial use.
     pexels_api_key: str | None = None
-    tmdb_api_key: str | None = None
     fanart_api_key: str | None = None
     image_results_per_query: int = 8
 

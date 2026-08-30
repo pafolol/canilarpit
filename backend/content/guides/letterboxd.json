@@ -70,21 +70,21 @@
     },
     "image_brief": [
       {
-        "provider": "tmdb",
-        "query": "In the Mood for Love",
-        "subject": "In the Mood for Love",
-        "role": "hero"
-      },
-      {
-        "provider": "tmdb",
-        "query": "Jeanne Dielman",
-        "subject": "Jeanne Dielman",
-        "role": "crib"
-      },
-      {
         "provider": "wikimedia",
         "query": "Wong Kar-wai",
         "subject": "Wong Kar-wai",
+        "role": "hero"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "Chantal Akerman",
+        "subject": "Chantal Akerman",
+        "role": "crib"
+      },
+      {
+        "provider": "pexels",
+        "query": "cinema auditorium empty seats",
+        "subject": "An empty cinema",
         "role": "tells"
       }
     ],

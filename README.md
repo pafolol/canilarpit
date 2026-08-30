@@ -99,25 +99,29 @@ providers and the model picks one per picture:
 |---|---|---|---|
 | Pexels | yes | Objects, food, drink, places, sport, interiors | Free licence |
 | Wikimedia Commons | no | Real people, buildings, marques, artefacts | CC, varies by file |
-| TMDB | yes | Films, television, actors | Editorial only |
 | TVmaze | no | Series, their characters and episodes | Editorial only |
 | AniList | no | Anime and manga, and their characters | Editorial only |
 | MyAnimeList (Jikan) | no | Anime and characters, as a second opinion | Editorial only |
-| fanart.tv | yes | Transparent logos and clear art | Editorial only |
+| fanart.tv | yes | Transparent logos, banners and clear art | Editorial only |
 
-Four of the seven need no key at all, so guides get illustrated out of the box.
+Four of the six need no key at all, so guides get illustrated out of the box.
+
+TMDB is deliberately absent: it charges for commercial use. Film imagery comes from
+Commons — directors, premieres, locations — rather than posters, which belong to
+somebody anyway. fanart.tv resolves its ids through TVmaze for television and
+Wikidata for film, so it needs no second key.
 
 Two rules keep the results honest:
 
 - **Providers substitute only within their family.** Generic photo libraries can cover
-  for each other; a film database cannot degrade to a stock library. Asking TMDB for
-  *Jeanne Dielman* and settling for whatever Commons has under that name gets you an
-  unrelated 1929 portrait, so an unavailable specialist returns nothing instead.
+  for each other; a film database cannot degrade to a stock library. Asking a screen database
+  for *Jeanne Dielman* and settling for whatever Commons has under that name gets you
+  an unrelated 1929 portrait, so an unavailable specialist returns nothing instead.
 - **Free-text results are filtered for relevance.** Commons will answer "techno club
   dancefloor" with a photograph of a Bukharan folk dance, because both mention dancing.
   Matches below half the query's significant words are dropped, and the rest are ranked.
 
-Everything from TMDB, TVmaze, AniList, Jikan and fanart.tv is copyrighted promotional
+Everything from TVmaze, AniList, Jikan and fanart.tv is copyrighted promotional
 material: fine editorially with credit, but the rights belong to whoever owns the film
 or show. Those assets are stored with `editorial_only` set, the admin panel labels them
 "rights reserved", and the public page prints the credit and licence under every image.

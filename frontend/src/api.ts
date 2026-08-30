@@ -56,7 +56,6 @@ export type ImageProviderId =
   | "auto"
   | "pexels"
   | "wikimedia"
-  | "tmdb"
   | "tvmaze"
   | "anilist"
   | "jikan"
