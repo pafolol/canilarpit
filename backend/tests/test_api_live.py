@@ -12,18 +12,22 @@ request. Point DATABASE_URL at a scratch database, not production.
 """
 
 import uuid
+from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select, text
+from sqlalchemy import delete, select, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.db.models import Guide, GuideStatus, User, UserRole
+from app.db.models import Guide, GuideStatus, TopicRequest, User, UserRole
 from app.db.session import SessionLocal
 from app.main import app
 
 EDITOR_ID = "test:editor"
+# Everything this suite writes is prefixed so teardown can find and remove it.
+GUIDE_PREFIX = "test-larp-"
+TOPIC_PREFIX = "test topic "
 DEV_HEADERS = {
     "X-Dev-Clerk-User-Id": EDITOR_ID,
     "X-Dev-Email": "editor@example.test",
@@ -50,7 +54,7 @@ pytestmark = pytest.mark.skipif(not READY, reason=SKIP_REASON or "database not r
 
 
 @pytest.fixture(scope="module")
-def client() -> TestClient:
+def client() -> Iterator[TestClient]:
     # The dev bypass is what lets these tests authenticate without Clerk. It is
     # refused outright when APP_ENV is production, so this cannot leak.
     if settings.is_production:
@@ -64,7 +68,18 @@ def client() -> TestClient:
         user.role = UserRole.ADMIN
         user.is_active = True
         db.commit()
-    return TestClient(app)
+
+    yield TestClient(app)
+
+    # Leave the catalog as we found it. A run that litters the editor's dashboard
+    # with archived stubs is a run nobody will want to repeat.
+    with SessionLocal() as db:
+        db.execute(delete(Guide).where(Guide.slug.startswith(GUIDE_PREFIX)))
+        db.execute(
+            delete(TopicRequest).where(TopicRequest.normalized_topic.startswith(TOPIC_PREFIX))
+        )
+        db.execute(delete(User).where(User.clerk_user_id == EDITOR_ID))
+        db.commit()
 
 
 def test_readiness_reaches_postgres(client: TestClient) -> None:
@@ -125,7 +140,7 @@ def test_a_missing_guide_is_a_404(client: TestClient) -> None:
 
 
 def test_requesting_a_missing_topic_records_demand(client: TestClient) -> None:
-    topic = f"Test topic {uuid.uuid4().hex[:8]}"
+    topic = f"Test topic {uuid.uuid4().hex[:8]}"  # normalizes under TOPIC_PREFIX
     body = client.post("/api/v1/topic-requests", json={"topic": topic}).json()
     assert body["recorded"] is True
     assert body["request_count"] == 1
@@ -168,7 +183,7 @@ def test_generation_is_refused_without_a_key(client: TestClient) -> None:
 
 def test_an_editor_can_draft_and_publish_a_guide(client: TestClient) -> None:
     """The full editorial loop, on a throwaway slug."""
-    slug = f"test-larp-{uuid.uuid4().hex[:8]}"
+    slug = f"{GUIDE_PREFIX}{uuid.uuid4().hex[:8]}"
     document = {
         "schema_version": 1,
         "slug": slug,
