@@ -1,15 +1,23 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  TYPE_GLYPH,
-  TYPES,
-  VERDICTS,
-  categories,
+  api,
+  ApiError,
+  clockOf,
+  type Category,
   type Clock,
   type CribSection,
-  type Entry,
   type EntryType,
+  type GuideCard,
   type Verdict,
+} from "./api";
+import {
+  TYPES,
+  TYPE_GLYPH,
+  VERDICTS,
+  VERDICT_LABEL,
+  VERDICT_LEVEL,
+  VERDICT_TONE,
 } from "./data";
 
 const prefersReducedMotion = () =>
@@ -30,11 +38,9 @@ export function clockLabel(clock: Clock): string {
    The glyph is a fill gauge: full, half, low, stopped.
    ---------------------------------------------------------------- */
 
-const LEVEL: Record<Verdict, number> = { YES: 1, KINDA: 0.5, "NOT REALLY": 0.18, "DON'T": 0 };
-
 function VerdictMark({ verdict }: { verdict: Verdict }) {
   const id = useId();
-  if (verdict === "DON'T") {
+  if (verdict === "dont") {
     return (
       <svg className="verdict__mark" viewBox="0 0 12 12" aria-hidden="true">
         <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2" />
@@ -42,30 +48,30 @@ function VerdictMark({ verdict }: { verdict: Verdict }) {
       </svg>
     );
   }
-  const level = LEVEL[verdict];
+  const level = VERDICT_LEVEL[verdict];
   return (
     <svg className="verdict__mark" viewBox="0 0 12 12" aria-hidden="true">
       <clipPath id={id}>
         <circle cx="6" cy="6" r="5" />
       </clipPath>
       <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="0" y={12 - 12 * level} width="12" height={12 * level} fill="currentColor" clipPath={`url(#${id})`} />
+      <rect
+        x="0"
+        y={12 - 12 * level}
+        width="12"
+        height={12 * level}
+        fill="currentColor"
+        clipPath={`url(#${id})`}
+      />
     </svg>
   );
 }
 
-const TONE: Record<Verdict, string> = {
-  YES: "yes",
-  KINDA: "kinda",
-  "NOT REALLY": "not",
-  "DON'T": "dont",
-};
-
 export function VerdictBadge({ verdict, size = "s" }: { verdict: Verdict; size?: "s" | "m" | "l" }) {
   return (
-    <span className={`verdict verdict--${size} verdict--${TONE[verdict]}`}>
+    <span className={`verdict verdict--${size} verdict--${VERDICT_TONE[verdict]}`}>
       <VerdictMark verdict={verdict} />
-      {verdict}
+      {VERDICT_LABEL[verdict]}
     </span>
   );
 }
@@ -135,18 +141,19 @@ export function FlagChips({ flags, stack = false }: { flags: string[]; stack?: b
   );
 }
 
-export function EntryCard({ entry }: { entry: Entry }) {
+export function EntryCard({ entry }: { entry: GuideCard }) {
   return (
     <Link className="card" to={`/entry/${entry.slug}`}>
       <div className="card__top">
-        <TypeGlyph type={entry.type} label />
-        <ExposureClock seconds={entry.clock} className="card__clock" />
+        <TypeGlyph type={entry.larp.entry_type} label />
+        <ExposureClock seconds={clockOf(entry.larp)} className="card__clock" />
       </div>
       <div className="card__body">
-        <h3 className="card__name">{entry.name}</h3>
-        <VerdictBadge verdict={entry.verdict} />
+        <h3 className="card__name">{entry.title}</h3>
+        <VerdictBadge verdict={entry.larp.verdict} />
+        <p className="card__dek">{entry.larp.dek}</p>
         <div className="card__flags">
-          <FlagChips flags={entry.flags} />
+          <FlagChips flags={entry.larp.flags} />
         </div>
       </div>
     </Link>
@@ -158,12 +165,13 @@ export function EntryCard({ entry }: { entry: Entry }) {
    The track is duplicated so -50% lands on a seam.
    ---------------------------------------------------------------- */
 
-export function TickerRow({ entries }: { entries: Entry[] }) {
+export function TickerRow({ entries }: { entries: GuideCard[] }) {
+  if (!entries.length) return null;
   const run = entries.map((e) => (
     <Link className="ticker__item" key={e.slug} to={`/entry/${e.slug}`}>
-      <span className="glyph" aria-hidden="true">{TYPE_GLYPH[e.type]}</span>
-      {e.name.toUpperCase()}
-      <ExposureClock seconds={e.clock} />
+      <span className="glyph" aria-hidden="true">{TYPE_GLYPH[e.larp.entry_type]}</span>
+      {e.title.toUpperCase()}
+      <ExposureClock seconds={clockOf(e.larp)} />
       <span className="ticker__sep" aria-hidden="true">·</span>
     </Link>
   ));
@@ -180,6 +188,69 @@ export function TickerRow({ entries }: { entries: Entry[] }) {
 }
 
 /* ----------------------------------------------------------------
+   SearchField — the front door. One box, one question.
+   Typing updates ?q= after a beat; Enter commits immediately.
+   ---------------------------------------------------------------- */
+
+export function SearchField({
+  value,
+  onChange,
+  busy,
+  count,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  busy: boolean;
+  count: number | null;
+}) {
+  const [draft, setDraft] = useState(value);
+  const dirty = useRef(false);
+
+  useEffect(() => {
+    if (!dirty.current) setDraft(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (draft === value) return;
+    const id = setTimeout(() => {
+      dirty.current = false;
+      onChange(draft);
+    }, 250);
+    return () => clearTimeout(id);
+  }, [draft, value, onChange]);
+
+  return (
+    <form
+      className="search"
+      role="search"
+      onSubmit={(event) => {
+        event.preventDefault();
+        dirty.current = false;
+        onChange(draft);
+      }}
+    >
+      <label className="u-sr" htmlFor="search-q">Search entries</label>
+      <input
+        id="search-q"
+        className="search__input"
+        type="search"
+        value={draft}
+        placeholder="Type a thing you might claim to know"
+        autoComplete="off"
+        onChange={(event) => {
+          dirty.current = true;
+          setDraft(event.target.value);
+        }}
+      />
+      <button className="search__btn" type="submit">Search</button>
+      <span className="search__status" aria-live="polite">
+        {busy ? "searching" : count === null ? "" : `${count} found`}
+      </span>
+    </form>
+  );
+}
+
+/* ----------------------------------------------------------------
    FilterBar — additive within a group, intersecting across groups.
    Every change is a history entry, so Back steps through them.
    ---------------------------------------------------------------- */
@@ -191,12 +262,20 @@ export function useFilters() {
   const verdicts = readList(params.get("verdict")) as Verdict[];
   const types = readList(params.get("type")) as EntryType[];
   const category = params.get("category") ?? "";
+  const q = params.get("q") ?? "";
 
-  const write = (next: { verdicts?: Verdict[]; types?: EntryType[]; category?: string }) => {
+  const write = (next: {
+    verdicts?: Verdict[];
+    types?: EntryType[];
+    category?: string;
+    q?: string;
+  }) => {
     const p = new URLSearchParams();
     const v = next.verdicts ?? verdicts;
     const t = next.types ?? types;
     const c = next.category ?? category;
+    const term = next.q ?? q;
+    if (term) p.set("q", term);
     if (v.length) p.set("verdict", v.join(","));
     if (t.length) p.set("type", t.join(","));
     if (c) p.set("category", c);
@@ -206,23 +285,41 @@ export function useFilters() {
   const toggle = <T extends string>(list: T[], value: T) =>
     list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
 
+  const setQuery = useCallback(
+    (term: string) => {
+      const p = new URLSearchParams(params);
+      if (term) p.set("q", term);
+      else p.delete("q");
+      setParams(p, { replace: true });
+    },
+    [params, setParams],
+  );
+
   return {
+    q,
     verdicts,
     types,
     category,
-    active: verdicts.length + types.length + (category ? 1 : 0),
+    active: verdicts.length + types.length + (category ? 1 : 0) + (q ? 1 : 0),
+    setQuery,
     toggleVerdict: (v: Verdict) => write({ verdicts: toggle(verdicts, v) }),
     toggleType: (t: EntryType) => write({ types: toggle(types, t) }),
     setCategory: (c: string) => write({ category: c }),
     clear: () => setParams(new URLSearchParams()),
-    match: (e: Entry) =>
-      (!verdicts.length || verdicts.includes(e.verdict)) &&
-      (!types.length || types.includes(e.type)) &&
-      (!category || e.category === category),
   };
 }
 
-export function FilterBar({ f, count, lockCategory }: { f: ReturnType<typeof useFilters>; count: number; lockCategory?: string }) {
+export function FilterBar({
+  f,
+  count,
+  categories,
+  lockCategory,
+}: {
+  f: ReturnType<typeof useFilters>;
+  count: number;
+  categories: Category[];
+  lockCategory?: string;
+}) {
   return (
     <div className="filters">
       <div className="filters__in u-shell">
@@ -234,7 +331,7 @@ export function FilterBar({ f, count, lockCategory }: { f: ReturnType<typeof use
               aria-pressed={f.verdicts.includes(v)}
               onClick={() => f.toggleVerdict(v)}
             >
-              {v}
+              {VERDICT_LABEL[v]}
             </button>
           ))}
         </div>
@@ -260,7 +357,9 @@ export function FilterBar({ f, count, lockCategory }: { f: ReturnType<typeof use
               >
                 <option value="">All categories</option>
                 {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c.slug} value={c.slug}>
+                    {c.title} ({c.published_guide_count})
+                  </option>
                 ))}
               </select>
             </>
@@ -280,7 +379,12 @@ export function FilterBar({ f, count, lockCategory }: { f: ReturnType<typeof use
    ---------------------------------------------------------------- */
 
 const asPlainText = (sections: CribSection[], title: string) =>
-  [title.toUpperCase(), ...sections.map((s) => `\n${s.heading.toUpperCase()}\n${s.lines.map((l) => `- ${l}`).join("\n")}`)].join("\n");
+  [
+    title.toUpperCase(),
+    ...sections.map(
+      (s) => `\n${s.heading.toUpperCase()}\n${s.lines.map((l) => `- ${l}`).join("\n")}`,
+    ),
+  ].join("\n");
 
 export function CribBlock({ sections, title, id }: { sections: CribSection[]; title: string; id?: string }) {
   const body = useRef<HTMLDivElement>(null);
@@ -348,18 +452,21 @@ function Box({
   cta,
   done,
   type = "text",
+  initialValue = "",
   submit,
 }: {
   title: string;
   sub: string;
   placeholder: string;
   cta: string;
-  done: string;
+  done: string | ((value: string) => string);
   type?: string;
-  submit: (value: string) => Promise<void>;
+  initialValue?: string;
+  submit: (value: string) => Promise<string | void>;
 }) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(initialValue);
   const [state, setState] = useState<BoxState>({ kind: "idle" });
+  const [outcome, setOutcome] = useState("");
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,11 +476,16 @@ function Box({
     }
     setState({ kind: "sending" });
     try {
-      await submit(value.trim());
+      const message = await submit(value.trim());
+      setOutcome(typeof message === "string" ? message : "");
       setState({ kind: "ok" });
-    } catch {
+    } catch (error) {
       // Field keeps its value. The message names what failed and what to do.
-      setState({ kind: "fail", message: "The request did not reach us. Check your connection and press submit again." });
+      const detail =
+        error instanceof ApiError && error.status === 429
+          ? "Too many requests from this address. Wait a minute and try again."
+          : "The request did not reach us. Check your connection and press submit again.";
+      setState({ kind: "fail", message: detail });
     }
   };
 
@@ -384,7 +496,7 @@ function Box({
         <p className="box__sub">{sub}</p>
       </div>
       {state.kind === "ok" ? (
-        <p className="box__msg">{done}</p>
+        <p className="box__msg">{outcome || (typeof done === "string" ? done : done(value))}</p>
       ) : (
         <>
           <label className="u-sr" htmlFor={`box-${title}`}>{title}</label>
@@ -408,23 +520,35 @@ function Box({
   );
 }
 
-// ponytail: no backend yet, so both boxes resolve locally. Swap the body for fetch() when the endpoint exists.
-const stub = () => new Promise<void>((r) => setTimeout(r, 450));
-
-export function SubmitBox() {
+/**
+ * Records demand for a topic nobody has written yet. Search never calls this on
+ * its own: the reader has to ask for it, once, on purpose.
+ */
+export function SubmitBox({ topic = "" }: { topic?: string }) {
   return (
     <Box
       title="Not listed yet"
       sub="One scene, taste, or role per submission."
       placeholder="e.g. orienteering, Bauhaus, sommelier"
-      cta="Submit"
+      cta="Request it"
+      initialValue={topic}
       done="Queued. A human reads it before it ships."
-      submit={stub}
+      submit={async (value) => {
+        const result = await api.requestTopic(value);
+        if (result.matching_guide) {
+          return `Already written: ${result.matching_guide.title}. Search for it above.`;
+        }
+        const n = result.request_count ?? 1;
+        return n > 1
+          ? `Recorded. ${n} people have asked for this one.`
+          : "Recorded. You are the first to ask for this one.";
+      }}
     />
   );
 }
 
 export function NewsletterBox() {
+  // No subscription endpoint exists yet, so this resolves locally and says so.
   return (
     <Box
       title="One entry a week"
@@ -432,8 +556,31 @@ export function NewsletterBox() {
       placeholder="you@example.com"
       type="email"
       cta="Subscribe"
-      done="Subscribed. The first one arrives on a Thursday."
-      submit={stub}
+      done="Noted locally. The mailing list is not wired up yet."
+      submit={() => new Promise<void>((r) => setTimeout(r, 350))}
     />
+  );
+}
+
+/* ---------------------------------------------------------------- */
+
+export function Loading({ what = "entries" }: { what?: string }) {
+  return <p className="state state--loading">Loading {what}…</p>;
+}
+
+export function ErrorState({ error, retry }: { error: unknown; retry?: () => void }) {
+  const message =
+    error instanceof ApiError
+      ? error.message
+      : "Something went wrong and the page could not load.";
+  return (
+    <div className="state state--error" role="alert">
+      <p>{message}</p>
+      {retry && (
+        <button className="chip" onClick={retry}>
+          Try again
+        </button>
+      )}
+    </div>
   );
 }

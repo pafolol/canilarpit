@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "slug": "quant",
+  "title": "Quant",
+  "summary": "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.",
+  "guide_type": "general",
+  "category_slug": "job",
+  "aliases": [
+    "Quantitative analyst",
+    "Quant finance"
+  ],
+  "content": {
+    "kind": "general",
+    "larp": {
+      "entry_type": "role",
+      "verdict": "dont",
+      "exposure_seconds": null,
+      "unfalsifiable": false,
+      "flags": [
+        "MATH IS CHECKABLE",
+        "NDA CULTURE",
+        "ONE QUESTION ENDS IT"
+      ],
+      "dek": "The claim is falsifiable in one question and the answer is a number. There is no surface layer here, only a surface.",
+      "crib": [],
+      "surface": [],
+      "follow_up": [
+        "\"What's your Sharpe?\"",
+        "It is small talk to them. It is a number, you do not have one, and there is no version of not answering that reads as anything other than not having one."
+      ],
+      "tells": [
+        "You describe strategies. They describe constraints, because the constraints are the job.",
+        "You say alpha. Nobody says alpha.",
+        "You cannot say what broke. Everyone in the seat has one thing that broke and cost them a quarter, and they will tell you about it unprompted."
+      ],
+      "cost": [
+        "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.",
+        "The failure is not social. Anyone in the room who is actually in the field now knows you lied about your job, and they work in an industry that keeps a list and is small enough for the list to matter.",
+        "If money moved on the claim, it stops being a social matter."
+      ],
+      "learn": {
+        "hours": 2000,
+        "book": "Advances in Financial Machine Learning — Marcos López de Prado",
+        "make": "A backtest that loses money honestly."
+      }
+    },
+    "overview": "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.\n\nThe failure is not social. Anyone in the room who is actually in the field now knows you lied about your job, and they work in an industry that keeps a list and is small enough for the list to matter.\n\nIf money moved on the claim, it stops being a social matter.",
+    "quick_brief": [
+      "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.",
+      "The failure is not social. Anyone in the room who is actually in the field now knows you lied about your job, and they work in an industry that keeps a list and is small enough for the list to matter.",
+      "If money moved on the claim, it stops being a social matter."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You describe strategies. They describe constraints, because the constraints are the job.",
+      "You say alpha. Nobody says alpha.",
+      "You cannot say what broke. Everyone in the seat has one thing that broke and cost them a quarter, and they will tell you about it unprompted."
+    ],
+    "questions": [
+      {
+        "question": "What's your Sharpe?",
+        "answer": "It is small talk to them. It is a number, you do not have one, and there is no version of not answering that reads as anything other than not having one."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "key_people": [],
+    "timeline": []
+  },
+  "sources": [],
+  "last_verified_at": null
+}

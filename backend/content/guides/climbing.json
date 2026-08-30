@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "slug": "climbing",
+  "title": "Climbing",
+  "summary": "Vocabulary lasts about three minutes. Then somebody suggests you get on the wall, and the suggestion is friendly.",
+  "guide_type": "lifestyle",
+  "category_slug": "sport",
+  "aliases": [
+    "Bouldering",
+    "Rock climbing"
+  ],
+  "content": {
+    "kind": "lifestyle",
+    "larp": {
+      "entry_type": "scene",
+      "verdict": "not_really",
+      "exposure_seconds": 180,
+      "unfalsifiable": false,
+      "flags": [
+        "PHYSICALLY CHECKABLE",
+        "GRADED",
+        "SMALL SCENE"
+      ],
+      "dek": "The scene is physical and the grade is public. Your body is the audit and it runs in front of everyone.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "V-scale for boulder, French or YDS for rope. Know which the room uses.",
+            "Fontainebleau, Hueco, Céüse as the named places.",
+            "Beta is the sequence. Flash, onsight and project are three different things.",
+            "Ondra and Sharma are the household names, which is itself a tell."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "Grades are soft everywhere except at your own gym.",
+            "Projecting one problem beats volume.",
+            "Indoor and outdoor are different sports."
+          ]
+        }
+      ],
+      "surface": [
+        "Vocabulary lasts about three minutes. Then somebody suggests you get on the wall, and the suggestion is friendly.",
+        "There is no version of this scene that stays verbal."
+      ],
+      "follow_up": [
+        "\"Want to jump on this one?\"",
+        "It is an invitation rather than a test, which is exactly why it is fatal. You can decline once. You cannot decline twice."
+      ],
+      "tells": [
+        "Your hands are wrong. Nobody who climbs has those hands.",
+        "You know the numbers but not the movement, and you describe routes by grade instead of by what they ask of you.",
+        "You say you climb but not where. Every climber has a home wall and names it in the first sentence."
+      ],
+      "cost": [
+        "Low socially, high in the moment. Nobody is angry and everybody saw it.",
+        "The scene is small enough that the story travels to the next gym before you do."
+      ],
+      "learn": {
+        "hours": 120,
+        "book": "The Rock Warrior's Way — Arno Ilgner",
+        "make": "Twelve sessions. Nothing substitutes for the sessions."
+      }
+    },
+    "overview": "Vocabulary lasts about three minutes. Then somebody suggests you get on the wall, and the suggestion is friendly.\n\nThere is no version of this scene that stays verbal.",
+    "quick_brief": [
+      "V-scale for boulder, French or YDS for rope. Know which the room uses.",
+      "Fontainebleau, Hueco, Céüse as the named places.",
+      "Beta is the sequence. Flash, onsight and project are three different things.",
+      "Ondra and Sharma are the household names, which is itself a tell.",
+      "Grades are soft everywhere except at your own gym.",
+      "Projecting one problem beats volume.",
+      "Indoor and outdoor are different sports."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "Your hands are wrong. Nobody who climbs has those hands.",
+      "You know the numbers but not the movement, and you describe routes by grade instead of by what they ask of you.",
+      "You say you climb but not where. Every climber has a home wall and names it in the first sentence."
+    ],
+    "questions": [
+      {
+        "question": "Want to jump on this one?",
+        "answer": "It is an invitation rather than a test, which is exactly why it is fatal. You can decline once. You cannot decline twice."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "aesthetic": "The scene is physical and the grade is public. Your body is the audit and it runs in front of everyone.",
+    "brands": [],
+    "visual_cues": [
+      "indoor bouldering wall",
+      "chalked hands on a climbing hold"
+    ],
+    "locations": [
+      "Bouldering gyms",
+      "Outdoor crags"
+    ],
+    "media_scenarios": [
+      {
+        "title": "Climbing reference shot",
+        "description": "A photograph an editor can place at the top of the guide.",
+        "search_terms": [
+          "indoor bouldering wall",
+          "chalked hands on a climbing hold"
+        ],
+        "generation_prompt": null
+      }
+    ]
+  },
+  "sources": [],
+  "last_verified_at": null
+}

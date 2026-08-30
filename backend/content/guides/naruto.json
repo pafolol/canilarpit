@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "slug": "naruto",
+  "title": "Naruto",
+  "summary": "A spoiler-heavy briefing on Naruto's plot, characters, major deaths, terminology, and fandom conversations.",
+  "guide_type": "anime",
+  "category_slug": "anime",
+  "aliases": [
+    "Naruto Shippuden",
+    "Naruto anime"
+  ],
+  "content": {
+    "kind": "anime",
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "kinda",
+      "exposure_seconds": 420,
+      "unfalsifiable": false,
+      "flags": [
+        "LONG CANON",
+        "SPOILER HEAVY",
+        "THEY WILL QUOTE IT"
+      ],
+      "dek": "The plot is public and the summaries are excellent. What gives you away is that you have opinions about arcs and no memory of watching them.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Team 7 is Naruto, Sasuke, Sakura, and Kakashi. Start there.",
+            "The Chunin Exams are the arc everyone rates highest.",
+            "Itachi killed the Uchiha clan under orders. That reveal reframes the series.",
+            "Pain's assault on the Leaf is the emotional peak for most viewers.",
+            "Shippuden is the sequel series, not a separate story."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "The filler is real and you skipped it. Everyone did.",
+            "The war arc runs long. Say so and you sound like a viewer.",
+            "Rock Lee versus Gaara is the fight you rewatch.",
+            "You liked Sasuke less than the show wanted you to."
+          ]
+        }
+      ],
+      "surface": [
+        "Names, the Hokage, the tailed beasts, and one arc you can describe. Four items carry an ordinary conversation for about seven minutes.",
+        "Anime fans are used to explaining, so questions read as interest rather than ignorance. The danger is not being asked, it is answering too fluently."
+      ],
+      "follow_up": [
+        "\"Which episode did you stop on?\"",
+        "A viewer has a stopping point, a gap where life got in the way, and a vague memory of which dub or subtitle they watched. A reader has a synopsis and a clean, suspiciously complete timeline."
+      ],
+      "tells": [
+        "You summarise arcs. Viewers quote lines.",
+        "You have no filler complaints. Everyone who watched it has filler complaints.",
+        "You rank fights by importance rather than by how they looked.",
+        "You cannot say where you watched it, or when."
+      ],
+      "cost": [
+        "Low. Being caught out on an anime costs you a joke at your expense.",
+        "The scene is enormous and mostly friendly. Admitting you are two hundred episodes behind is a normal sentence in this room."
+      ],
+      "learn": {
+        "hours": 90,
+        "book": "Nothing. Watch the Chunin Exams and the Pain arc.",
+        "make": "Watch twenty episodes in order and write one line about each."
+      }
+    },
+    "overview": "Naruto follows Naruto Uzumaki, an ostracized ninja who carries the Nine-Tailed Fox and wants to become Hokage. The larger story expands from village missions into a conflict over tailed beasts, inherited cycles of violence, and the Fourth Shinobi World War.",
+    "quick_brief": [
+      "Naruto begins as an isolated prankster seeking recognition and ends as a hero accepted by the village.",
+      "Team 7 consists of Naruto, Sasuke, Sakura, and their teacher Kakashi.",
+      "Sasuke's departure and Naruto's promise to bring him back drive much of the series.",
+      "The Akatsuki hunt the tailed beasts, including the Nine-Tails sealed inside Naruto.",
+      "The final central conflict is Naruto versus Sasuke after the war."
+    ],
+    "essential_facts": [
+      {
+        "fact": "The story is split between Naruto and the later Naruto: Shippuden era.",
+        "citations": [
+          "naruto-wikipedia"
+        ]
+      },
+      {
+        "fact": "Naruto is the jinchuriki of Kurama, the Nine-Tailed Fox.",
+        "citations": [
+          "naruto-wikipedia"
+        ]
+      }
+    ],
+    "talking_points": [
+      {
+        "opener": "The Pain arc is where Naruto's ideals finally become more important than simply winning fights.",
+        "follow_up": "His conversation with Nagato turns the series' cycle-of-hatred theme into an explicit choice.",
+        "context": "Useful when discussing the strongest story arc rather than only favorite battles."
+      },
+      {
+        "opener": "Sasuke is easier to understand as a trauma-driven rival than as a conventional villain.",
+        "follow_up": "Each revelation about Itachi changes what Sasuke thinks justice requires."
+      }
+    ],
+    "vocabulary": [
+      {
+        "term": "Hokage",
+        "meaning": "The leader of the Hidden Leaf Village.",
+        "example": "Naruto's original goal is to become Hokage so the village will recognize him."
+      },
+      {
+        "term": "Jinchuriki",
+        "meaning": "A person who has a tailed beast sealed inside them."
+      },
+      {
+        "term": "Chakra",
+        "meaning": "The energy used to perform ninja techniques."
+      }
+    ],
+    "common_mistakes": [
+      "Do not treat Naruto and Naruto: Shippuden as unrelated shows.",
+      "Do not call every eye technique the Sharingan; the Byakugan and Rinnegan are distinct.",
+      "Do not describe Itachi's motives without accounting for the later reveal about the Uchiha massacre."
+    ],
+    "questions": [
+      {
+        "question": "Who is Naruto's main rival?",
+        "answer": "Sasuke Uchiha, his Team 7 teammate and the person Naruto repeatedly tries to bring back to the village."
+      },
+      {
+        "question": "Does Naruto become Hokage?",
+        "answer": "Yes. He becomes the Seventh Hokage after the main series."
+      }
+    ],
+    "spoiler_warning": true,
+    "premise": "A young ninja shunned because of the monster sealed inside him attempts to earn recognition, protect his friends, and eventually lead his village.",
+    "ending_summary": "After Kaguya is defeated and the war ends, Naruto and Sasuke fight one final battle at the Valley of the End. Both lose an arm, Sasuke concedes, and the cycle between their predecessors is broken. Naruto later marries Hinata and eventually becomes the Seventh Hokage.",
+    "characters": [
+      {
+        "name": "Naruto Uzumaki",
+        "role": "Protagonist, member of Team 7, and jinchuriki of the Nine-Tails.",
+        "fate": "Survives, marries Hinata, and becomes the Seventh Hokage.",
+        "relationships": [
+          "Sasuke's rival and closest friend",
+          "Jiraiya's student",
+          "Hinata's husband"
+        ]
+      },
+      {
+        "name": "Sasuke Uchiha",
+        "role": "Naruto's rival and the survivor whose pursuit of revenge drives the central conflict.",
+        "fate": "Survives the final battle and leaves on a journey of atonement.",
+        "relationships": [
+          "Itachi's younger brother",
+          "Naruto's rival",
+          "Sakura's eventual husband"
+        ]
+      },
+      {
+        "name": "Jiraiya",
+        "role": "Legendary Sannin, author, spy, and Naruto's mentor.",
+        "fate": "Killed while investigating Pain in the Hidden Rain.",
+        "relationships": [
+          "Naruto's mentor",
+          "Nagato's former teacher",
+          "Tsunade's teammate"
+        ]
+      }
+    ],
+    "major_events": [
+      {
+        "title": "Sasuke leaves the village",
+        "description": "Sasuke joins Orochimaru in pursuit of enough power to kill Itachi, and Naruto fails to stop him at the Valley of the End.",
+        "spoiler_level": "major",
+        "citations": [
+          "naruto-wikipedia"
+        ]
+      },
+      {
+        "title": "Jiraiya dies fighting Pain",
+        "description": "Jiraiya uncovers the secret behind Pain but is killed before he can return, leaving a coded final message.",
+        "spoiler_level": "major",
+        "citations": [
+          "naruto-wikipedia"
+        ]
+      }
+    ],
+    "fandom_debates": [
+      "Whether the Pain arc is the series' narrative peak.",
+      "How much the reincarnation reveal weakens or supports the story's themes.",
+      "Whether Sasuke's decisions remain sympathetic after learning the truth about Itachi."
+    ]
+  },
+  "sources": [
+    {
+      "key": "naruto-wikipedia",
+      "title": "Naruto",
+      "url": "https://en.wikipedia.org/wiki/Naruto",
+      "publisher": "Wikipedia",
+      "verified_at": "2026-08-23T00:00:00Z"
+    }
+  ],
+  "last_verified_at": "2026-08-23T00:00:00Z"
+}

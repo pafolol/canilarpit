@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "slug": "brutalism",
+  "title": "Brutalism",
+  "summary": "A building, its architect, and what it was built for. The third item is where larpers stop.",
+  "guide_type": "lifestyle",
+  "category_slug": "design",
+  "aliases": [
+    "Brutalist architecture",
+    "Béton brut"
+  ],
+  "content": {
+    "kind": "lifestyle",
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "kinda",
+      "exposure_seconds": 300,
+      "unfalsifiable": false,
+      "flags": [
+        "HIGH VOCAB",
+        "IMAGE-LED",
+        "THEY WANT TO TEACH YOU"
+      ],
+      "dek": "Everyone has the images and nobody has the buildings. You pass on a screen and fail on the street.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Béton brut. The term is about the concrete, not the mood.",
+            "Le Corbusier, Unité d'Habitation. The origin point.",
+            "Goldfinger's Trellick Tower. Lasdun's National Theatre.",
+            "Reyner Banham named it and then complained about what it became."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "It was social housing before it was an aesthetic.",
+            "Most of what gets posted is not brutalism, it is just concrete.",
+            "The demolitions are the actual subject."
+          ]
+        }
+      ],
+      "surface": [
+        "A building, its architect, and what it was built for. The third item is where larpers stop.",
+        "Photographs carry you a long way here, which is why the clock is generous and the failure is specific."
+      ],
+      "follow_up": [
+        "\"Have you been inside one?\"",
+        "The interiors are the argument. Every photograph in circulation is an exterior, so the inside is the one thing no amount of scrolling supplies."
+      ],
+      "tells": [
+        "You post exteriors. The people who care talk about corridors, light wells, and how the lifts work.",
+        "You call it brutal. The word is about the concrete.",
+        "You have no opinion about who lives there now, which means you are looking at a picture rather than a building."
+      ],
+      "cost": [
+        "Low. Somebody will send you a reading list, which is this scene's version of a punishment.",
+        "You will be invited to a walking tour and the walking tour is where it ends."
+      ],
+      "learn": {
+        "hours": 25,
+        "book": "The New Brutalism — Reyner Banham",
+        "make": "Visit three and walk the corridors."
+      }
+    },
+    "overview": "A building, its architect, and what it was built for. The third item is where larpers stop.\n\nPhotographs carry you a long way here, which is why the clock is generous and the failure is specific.",
+    "quick_brief": [
+      "Béton brut. The term is about the concrete, not the mood.",
+      "Le Corbusier, Unité d'Habitation. The origin point.",
+      "Goldfinger's Trellick Tower. Lasdun's National Theatre.",
+      "Reyner Banham named it and then complained about what it became.",
+      "It was social housing before it was an aesthetic.",
+      "Most of what gets posted is not brutalism, it is just concrete.",
+      "The demolitions are the actual subject."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You post exteriors. The people who care talk about corridors, light wells, and how the lifts work.",
+      "You call it brutal. The word is about the concrete.",
+      "You have no opinion about who lives there now, which means you are looking at a picture rather than a building."
+    ],
+    "questions": [
+      {
+        "question": "Have you been inside one?",
+        "answer": "The interiors are the argument. Every photograph in circulation is an exterior, so the inside is the one thing no amount of scrolling supplies."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "aesthetic": "Everyone has the images and nobody has the buildings. You pass on a screen and fail on the street.",
+    "brands": [],
+    "visual_cues": [
+      "raw concrete facade",
+      "brutalist housing estate stairwell"
+    ],
+    "locations": [
+      "Postwar civic buildings",
+      "University campuses",
+      "Social housing"
+    ],
+    "media_scenarios": [
+      {
+        "title": "Brutalism reference shot",
+        "description": "A photograph an editor can place at the top of the guide.",
+        "search_terms": [
+          "raw concrete facade",
+          "brutalist housing estate stairwell"
+        ],
+        "generation_prompt": null
+      }
+    ]
+  },
+  "sources": [],
+  "last_verified_at": null
+}

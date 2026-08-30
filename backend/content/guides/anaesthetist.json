@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "slug": "anaesthetist",
+  "title": "Anaesthetist",
+  "summary": "This is the entry that changes category. Claiming a clinical role is not a social bluff, and in most places it stops being only a social matter the moment anyone acts on it.",
+  "guide_type": "general",
+  "category_slug": "job",
+  "aliases": [
+    "Anesthesiologist",
+    "Anaesthesiologist"
+  ],
+  "content": {
+    "kind": "general",
+    "larp": {
+      "entry_type": "role",
+      "verdict": "dont",
+      "exposure_seconds": null,
+      "unfalsifiable": false,
+      "flags": [
+        "DUTY IMPLIED",
+        "ONE QUESTION ENDS IT",
+        "LEGAL EXPOSURE"
+      ],
+      "dek": "Do not. The claim carries duty implications that outlive the dinner party.",
+      "crib": [],
+      "surface": [],
+      "follow_up": [
+        "\"What do you use for induction?\"",
+        "There is a small, boring, universally known answer, and every actual anaesthetist gives it without thinking about it first. The pause is the whole tell."
+      ],
+      "tells": [
+        "You talk about surgery. They talk about the twenty minutes before and the twenty minutes after, because that is the job.",
+        "You describe drama. The profession is the management of boredom punctuated by four minutes.",
+        "You have no opinion about the coffee in that hospital. Everyone has one."
+      ],
+      "cost": [
+        "This is the entry that changes category. Claiming a clinical role is not a social bluff, and in most places it stops being only a social matter the moment anyone acts on it.",
+        "The room contains a nurse more often than you expect.",
+        "If somebody collapses at that dinner, the claim becomes the only fact anyone remembers about you."
+      ],
+      "learn": {
+        "hours": 20000,
+        "book": "Miller's Anesthesia",
+        "make": "Medical school. There is no shorter path and that is the point."
+      }
+    },
+    "overview": "This is the entry that changes category. Claiming a clinical role is not a social bluff, and in most places it stops being only a social matter the moment anyone acts on it.\n\nThe room contains a nurse more often than you expect.\n\nIf somebody collapses at that dinner, the claim becomes the only fact anyone remembers about you.",
+    "quick_brief": [
+      "This is the entry that changes category. Claiming a clinical role is not a social bluff, and in most places it stops being only a social matter the moment anyone acts on it.",
+      "The room contains a nurse more often than you expect.",
+      "If somebody collapses at that dinner, the claim becomes the only fact anyone remembers about you."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You talk about surgery. They talk about the twenty minutes before and the twenty minutes after, because that is the job.",
+      "You describe drama. The profession is the management of boredom punctuated by four minutes.",
+      "You have no opinion about the coffee in that hospital. Everyone has one."
+    ],
+    "questions": [
+      {
+        "question": "What do you use for induction?",
+        "answer": "There is a small, boring, universally known answer, and every actual anaesthetist gives it without thinking about it first. The pause is the whole tell."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "key_people": [],
+    "timeline": []
+  },
+  "sources": [],
+  "last_verified_at": null
+}

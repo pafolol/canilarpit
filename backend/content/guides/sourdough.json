@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "slug": "sourdough",
+  "title": "Sourdough",
+  "summary": "A hydration number, a flour, and a complaint about your oven. That is the entire first conversation and it renews.",
+  "guide_type": "lifestyle",
+  "category_slug": "food",
+  "aliases": [
+    "Sourdough bread",
+    "Naturally leavened bread"
+  ],
+  "content": {
+    "kind": "lifestyle",
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "yes",
+      "exposure_seconds": 600,
+      "unfalsifiable": false,
+      "flags": [
+        "PUBLIC CANON",
+        "THEY WANT TO TEACH YOU",
+        "SLOW PROOF"
+      ],
+      "dek": "The knowledge is free, the practice is slow, and nobody is going to ask you to produce a loaf tonight.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Hydration as a percentage. The whole hobby is spoken in percentages.",
+            "Tartine is the shared text. Forkish is the other one.",
+            "Bulk ferment, shaping, cold retard. The three stages.",
+            "Banneton, lame, dutch oven. The three objects."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "Starter age is a joke, not a credential.",
+            "Open crumb is overrated and mostly hydration.",
+            "The oven matters less than the shaping."
+          ]
+        }
+      ],
+      "surface": [
+        "A hydration number, a flour, and a complaint about your oven. That is the entire first conversation and it renews.",
+        "Nothing about this scene happens on a deadline, which is why the clock is long."
+      ],
+      "follow_up": [
+        "\"Can I see it?\"",
+        "Everyone photographs the crumb. Having no photograph is the only real failure state, and it is recoverable within a week."
+      ],
+      "tells": [
+        "You talk about the starter and not the schedule. The schedule is the hobby.",
+        "You have no complaint. Every baker has one recurring failure they are mid-argument with.",
+        "You say artisan."
+      ],
+      "cost": [
+        "None. The worst outcome is that somebody gives you starter, which is a gift and an obligation.",
+        "You will be asked about it in three weeks. That is the only follow-up."
+      ],
+      "learn": {
+        "hours": 30,
+        "book": "Tartine Bread — Chad Robertson",
+        "make": "Six loaves. The fourth is where it starts working."
+      }
+    },
+    "overview": "A hydration number, a flour, and a complaint about your oven. That is the entire first conversation and it renews.\n\nNothing about this scene happens on a deadline, which is why the clock is long.",
+    "quick_brief": [
+      "Hydration as a percentage. The whole hobby is spoken in percentages.",
+      "Tartine is the shared text. Forkish is the other one.",
+      "Bulk ferment, shaping, cold retard. The three stages.",
+      "Banneton, lame, dutch oven. The three objects.",
+      "Starter age is a joke, not a credential.",
+      "Open crumb is overrated and mostly hydration.",
+      "The oven matters less than the shaping."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You talk about the starter and not the schedule. The schedule is the hobby.",
+      "You have no complaint. Every baker has one recurring failure they are mid-argument with.",
+      "You say artisan."
+    ],
+    "questions": [
+      {
+        "question": "Can I see it?",
+        "answer": "Everyone photographs the crumb. Having no photograph is the only real failure state, and it is recoverable within a week."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "aesthetic": "The knowledge is free, the practice is slow, and nobody is going to ask you to produce a loaf tonight.",
+    "brands": [],
+    "visual_cues": [
+      "open crumb sourdough loaf",
+      "banneton and dough scraper"
+    ],
+    "locations": [
+      "Home kitchens",
+      "Micro bakeries",
+      "Farmers markets"
+    ],
+    "media_scenarios": [
+      {
+        "title": "Sourdough reference shot",
+        "description": "A photograph an editor can place at the top of the guide.",
+        "search_terms": [
+          "open crumb sourdough loaf",
+          "banneton and dough scraper"
+        ],
+        "generation_prompt": null
+      }
+    ]
+  },
+  "sources": [],
+  "last_verified_at": null
+}

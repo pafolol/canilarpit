@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "slug": "techno",
+  "title": "Techno",
+  "summary": "Rooms and hours, not tracks. Nobody in this scene identifies music on their phone and nobody admits to wanting to.",
+  "guide_type": "lifestyle",
+  "category_slug": "music",
+  "aliases": [
+    "Berlin techno",
+    "Club techno"
+  ],
+  "content": {
+    "kind": "lifestyle",
+    "larp": {
+      "entry_type": "scene",
+      "verdict": "kinda",
+      "exposure_seconds": 240,
+      "unfalsifiable": false,
+      "flags": [
+        "RITUAL OVER TASTE",
+        "TIME-BASED",
+        "SMALL SCENE"
+      ],
+      "dek": "The music is easy and the ritual is not. You pass in conversation and fail at four in the morning.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Basic Channel and Chain Reaction. The dub techno lineage.",
+            "Jeff Mills, Robert Hood. Detroit minimalism.",
+            "Ostgut Ton as a label, not as a building.",
+            "Giegling and Perlon for the softer end of the argument."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "The room and the hour matter more than the lineup.",
+            "Most of it is boring, and boring is the compliment.",
+            "A set is judged at hour four, not at the peak."
+          ]
+        }
+      ],
+      "surface": [
+        "Rooms and hours, not tracks. Nobody in this scene identifies music on their phone and nobody admits to wanting to.",
+        "The correct answer to what was played is a mood and a time."
+      ],
+      "follow_up": [
+        "\"What time did you get there?\"",
+        "Arrival time is the entire class system of this scene, it is asked casually, and there is no way to guess the right answer because the right answer is different in every city."
+      ],
+      "tells": [
+        "You name DJs. They name nights.",
+        "You describe the drop. There is no drop, that is a different genre, and nobody will correct you out loud.",
+        "You left before three. Everything worth defending happens after three.",
+        "You dressed for it. The people who belong dressed for a laundry day."
+      ],
+      "cost": [
+        "Moderate. The scene is not cruel but it is closed, and it remembers faces better than it remembers names.",
+        "You will not be told. You will simply stop being included in the message."
+      ],
+      "learn": {
+        "hours": 60,
+        "book": "Energy Flash — Simon Reynolds",
+        "make": "Stay until close, once, sober."
+      }
+    },
+    "overview": "Rooms and hours, not tracks. Nobody in this scene identifies music on their phone and nobody admits to wanting to.\n\nThe correct answer to what was played is a mood and a time.",
+    "quick_brief": [
+      "Basic Channel and Chain Reaction. The dub techno lineage.",
+      "Jeff Mills, Robert Hood. Detroit minimalism.",
+      "Ostgut Ton as a label, not as a building.",
+      "Giegling and Perlon for the softer end of the argument.",
+      "The room and the hour matter more than the lineup.",
+      "Most of it is boring, and boring is the compliment.",
+      "A set is judged at hour four, not at the peak."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You name DJs. They name nights.",
+      "You describe the drop. There is no drop, that is a different genre, and nobody will correct you out loud.",
+      "You left before three. Everything worth defending happens after three.",
+      "You dressed for it. The people who belong dressed for a laundry day."
+    ],
+    "questions": [
+      {
+        "question": "What time did you get there?",
+        "answer": "Arrival time is the entire class system of this scene, it is asked casually, and there is no way to guess the right answer because the right answer is different in every city."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "aesthetic": "The music is easy and the ritual is not. You pass in conversation and fail at four in the morning.",
+    "brands": [],
+    "visual_cues": [
+      "dark club interior with strobe",
+      "queue outside a warehouse at night"
+    ],
+    "locations": [
+      "Warehouse parties",
+      "Berlin clubs",
+      "Sunday afternoon closing sets"
+    ],
+    "media_scenarios": [
+      {
+        "title": "Techno reference shot",
+        "description": "A photograph an editor can place at the top of the guide.",
+        "search_terms": [
+          "dark club interior with strobe",
+          "queue outside a warehouse at night"
+        ],
+        "generation_prompt": null
+      }
+    ]
+  },
+  "sources": [],
+  "last_verified_at": null
+}

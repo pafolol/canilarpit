@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "slug": "crypto-vc",
+  "title": "Crypto VC",
+  "summary": "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.",
+  "guide_type": "general",
+  "category_slug": "job",
+  "aliases": [
+    "Web3 VC",
+    "Crypto venture capital"
+  ],
+  "content": {
+    "kind": "general",
+    "larp": {
+      "entry_type": "role",
+      "verdict": "yes",
+      "exposure_seconds": null,
+      "unfalsifiable": true,
+      "flags": [
+        "UNFALSIFIABLE",
+        "PUBLIC VOCAB",
+        "NO GATEKEEPER"
+      ],
+      "dek": "Nothing here is checkable, the vocabulary is public, and the real thing fails in the same way the bluff does.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Thesis, allocation, liquid against locked, cliff and vest.",
+            "SAFT, then SAFE plus token warrant. The paperwork moved and knowing that dates you correctly.",
+            "Name a fund you are not at and a deal you did not lead.",
+            "Everyone is quietly holding something from 2021 they will not mark down."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "Most of the last cycle was infrastructure with no users.",
+            "Distribution is the hard part now, not the technology.",
+            "You were early and you sized it wrong. Unverifiable and universally true."
+          ]
+        }
+      ],
+      "surface": [
+        "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.",
+        "The surface layer and the actual layer are the same layer. That is why the clock does not run."
+      ],
+      "follow_up": [
+        "\"What did you pass on?\"",
+        "There is no follow-up that kills you. Any plausible answer holds, and nobody can check, and that is the entire finding."
+      ],
+      "tells": [
+        "You are too specific. The real ones are vague on purpose and vague in a particular direction.",
+        "You have no complaints about your LPs.",
+        "You sound excited. Nobody in the seat has sounded excited since 2021."
+      ],
+      "cost": [
+        "Low, and mostly borne by other people.",
+        "The exception is money. The moment somebody wires on the strength of the claim, this entry no longer applies to you."
+      ],
+      "learn": {
+        "hours": 40,
+        "book": "The last eight quarterly letters from any fund",
+        "make": "A one-page thesis you would defend to a stranger."
+      }
+    },
+    "overview": "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.\n\nThe surface layer and the actual layer are the same layer. That is why the clock does not run.",
+    "quick_brief": [
+      "Thesis, allocation, liquid against locked, cliff and vest.",
+      "SAFT, then SAFE plus token warrant. The paperwork moved and knowing that dates you correctly.",
+      "Name a fund you are not at and a deal you did not lead.",
+      "Everyone is quietly holding something from 2021 they will not mark down.",
+      "Most of the last cycle was infrastructure with no users.",
+      "Distribution is the hard part now, not the technology.",
+      "You were early and you sized it wrong. Unverifiable and universally true."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You are too specific. The real ones are vague on purpose and vague in a particular direction.",
+      "You have no complaints about your LPs.",
+      "You sound excited. Nobody in the seat has sounded excited since 2021."
+    ],
+    "questions": [
+      {
+        "question": "What did you pass on?",
+        "answer": "There is no follow-up that kills you. Any plausible answer holds, and nobody can check, and that is the entire finding."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "key_people": [],
+    "timeline": []
+  },
+  "sources": [],
+  "last_verified_at": null
+}

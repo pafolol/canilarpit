@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "slug": "letterboxd",
+  "title": "Letterboxd",
+  "summary": "A list, a rating, and one sentence. The one sentence is the platform's whole register.",
+  "guide_type": "general",
+  "category_slug": "film",
+  "aliases": [
+    "Film Twitter",
+    "Letterboxd account"
+  ],
+  "content": {
+    "kind": "general",
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "yes",
+      "exposure_seconds": null,
+      "unfalsifiable": true,
+      "flags": [
+        "PUBLIC CANON",
+        "NO GATEKEEPER",
+        "LOW STAKES"
+      ],
+      "dek": "The canon is public, the reviews are free, and nobody can audit whether you watched it.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Jeanne Dielman. The 2022 Sight & Sound number one.",
+            "Tsai Ming-liang. Long takes, little dialogue.",
+            "Wong Kar-wai. Everyone has seen it, few have rewatched it.",
+            "Four and a half is the ceiling. Five is a personality statement."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "The letterboxing joke is old and you are past it.",
+            "You log rewatches, which is the mark of an account in use.",
+            "Any director's consensus favourite is their third best."
+          ]
+        }
+      ],
+      "surface": [
+        "A list, a rating, and one sentence. The one sentence is the platform's whole register.",
+        "Never write a paragraph. The form is a caption and length reads as effort, which reads as new."
+      ],
+      "follow_up": [
+        "\"What have you actually watched this month?\"",
+        "Larpers have a canon. Users have a recent history, and a real one is full of mediocre films watched on a Tuesday for no reason."
+      ],
+      "tells": [
+        "Every favourite is above four stars. Real accounts have a two-star film they will defend at length.",
+        "No rewatches. Nobody who loves film watches everything exactly once.",
+        "You talk about films. Users talk about watching films, which is a different subject with different sentences."
+      ],
+      "cost": [
+        "None. There is no one to catch you, and that is the finding rather than an oversight.",
+        "The only exposure is to yourself, eventually, in a conversation with someone who has seen it."
+      ],
+      "learn": {
+        "hours": 6,
+        "book": "Nothing. Watch four films.",
+        "make": "Log twenty films you have already seen, honestly, including the bad ones."
+      }
+    },
+    "overview": "A list, a rating, and one sentence. The one sentence is the platform's whole register.\n\nNever write a paragraph. The form is a caption and length reads as effort, which reads as new.",
+    "quick_brief": [
+      "Jeanne Dielman. The 2022 Sight & Sound number one.",
+      "Tsai Ming-liang. Long takes, little dialogue.",
+      "Wong Kar-wai. Everyone has seen it, few have rewatched it.",
+      "Four and a half is the ceiling. Five is a personality statement.",
+      "The letterboxing joke is old and you are past it.",
+      "You log rewatches, which is the mark of an account in use.",
+      "Any director's consensus favourite is their third best."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "Every favourite is above four stars. Real accounts have a two-star film they will defend at length.",
+      "No rewatches. Nobody who loves film watches everything exactly once.",
+      "You talk about films. Users talk about watching films, which is a different subject with different sentences."
+    ],
+    "questions": [
+      {
+        "question": "What have you actually watched this month?",
+        "answer": "Larpers have a canon. Users have a recent history, and a real one is full of mediocre films watched on a Tuesday for no reason."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "key_people": [],
+    "timeline": []
+  },
+  "sources": [],
+  "last_verified_at": null
+}

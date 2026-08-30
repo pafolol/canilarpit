@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "slug": "prestige-tv",
+  "title": "Prestige TV",
+  "summary": "A show, a season, and a supporting character. Nobody checks the first two.",
+  "guide_type": "general",
+  "category_slug": "series",
+  "aliases": [
+    "Prestige television",
+    "Peak TV"
+  ],
+  "content": {
+    "kind": "general",
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "kinda",
+      "exposure_seconds": 300,
+      "unfalsifiable": false,
+      "flags": [
+        "SMALL CANON",
+        "NO GATEKEEPER",
+        "SPOILER RISK"
+      ],
+      "dek": "The canon is small and the opinions are borrowed from the same four essays. You pass until somebody names a season.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "The Sopranos, The Wire, Mad Men. The three-name spine.",
+            "Season two is the contested one, in almost every show.",
+            "The Wire season four is the correct answer and saying it marks you as ordinary.",
+            "Prestige is a budget and a runtime before it is a quality."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "The finale discourse is more interesting than the finales.",
+            "Six episodes is not a season.",
+            "Every show got worse once it knew it was prestige."
+          ]
+        }
+      ],
+      "surface": [
+        "A show, a season, and a supporting character. Nobody checks the first two.",
+        "Everyone has seen the pilot of everything. Nothing above episode four is safe."
+      ],
+      "follow_up": [
+        "\"Which season?\"",
+        "It is the only question in the form and it gets asked constantly, because seasons are how people who actually watched store the show."
+      ],
+      "tells": [
+        "You quote the famous line. Everyone has the famous line, it was in the trailer.",
+        "You talk about the writing. Viewers talk about one scene.",
+        "You have no show you gave up on. Everyone has one and it is usually season three."
+      ],
+      "cost": [
+        "None worth counting. This is the lowest-stakes claim on the site.",
+        "Somebody will spoil something for you, which is the only enforcement this scene has."
+      ],
+      "learn": {
+        "hours": 60,
+        "book": "Difficult Men — Brett Martin",
+        "make": "Finish one show you abandoned."
+      }
+    },
+    "overview": "A show, a season, and a supporting character. Nobody checks the first two.\n\nEveryone has seen the pilot of everything. Nothing above episode four is safe.",
+    "quick_brief": [
+      "The Sopranos, The Wire, Mad Men. The three-name spine.",
+      "Season two is the contested one, in almost every show.",
+      "The Wire season four is the correct answer and saying it marks you as ordinary.",
+      "Prestige is a budget and a runtime before it is a quality.",
+      "The finale discourse is more interesting than the finales.",
+      "Six episodes is not a season.",
+      "Every show got worse once it knew it was prestige."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You quote the famous line. Everyone has the famous line, it was in the trailer.",
+      "You talk about the writing. Viewers talk about one scene.",
+      "You have no show you gave up on. Everyone has one and it is usually season three."
+    ],
+    "questions": [
+      {
+        "question": "Which season?",
+        "answer": "It is the only question in the form and it gets asked constantly, because seasons are how people who actually watched store the show."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "key_people": [],
+    "timeline": []
+  },
+  "sources": [],
+  "last_verified_at": null
+}

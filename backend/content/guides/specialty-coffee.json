@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "slug": "specialty-coffee",
+  "title": "Specialty coffee",
+  "summary": "Order a filter, ask what is on, ask about the process. Three moves and you are inside the conversation.",
+  "guide_type": "lifestyle",
+  "category_slug": "drink",
+  "aliases": [
+    "Third wave coffee",
+    "Speciality coffee"
+  ],
+  "content": {
+    "kind": "lifestyle",
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "yes",
+      "exposure_seconds": 900,
+      "unfalsifiable": false,
+      "flags": [
+        "THEY WANT TO TEACH YOU",
+        "PUBLIC CANON",
+        "LOW STAKES"
+      ],
+      "dek": "Fifteen minutes of vocabulary buys you a year. The scene is evangelical and wants you inside it.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Washed against natural. This one distinction does most of the work.",
+            "Gesha as the expensive varietal. Bourbon and Typica as the floor.",
+            "Ethiopia for florals, Colombia for balance, Kenya for acidity.",
+            "James Hoffmann is the shared reference and nobody is embarrassed about it."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "Light roast is not better, it is more legible.",
+            "Grind matters more than the machine.",
+            "Most third wave cafés under-extract to look current."
+          ]
+        }
+      ],
+      "surface": [
+        "Order a filter, ask what is on, ask about the process. Three moves and you are inside the conversation.",
+        "Say what you taste even when you are wrong. Being wrong out loud is the accepted entry ritual here, which is why the clock runs so long."
+      ],
+      "follow_up": [
+        "\"How do you make it at home?\"",
+        "There is no bluff available. Either there is a grinder on your counter or there is not, and the follow-up to the answer is what grinder."
+      ],
+      "tells": [
+        "You praise the beans. They talk about the roast, the water, and the grinder, in that order.",
+        "You say notes of, and then read the bag out loud.",
+        "You have opinions about origin and none about water. Water is half of it."
+      ],
+      "cost": [
+        "Very low. The worst outcome is a barista explaining something to you for eleven minutes.",
+        "Nobody in this scene has ever been glad to catch someone out."
+      ],
+      "learn": {
+        "hours": 15,
+        "book": "The World Atlas of Coffee — James Hoffmann",
+        "make": "Dial in one bean on one grinder across five days."
+      }
+    },
+    "overview": "Order a filter, ask what is on, ask about the process. Three moves and you are inside the conversation.\n\nSay what you taste even when you are wrong. Being wrong out loud is the accepted entry ritual here, which is why the clock runs so long.",
+    "quick_brief": [
+      "Washed against natural. This one distinction does most of the work.",
+      "Gesha as the expensive varietal. Bourbon and Typica as the floor.",
+      "Ethiopia for florals, Colombia for balance, Kenya for acidity.",
+      "James Hoffmann is the shared reference and nobody is embarrassed about it.",
+      "Light roast is not better, it is more legible.",
+      "Grind matters more than the machine.",
+      "Most third wave cafés under-extract to look current."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You praise the beans. They talk about the roast, the water, and the grinder, in that order.",
+      "You say notes of, and then read the bag out loud.",
+      "You have opinions about origin and none about water. Water is half of it."
+    ],
+    "questions": [
+      {
+        "question": "How do you make it at home?",
+        "answer": "There is no bluff available. Either there is a grinder on your counter or there is not, and the follow-up to the answer is what grinder."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "aesthetic": "Fifteen minutes of vocabulary buys you a year. The scene is evangelical and wants you inside it.",
+    "brands": [],
+    "visual_cues": [
+      "espresso machine portafilter",
+      "pour over brew bar"
+    ],
+    "locations": [
+      "Specialty cafes",
+      "Roastery cupping tables"
+    ],
+    "media_scenarios": [
+      {
+        "title": "Specialty coffee reference shot",
+        "description": "A photograph an editor can place at the top of the guide.",
+        "search_terms": [
+          "espresso machine portafilter",
+          "pour over brew bar"
+        ],
+        "generation_prompt": null
+      }
+    ]
+  },
+  "sources": [],
+  "last_verified_at": null
+}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation, useParams } from "react-router-dom";
+import AdminApp from "./admin/AdminApp";
 import Entry from "./Entry";
 import Home from "./Home";
 import NotListed from "./NotListed";
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/entry/:slug" element={<Entry />} />
           <Route path="/category/:slug" element={<CategoryRoute />} />
+          <Route path="/admin/*" element={<AdminApp />} />
           <Route
             path="/spot-the-larper"
             element={<NotListed note="Every tell on the site, as one flat list. It comes after the entry pages." />}
@@ -70,6 +72,8 @@ export default function App() {
           <Link to="/">Submit</Link>
           <span className="ftr__sep" aria-hidden="true">·</span>
           <Link to="/stats">Stats</Link>
+          <span className="ftr__sep" aria-hidden="true">·</span>
+          <Link to="/admin">Editors</Link>
           <span className="ftr__note">{offline ? "Offline. The page still works." : "Read it before you need it."}</span>
         </div>
       </footer>

@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "slug": "f1",
+  "title": "Formula 1",
+  "summary": "One race, one strategy call, one complaint about stewarding. Endlessly renewable and never checked.",
+  "guide_type": "general",
+  "category_slug": "sport",
+  "aliases": [
+    "Formula 1",
+    "Formula One"
+  ],
+  "content": {
+    "kind": "general",
+    "larp": {
+      "entry_type": "scene",
+      "verdict": "yes",
+      "exposure_seconds": null,
+      "unfalsifiable": true,
+      "flags": [
+        "PUBLIC DATA",
+        "LARGE SCENE",
+        "NO GATEKEEPER"
+      ],
+      "dek": "The sport publishes everything. Every fact you would need is on a timing screen and half the paddock is guessing too.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Undercut, overcut, dirty air, degradation. Four words carry most of the analysis.",
+            "Ground effect and the 2022 regulation change.",
+            "Adrian Newey as the shared name for design.",
+            "Any pre-2010 opinion marks you as older, which reads as credible."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "The racing got worse and the coverage got better.",
+            "Strategy is more interesting than the driver market.",
+            "The sprint format solves a problem nobody had."
+          ]
+        }
+      ],
+      "surface": [
+        "One race, one strategy call, one complaint about stewarding. Endlessly renewable and never checked.",
+        "The fandom quadrupled in four years, so being new is the statistical default rather than a mark against you."
+      ],
+      "follow_up": [
+        "\"Were you watching before Drive to Survive?\"",
+        "It is a status question and the lie is checkable through a single 2017 detail. Answering honestly costs nothing, which is why the verdict holds."
+      ],
+      "tells": [
+        "You only know current drivers.",
+        "You talk about overtakes and not tyres. The sport is about tyres.",
+        "You have no team you resent. Everyone has one."
+      ],
+      "cost": [
+        "None. Everybody arrived recently and everybody knows it.",
+        "The only people who mind are the ones who arrived eighteen months before you."
+      ],
+      "learn": {
+        "hours": 10,
+        "book": "The Mechanic — Marc Priestley",
+        "make": "Watch one race with the timing screen open."
+      }
+    },
+    "overview": "One race, one strategy call, one complaint about stewarding. Endlessly renewable and never checked.\n\nThe fandom quadrupled in four years, so being new is the statistical default rather than a mark against you.",
+    "quick_brief": [
+      "Undercut, overcut, dirty air, degradation. Four words carry most of the analysis.",
+      "Ground effect and the 2022 regulation change.",
+      "Adrian Newey as the shared name for design.",
+      "Any pre-2010 opinion marks you as older, which reads as credible.",
+      "The racing got worse and the coverage got better.",
+      "Strategy is more interesting than the driver market.",
+      "The sprint format solves a problem nobody had."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You only know current drivers.",
+      "You talk about overtakes and not tyres. The sport is about tyres.",
+      "You have no team you resent. Everyone has one."
+    ],
+    "questions": [
+      {
+        "question": "Were you watching before Drive to Survive?",
+        "answer": "It is a status question and the lie is checkable through a single 2017 detail. Answering honestly costs nothing, which is why the verdict holds."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "key_people": [],
+    "timeline": []
+  },
+  "sources": [],
+  "last_verified_at": null
+}

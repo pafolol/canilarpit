@@ -1,5 +1,8 @@
 import { SubmitBox } from "./components";
 
+const asTopic = (slug?: string) =>
+  (slug ?? "").replace(/^\/+/, "").replace(/[-_/]+/g, " ").trim();
+
 export default function NotListed({ slug, note }: { slug?: string; note?: string }) {
   return (
     <div className="u-shell">
@@ -13,7 +16,7 @@ export default function NotListed({ slug, note }: { slug?: string; note?: string
             </>
           )}
         </p>
-        {!note && <SubmitBox />}
+        {!note && <SubmitBox topic={asTopic(slug)} />}
       </section>
     </div>
   );

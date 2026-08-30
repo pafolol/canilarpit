@@ -1,137 +1,112 @@
-# Can I LARP It API
+# Can I LARP It
 
-FastAPI and PostgreSQL backend for a catalog of pre-generated, editor-reviewed LARP guides.
-Public searches never trigger AI generation. Missing topics are counted so editors can decide what
-to research next.
+One question per entry: **can you larp it, and for how long before someone catches you?**
 
-## Stack
+To LARP something is to present yourself as knowing or being something you do not — a
+film you never watched, a scene you do not belong to, a job you do not do. This site is
+the briefing you read beforehand: the crib sheet, the follow-up question that collapses
+it, the tells, the cost of being caught, and the honest hours it would take to just
+learn the thing instead.
 
-- Python 3.11+
-- FastAPI
-- PostgreSQL 15+
-- SQLAlchemy 2 and Alembic
-- Clerk authentication
-- Optional S3-compatible storage for uploaded and generated images
+Readers type a word. If a guide exists they read it. If it does not, they ask for it,
+and that demand shows up in the editors' backlog.
 
-Docker is not used by this project.
+## The repository
 
-## Local Setup
+```
+canilarpit/
+├── backend/     FastAPI + PostgreSQL: catalog, editorial CMS, guide generation
+├── frontend/    React + Vite: the public reading interface and the admin panel
+└── scripts/     Setup, dev, migrate, seed, check
+```
 
-Create and activate a virtual environment on Windows:
+The two halves used to be separate branches. They are one repo now: `backend/` owns the
+data and the contract, `frontend/` reads it through `frontend/src/api.ts`, and nothing
+in the interface holds its own copy of the content.
+
+## Quick start
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
-Copy-Item .env.example .env
+npm run setup
 ```
 
-Create a PostgreSQL database using credentials that are valid on your machine:
+That creates `.venv`, installs both halves, and writes `backend/.env` and
+`frontend/.env` from their examples. Then point `DATABASE_URL` at a database you have
+created, and:
 
 ```powershell
-createdb -U postgres canilarpit
+npm run db:migrate
+npm run db:seed
+npm run dev
 ```
 
-Set `DATABASE_URL` in `.env`, then migrate and seed the database:
+- Reading interface: <http://localhost:5173>
+- Admin panel: <http://localhost:5173/admin>
+- API: <http://127.0.0.1:8000>, Swagger at `/docs`
+
+The dev server proxies `/api` and `/health` to the API, so the frontend calls relative
+paths and never needs CORS in development.
+
+### Making yourself an editor
+
+`DEV_AUTH_BYPASS=true` is set in `backend/.env`, so the admin panel offers a "Local
+development" sign-in that sends an identity header instead of a Clerk token. The API
+refuses that bypass outright when `APP_ENV=production`.
+
+The first sign-in creates a `member`. Promote it once:
 
 ```powershell
-python -m alembic upgrade head
-canilarpit seed
+.venv\Scripts\python.exe -m app.cli set-role local-admin admin
 ```
 
-Start the API:
+(run from `backend/`, or use `canilarpit set-role local-admin admin` with the venv
+active). Reload `/admin` and the catalog appears.
+
+## Generating a guide
+
+The admin panel's **Generate** tab takes a topic and produces a complete draft:
+
+1. The model writes the whole guide document in one JSON object.
+2. The API validates it with the same Pydantic schema the CMS uses. Validation errors
+   are handed back to the model to repair, up to `AI_MAX_REPAIR_ATTEMPTS` times.
+3. Every source URL is fetched. Dead links are dropped, along with the citations that
+   pointed at them, so a published guide never carries a broken reference.
+4. Stock photographs are searched using the image terms the guide itself proposed, and
+   attached to the draft revision.
+5. The result is a **draft**. Nothing is published until an admin publishes it.
+
+Set `OPENAI_API_KEY` in `backend/.env` to switch it on; `OPENAI_BASE_URL` and
+`OPENAI_MODEL` point it at any OpenAI-compatible endpoint. Set `PEXELS_API_KEY` for the
+photographs. Without either key everything else still works — the panel says which
+feature is unavailable and why.
+
+Generation runs inside the API process as a background task. For a separate worker:
 
 ```powershell
-uvicorn app.main:app --reload
+canilarpit work --limit 5
 ```
 
-Useful URLs:
-
-- API: `http://127.0.0.1:8000`
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
-- Liveness: `http://127.0.0.1:8000/health/live`
-- Database readiness: `http://127.0.0.1:8000/health/ready`
-
-## Clerk
-
-Create a Clerk application and enable the desired sign-in methods. Clerk can provide Google,
-GitHub, and email/password accounts at the same time. Set these values in `.env`:
-
-```dotenv
-CLERK_ISSUER=https://your-instance.clerk.accounts.dev
-CLERK_JWKS_URL=https://your-instance.clerk.accounts.dev/.well-known/jwks.json
-CLERK_WEBHOOK_SECRET=whsec_...
-CLERK_AUDIENCE=
-CLERK_AUTHORIZED_PARTIES=["http://localhost:3000","https://canilarpit.com"]
-```
-
-`CLERK_AUDIENCE` is optional when the Clerk template does not issue an audience claim.
-`CLERK_AUTHORIZED_PARTIES` should contain every frontend origin allowed to present tokens.
-
-Configure Clerk to send `user.created`, `user.updated`, and `user.deleted` events to:
-
-```text
-https://your-api.example.com/api/v1/webhooks/clerk
-```
-
-After the first account signs in and calls `GET /api/v1/me`, assign its application role:
+## Checks
 
 ```powershell
-canilarpit set-role user_clerk_id admin
+npm run check
 ```
 
-For local frontend development only, `DEV_AUTH_BYPASS=true` allows these headers instead of a Clerk
-token:
+Runs `ruff`, `pytest`, `oxlint`, and the production build. The tests in
+`backend/tests/test_api_live.py` exercise the real API against PostgreSQL and skip
+themselves when no seeded database is reachable, so the suite is useful either way.
 
-```text
-X-Dev-Clerk-User-Id: local-user
-X-Dev-Email: developer@example.com
-```
+## What is where
 
-The bypass cannot be enabled when `APP_ENV=production`.
+| Concern | File |
+|---|---|
+| The verdict layer (verdict, clock, tells, crib) | `backend/app/schemas/content.py` |
+| Search, filters, topic demand | `backend/app/api/routes/public.py` |
+| Editorial CMS and lifecycle | `backend/app/api/routes/admin.py` |
+| Guide generation | `backend/app/services/ai.py`, `services/generation.py` |
+| Stock imagery | `backend/app/services/stock.py` |
+| Frontend API client and types | `frontend/src/api.ts` |
+| Admin panel | `frontend/src/admin/` |
+| Seed content | `backend/content/guides/*.json` |
 
-## Content Workflow
-
-Validated guide files live in `content/guides/`. The included seed command publishes those files to
-PostgreSQL. The CMS endpoints can create and edit database drafts, and the export endpoint produces
-the same portable JSON format for Git review.
-
-```powershell
-canilarpit import-guide content/guides/naruto.json --publish
-canilarpit export-guide naruto content/guides/naruto.json
-```
-
-The seed includes one anime guide and one lifestyle guide. Content is validated with category-aware
-Pydantic schemas before it can be stored or published.
-
-## Media Storage
-
-Stock and external assets can use remote HTTPS URLs. Generated and uploaded assets can be sent to an
-S3-compatible bucket using a 15-minute presigned upload URL. Configure:
-
-```dotenv
-S3_ENDPOINT_URL=https://your-account.r2.cloudflarestorage.com
-S3_ACCESS_KEY_ID=...
-S3_SECRET_ACCESS_KEY=...
-S3_BUCKET=canilarpit-media
-S3_REGION=auto
-MEDIA_PUBLIC_BASE_URL=https://media.canilarpit.com
-```
-
-## Research Jobs
-
-The API implements the research queue and lifecycle, but no paid search, LLM, stock, or image model
-provider is selected yet. An external worker can atomically claim jobs using
-`app.workers.research.claim_next_research_job`, perform provider calls, and save its result. Public
-searches cannot enqueue jobs.
-
-## Quality Checks
-
-```powershell
-python -m ruff check .
-python -m pytest
-python -m alembic upgrade head --sql
-```
-
-See [`docs/API.md`](docs/API.md) for the complete frontend contract.
+The complete HTTP contract is in [`backend/docs/API.md`](backend/docs/API.md).

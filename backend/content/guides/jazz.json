@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "slug": "jazz",
+  "title": "Jazz",
+  "summary": "One album, one player who is not the bandleader, one live recording. Two minutes in total.",
+  "guide_type": "general",
+  "category_slug": "music",
+  "aliases": [
+    "Jazz records",
+    "Bebop"
+  ],
+  "content": {
+    "kind": "general",
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "not_really",
+      "exposure_seconds": 120,
+      "unfalsifiable": false,
+      "flags": [
+        "PLAYERS PRESENT",
+        "DEEP CANON",
+        "TIME-BASED"
+      ],
+      "dek": "The canon is deep, the listening is checkable in real time, and the room usually contains a player.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Kind of Blue is the correct entry and the wrong answer to a favourite.",
+            "Coltrane before and after 1965 are two different subjects.",
+            "Mingus, Monk, Bill Evans as the safe middle.",
+            "Rhythm sections. Nobody larping has ever mentioned a bass player."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "The live record is usually the better one.",
+            "Fusion is not the insult it used to be.",
+            "You listen to the drummer first. This is a real position and it is defensible."
+          ]
+        }
+      ],
+      "surface": [
+        "One album, one player who is not the bandleader, one live recording. Two minutes in total.",
+        "The surface is short here because the record is usually already playing."
+      ],
+      "follow_up": [
+        "\"Who's playing on it?\"",
+        "Personnel is the language of the form and it is printed on the sleeve, so not knowing is not the kind of gap that gets forgiven."
+      ],
+      "tells": [
+        "You name bandleaders only.",
+        "You say improvisation as though the word explained something.",
+        "You cannot hum a head. Everyone who listens can hum four.",
+        "It is playing right now and you are still talking."
+      ],
+      "cost": [
+        "Moderate. Someone will put on a record and stop talking to you, which is the entire punishment and it is sufficient.",
+        "Nothing is said. That is worse."
+      ],
+      "learn": {
+        "hours": 80,
+        "book": "Thinking in Jazz — Paul Berliner",
+        "make": "Learn to hear the bass line on ten records."
+      }
+    },
+    "overview": "One album, one player who is not the bandleader, one live recording. Two minutes in total.\n\nThe surface is short here because the record is usually already playing.",
+    "quick_brief": [
+      "Kind of Blue is the correct entry and the wrong answer to a favourite.",
+      "Coltrane before and after 1965 are two different subjects.",
+      "Mingus, Monk, Bill Evans as the safe middle.",
+      "Rhythm sections. Nobody larping has ever mentioned a bass player.",
+      "The live record is usually the better one.",
+      "Fusion is not the insult it used to be.",
+      "You listen to the drummer first. This is a real position and it is defensible."
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [
+      "You name bandleaders only.",
+      "You say improvisation as though the word explained something.",
+      "You cannot hum a head. Everyone who listens can hum four.",
+      "It is playing right now and you are still talking."
+    ],
+    "questions": [
+      {
+        "question": "Who's playing on it?",
+        "answer": "Personnel is the language of the form and it is printed on the sleeve, so not knowing is not the kind of gap that gets forgiven."
+      }
+    ],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "key_people": [],
+    "timeline": []
+  },
+  "sources": [],
+  "last_verified_at": null
+}
