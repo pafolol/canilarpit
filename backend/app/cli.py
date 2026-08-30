@@ -201,7 +201,7 @@ def backfill_images(slug: str | None, limit: int, replace: bool) -> None:
                 existing = []
 
             document = revision_document(revision)
-            picked, warnings = fetch_planned_images(document, limit=3)
+            picked, warnings = fetch_planned_images(document, limit=5)
             if not picked:
                 detail = warnings[0] if warnings else "no provider returned anything"
                 print(f"{guide.slug}: no images ({detail})")

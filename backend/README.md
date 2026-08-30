@@ -8,6 +8,10 @@ guide document carries a `content.larp` block: a verdict, an exposure clock, the
 sheet, the follow-up that collapses it, the tells, the cost, and the honest hours it
 would take to just learn the thing. See `app/schemas/content.py`.
 
+Verdicts are `yes`, `kinda`, `talk_only` and `dont`. Only the last is a refusal, and it
+is for claims that endanger or defraud someone. `talk_only` means the conversation holds
+and the doing does not; it still gets a full crib sheet.
+
 ## Stack
 
 - Python 3.11+

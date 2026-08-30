@@ -75,13 +75,13 @@
         "provider": "wikimedia",
         "query": "Trellick Tower",
         "subject": "Trellick Tower",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "wikimedia",
         "query": "Boston City Hall brutalist",
         "subject": "Boston City Hall",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "A building, its architect, and what it was built for. The third item is where larpers stop.\n\nPhotographs carry you a long way here, which is why the clock is generous and the failure is specific.",

@@ -109,6 +109,14 @@ IMAGE_PROVIDERS = Literal[
 ]
 
 
+# Where a picture goes. "hero" is the top of the page, "gallery" is the strip at
+# the bottom, and the rest are section ids: the image lands under that section.
+IMAGE_ROLES = Literal[
+    "hero", "crib", "surface", "follow-up", "tells", "brief", "words", "asked",
+    "cost", "learn", "gallery",
+]
+
+
 class ImageQuery(BaseModel):
     """One picture the guide wants, and where to go and look for it.
 
@@ -120,7 +128,7 @@ class ImageQuery(BaseModel):
     provider: IMAGE_PROVIDERS = "auto"
     query: str = Field(min_length=2, max_length=200)
     subject: str | None = Field(default=None, max_length=200)
-    role: Literal["hero", "gallery"] = "gallery"
+    role: IMAGE_ROLES = "gallery"
     note: str | None = Field(default=None, max_length=500)
 
     @field_validator("query", "subject")
@@ -131,7 +139,7 @@ class ImageQuery(BaseModel):
 
 class CommonGuideContent(BaseModel):
     larp: LarpProfile
-    image_brief: list[ImageQuery] = Field(default_factory=list, max_length=8)
+    image_brief: list[ImageQuery] = Field(default_factory=list, max_length=10)
     overview: str = Field(min_length=1, max_length=5000)
     quick_brief: list[str] = Field(min_length=1, max_length=20)
     essential_facts: list[FactItem] = Field(default_factory=list, max_length=50)

@@ -125,7 +125,7 @@ def attach_images(
 
 
 def fetch_planned_images(
-    document: GuideDocument, *, limit: int = 4
+    document: GuideDocument, *, limit: int = 6
 ) -> tuple[list[tuple[ImageCandidate, str]], list[str]]:
     """Run the guide's own image brief through the provider registry."""
     picked: list[tuple[ImageCandidate, str]] = []

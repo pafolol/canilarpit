@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from app.core.config import settings
-from app.db.models import EntryType, GuideType
+from app.db.models import EntryType, GuideType, Verdict
 from app.services import ai, images
 
 CONTENT = Path(__file__).resolve().parent.parent / "content" / "guides"
@@ -93,9 +93,24 @@ def test_the_prompt_names_the_available_categories() -> None:
     assert "Include the ending." in user
 
 
-def test_the_system_prompt_refuses_the_dangerous_ones() -> None:
-    assert "anaesthetist" in ai.SYSTEM_PROMPT
-    assert '"dont"' in ai.SYSTEM_PROMPT
+def test_the_verdict_scale_encourages_three_of_its_four_answers() -> None:
+    """The site exists to help, so only genuine harm gets a refusal."""
+    prompt = ai.SYSTEM_PROMPT
+    for verdict in Verdict:
+        assert f'"{verdict.value}"' in prompt, f"{verdict.value} is not explained"
+    assert "not_really" not in prompt and "not_really" not in ai.CONTRACT
+
+    # The failure mode we are guarding against: filing "hacking" under dont.
+    assert "Difficult is \"talk_only\"" in prompt
+    assert "endangers somebody or defrauds them" in prompt
+
+
+def test_the_brief_asks_for_pictures_through_the_article() -> None:
+    contract = ai.CONTRACT
+    assert "4 to 6 pictures" in contract
+    for section in ("crib", "surface", "tells", "cost", "learn", "gallery"):
+        assert section in contract
+    assert 'role: "hero"' in contract
 
 
 def test_the_image_plan_comes_from_the_document_and_names_a_provider() -> None:

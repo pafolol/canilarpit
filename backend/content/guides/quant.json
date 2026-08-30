@@ -2,7 +2,7 @@
   "schema_version": 1,
   "slug": "quant",
   "title": "Quant",
-  "summary": "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.",
+  "summary": "Vocabulary, one strategy family, and a complaint about data quality. Three items hold an ordinary conversation for about two minutes.",
   "guide_type": "general",
   "category_slug": "job",
   "aliases": [
@@ -13,17 +13,40 @@
     "kind": "general",
     "larp": {
       "entry_type": "role",
-      "verdict": "dont",
-      "exposure_seconds": null,
+      "verdict": "talk_only",
+      "exposure_seconds": 120,
       "unfalsifiable": false,
       "flags": [
-        "MATH IS CHECKABLE",
-        "NDA CULTURE",
-        "ONE QUESTION ENDS IT"
+        "ONE QUESTION ENDS IT",
+        "THE ANSWER IS A NUMBER",
+        "SMALL SCENE"
       ],
-      "dek": "The claim is falsifiable in one question and the answer is a number. There is no surface layer here, only a surface.",
-      "crib": [],
-      "surface": [],
+      "dek": "You can hold the vocabulary for a whole evening. You cannot hold the one question, and it is the question people ask first.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Sharpe ratio. Return over volatility. Above two is very good and rarely true.",
+            "Renaissance and the Medallion fund. Everyone brings it up; nobody has the numbers.",
+            "Factor models. Fama-French is the one you have actually read about.",
+            "kdb+ and q for tick data, Python and pandas for everything else.",
+            "Alpha decay. Every strategy stops working; the argument is how fast."
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "Backtests are mostly overfitting. Say it early and you sound like a practitioner.",
+            "Execution costs eat more edge than anyone models.",
+            "Machine learning is oversold in this room. Linear models survive longer.",
+            "You are bored of people asking about crypto."
+          ]
+        }
+      ],
+      "surface": [
+        "Vocabulary, one strategy family, and a complaint about data quality. Three items hold an ordinary conversation for about two minutes.",
+        "The trouble is that this is a numbers job and the room knows it. Everything you say is fine until somebody asks for a figure, and figures do not come from reading."
+      ],
       "follow_up": [
         "\"What's your Sharpe?\"",
         "It is small talk to them. It is a number, you do not have one, and there is no version of not answering that reads as anything other than not having one."
@@ -34,14 +57,13 @@
         "You cannot say what broke. Everyone in the seat has one thing that broke and cost them a quarter, and they will tell you about it unprompted."
       ],
       "cost": [
-        "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.",
-        "The failure is not social. Anyone in the room who is actually in the field now knows you lied about your job, and they work in an industry that keeps a list and is small enough for the list to matter.",
-        "If money moved on the claim, it stops being a social matter."
+        "Low socially, and immediate. Nobody is harmed and nobody is angry; you are simply not a quant any more, and the conversation moves on.",
+        "The exception is a job interview or anything with money attached. That stops being a bluff and starts being fraud, and it is the one place this entry does not apply."
       ],
       "learn": {
-        "hours": 2000,
-        "book": "Advances in Financial Machine Learning — Marcos López de Prado",
-        "make": "A backtest that loses money honestly."
+        "hours": 400,
+        "book": "Advances in Financial Machine Learning - Marcos Lopez de Prado",
+        "make": "Backtest one strategy honestly, including costs, and watch it stop working."
       }
     },
     "image_brief": [
@@ -55,13 +77,13 @@
         "provider": "pexels",
         "query": "financial charts monitors",
         "subject": "Charts on monitors",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "wikimedia",
         "query": "New York Stock Exchange building",
         "subject": "The New York Stock Exchange",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "Immediate and total. This is one of the few claims that can be falsified at the table, in under a minute, by someone who is only being friendly.\n\nThe failure is not social. Anyone in the room who is actually in the field now knows you lied about your job, and they work in an industry that keeps a list and is small enough for the list to matter.\n\nIf money moved on the claim, it stops being a social matter.",

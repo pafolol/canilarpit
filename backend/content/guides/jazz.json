@@ -13,7 +13,7 @@
     "kind": "general",
     "larp": {
       "entry_type": "taste",
-      "verdict": "not_really",
+      "verdict": "talk_only",
       "exposure_seconds": 120,
       "unfalsifiable": false,
       "flags": [
@@ -76,13 +76,13 @@
         "provider": "wikimedia",
         "query": "Miles Davis",
         "subject": "Miles Davis",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "wikimedia",
         "query": "jazz club performance",
         "subject": "A jazz club",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "One album, one player who is not the bandleader, one live recording. Two minutes in total.\n\nThe surface is short here because the record is usually already playing.",

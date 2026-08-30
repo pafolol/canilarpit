@@ -17,7 +17,7 @@
   /* doability, as a severity ramp */
   --v-yes:    #43C08A;
   --v-kinda:  #DDA53C;
-  --v-not:    #E3793E;
+  --v-talk:   #E3793E;
   --v-dont:   var(--stop);
 
   --display: "IBM Plex Sans Condensed", "Helvetica Neue", Arial, sans-serif;
@@ -219,7 +219,7 @@ input {
 }
 .verdict--yes  { color: var(--v-yes); }
 .verdict--kinda { color: var(--v-kinda); }
-.verdict--not  { color: var(--v-not); }
+.verdict--talk  { color: var(--v-talk); }
 .verdict--dont { color: var(--v-dont); }
 
 .verdict--s  { font-size: var(--t-15); }
@@ -1391,4 +1391,19 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
   .xcard, .xcard--up { transform: none; }
+}
+
+/* ---------- pictures sit beside the point they illustrate ---------- */
+
+.figure--inline { margin: 2rem 0 2.5rem; }
+/* Portraits and 16:9 stills share this column, so cap the height and hold the
+   top of the frame: a cropped forehead is worse than a cropped chest. */
+.figure--inline img {
+  max-height: 24rem;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+@media (max-width: 767px) {
+  .figure--inline img { max-height: 15rem; }
 }

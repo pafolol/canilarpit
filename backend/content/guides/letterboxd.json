@@ -75,13 +75,13 @@
         "provider": "tmdb",
         "query": "Jeanne Dielman",
         "subject": "Jeanne Dielman",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "wikimedia",
         "query": "Wong Kar-wai",
         "subject": "Wong Kar-wai",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "A list, a rating, and one sentence. The one sentence is the platform's whole register.\n\nNever write a paragraph. The form is a caption and length reads as effort, which reads as new.",

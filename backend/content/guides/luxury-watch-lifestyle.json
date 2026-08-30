@@ -78,13 +78,13 @@
         "provider": "wikimedia",
         "query": "mechanical watch movement",
         "subject": "A mechanical movement",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "pexels",
         "query": "wristwatch on wrist close up",
         "subject": "A watch on the wrist",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "Luxury-watch culture combines design history, mechanical details, brand reputation, scarcity, and collecting preferences. Knowing a few model families and using precise terms is more convincing than repeatedly mentioning price.",

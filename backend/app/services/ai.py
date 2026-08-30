@@ -76,11 +76,16 @@ House rules, in order of importance:
 2. Be honest about the ceiling. Most LARPs fail, and the useful part of the guide is \
    knowing exactly where. Name the specific question, follow-up, or situation that \
    collapses it.
-3. Refuse the harmful ones. If pretending to be this thing puts people at risk or is \
-   plain fraud - a doctor, an anaesthetist, a lawyer, a licensed engineer, a paid \
-   professional handling someone's money or safety - the verdict is "dont", there is no \
-   crib sheet worth writing, and the entry exists to say so and explain the cost. Write \
-   the cost section as the whole point of the entry.
+3. Assume it can be larped. That is what the reader came for. Almost every subject - a \
+   craft, a science, a scene, a job title, a body of work, a technical field like \
+   hacking or medicine or law taken as a subject of conversation - has a surface layer \
+   somebody can hold, and your job is to hand it over. Reach for "dont" only when \
+   making the claim would put a person at risk or take their money: presenting yourself \
+   as the clinician treating someone, the lawyer filing for them, the engineer signing \
+   off the building, or claiming a credential to get hired or paid. Talking \
+   knowledgeably about medicine at dinner is not that. When you do write a "dont" there \
+   is no crib sheet worth writing: the entry exists to say so, and the cost section is \
+   the whole point of it.
 4. Write flat, specific, declarative prose. No hype, no listicle voice, no "dive into", \
    no exclamation marks, no second-person cheerleading. Short sentences. Concrete nouns. \
    A named producer beats an adjective. British spelling.
@@ -94,9 +99,21 @@ checkable at all - taste in films, an opinion nobody can audit - set `unfalsifia
 to true and leave `exposure_seconds` null. A "dont" verdict always has \
 `exposure_seconds` null and `unfalsifiable` false.
 
-Verdicts: "yes" (holds indefinitely or the stakes are nil), "kinda" (holds at the bar, \
-fails at the table), "not_really" (physical or verifiable skill gaps show fast), \
-"dont" (harmful, fraudulent, or dangerous).
+Verdicts. Three of the four mean yes, and they are meant to sound like it:
+
+- "yes": holds indefinitely, or nobody can check, or the stakes are nil.
+- "kinda": holds at the bar and fails at the table. The most common answer.
+- "talk_only": the conversation holds; the doing does not. Use this whenever the \
+  subject has a performable part the reader cannot perform - playing the instrument, \
+  climbing the wall, popping the shell, producing the number. It is not a refusal and \
+  must never read as one. Say how far the talk carries, then name the moment somebody \
+  hands you the guitar. Most technical fields land here. Lead every section with
+  what works before naming what does not.
+- "dont": making the claim endangers somebody or defrauds them. Rare, and it should be.
+
+Filing a subject under "dont" because it is merely difficult, technical, or easy to \
+check is the one mistake that makes this site useless. Difficult is "talk_only". \
+Checkable is "kinda". Dangerous is "dont".
 
 You reply with one JSON object and nothing else. No markdown fence, no commentary."""
 
@@ -136,12 +153,15 @@ content, for all kinds:
   "kind": "<same value as guide_type>",
   "larp": {
     "entry_type": "<scene | taste | role>",
-    "verdict": "<yes | kinda | not_really | dont>",
+    "verdict": "<yes | kinda | talk_only | dont>",
     "exposure_seconds": <integer >= 30, or null>,
     "unfalsifiable": <true only when nothing is checkable; then exposure_seconds is null>,
     "flags": ["2 or 3 SHORT UPPERCASE WARNINGS, e.g. HIGH VOCAB, SMALL SCENE,
                THEY WANT TO TEACH YOU"],
-    "dek": "<10-400 chars, one sentence under the title stating the shape of the problem>",
+    "dek": "<10-400 chars, one sentence. Lead with what the reader CAN hold, then
+             name the limit. Never open on the failure: 'You can run the whole
+             vocabulary; the trouble starts when someone hands you a terminal'
+             is right, 'You will be exposed as soon as anyone asks' is not.>",
     "crib": [
       {
         "heading": "References",
@@ -168,7 +188,7 @@ content, for all kinds:
       "provider": "<one of: %(providers)s>",
       "query": "<exactly what to type into that provider's search>",
       "subject": "<what the picture is of, for the caption>",
-      "role": "<hero for the first image, gallery for the rest>",
+      "role": "<hero, or the section the picture illustrates>",
       "note": "<optional: why this picture>"
     }
   ],
@@ -199,8 +219,18 @@ When kind is "lifestyle", content also has:
 When kind is "general", content also has:
   "key_people" and "timeline" (lists of strings).
 
-`image_brief` is 3 to 5 pictures that illustrate the guide, best first. Choosing
-the right provider matters more than the wording of the query:
+`image_brief` is 4 to 6 pictures, spread through the article rather than piled at
+the top. Exactly one carries `role: "hero"`. Give the others the section they
+illustrate, so a reader meets a picture beside the point it belongs to:
+
+  crib      the references and names the guide tells you to drop
+  surface   what passes on first contact
+  tells     what a real participant does that you would not
+  cost      what being caught looks like
+  learn     the honest alternative: the place, the tool, the practice
+  gallery   no strong opinion; it lands at the end
+
+Choosing the right provider matters more than the wording of the query:
 
 %(provider_help)s
 
@@ -439,7 +469,7 @@ def provider_guidance() -> str:
     return "\n".join(lines)
 
 
-def image_plan(document: GuideDocument, *, limit: int = 4) -> list[ImageQuery]:
+def image_plan(document: GuideDocument, *, limit: int = 6) -> list[ImageQuery]:
     """What to fetch, in order. The model's brief wins; otherwise we infer one."""
     brief = list(document.content.image_brief)
     if not brief:

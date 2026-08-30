@@ -75,13 +75,13 @@
         "provider": "wikimedia",
         "query": "Formula One pit stop",
         "subject": "A pit stop",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "wikimedia",
         "query": "Max Verstappen",
         "subject": "Max Verstappen",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "One race, one strategy call, one complaint about stewarding. Endlessly renewable and never checked.\n\nThe fandom quadrupled in four years, so being new is the statistical default rather than a mark against you.",

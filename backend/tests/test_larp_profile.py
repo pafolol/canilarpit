@@ -84,3 +84,23 @@ def test_a_guide_without_a_verdict_is_rejected() -> None:
     del payload["content"]["larp"]
     with pytest.raises(ValidationError, match="larp"):
         GuideDocument.model_validate(payload)
+
+
+def test_the_scale_has_no_refusal_left_in_it_but_dont() -> None:
+    """Three of the four verdicts are a yes, and the seed content reflects that."""
+    verdicts = [
+        GuideDocument.model_validate_json(path.read_text(encoding="utf-8")).larp.verdict
+        for path in CONTENT.glob("*.json")
+    ]
+    refusals = [v for v in verdicts if v is Verdict.DONT]
+    assert len(refusals) <= 2, "DON'T is for harm, not for difficulty"
+    assert Verdict.TALK_ONLY in verdicts, "the encouraging middle answer is in use"
+    assert not hasattr(Verdict, "NOT_REALLY")
+
+
+def test_a_talk_only_guide_still_carries_a_crib_sheet() -> None:
+    """It is a yes, so the reader gets the thing they came for."""
+    for path in CONTENT.glob("*.json"):
+        document = GuideDocument.model_validate_json(path.read_text(encoding="utf-8"))
+        if document.larp.verdict is Verdict.TALK_ONLY:
+            assert document.larp.crib, f"{document.slug} has no crib sheet"

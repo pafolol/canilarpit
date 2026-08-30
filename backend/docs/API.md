@@ -90,7 +90,12 @@ document. Its three clock states are mutually exclusive:
 | Stopped | `exposure_seconds` null, `unfalsifiable` false | Only on `verdict: "dont"`; no clock runs |
 
 Guide types are `anime`, `lifestyle`, and `general`. Entry types are `scene`, `taste`,
-and `role`. Verdicts are `yes`, `kinda`, `not_really`, and `dont`. Media kinds are
+and `role`.
+
+Verdicts are `yes`, `kinda`, `talk_only`, and `dont`. Three of the four are a yes:
+`talk_only` means the conversation holds and the doing does not, which is a finding
+rather than a refusal. `dont` is reserved for claims that endanger or defraud someone,
+and those entries carry no crib sheet by design. Media kinds are
 `stock`, `external`, `generated`, and `uploaded`. Approval states are `draft`,
 `approved`, `rejected`, and `broken`.
 
@@ -538,10 +543,14 @@ Every create, import, draft-save, and export operation uses this top-level shape
 Citation strings in facts, anime events, and lifestyle brands must match a source `key`. Duplicate
 aliases and sources are rejected or normalized. `content.kind` must equal `guide_type`.
 
-`content.image_brief` is a list of up to eight `{provider, query, subject, role, note}`
+`content.image_brief` is a list of up to ten `{provider, query, subject, role, note}`
 objects naming what to illustrate the guide with and where to find it. `provider` is
-`auto` or one of the ids from `GET /admin/media/providers`; `role` is `hero` or
-`gallery`. It may be empty, in which case the backend infers a brief from the title and
+`auto` or one of the ids from `GET /admin/media/providers`.
+
+`role` places the picture: `hero` is the top of the page, `gallery` is the strip at the
+end, and `crib`, `surface`, `follow-up`, `tells`, `brief`, `words`, `asked`, `cost` and
+`learn` put it under that section. Images without a section are spread evenly through
+the article, so a reader meets a picture beside the point it belongs to. It may be empty, in which case the backend infers a brief from the title and
 any visual cues.
 
 `content.larp` is required. Its clock rules are enforced at validation time: a `dont`

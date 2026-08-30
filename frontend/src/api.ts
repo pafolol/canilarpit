@@ -10,7 +10,7 @@ const V1 = `${BASE}/api/v1`;
 
 /* ---------------------------------------------------------------- types */
 
-export type Verdict = "yes" | "kinda" | "not_really" | "dont";
+export type Verdict = "yes" | "kinda" | "talk_only" | "dont";
 export type EntryType = "scene" | "taste" | "role";
 export type GuideType = "anime" | "lifestyle" | "general";
 export type GuideStatus = "draft" | "in_review" | "published" | "archived";
@@ -67,7 +67,8 @@ export type ImageQuery = {
   provider: ImageProviderId;
   query: string;
   subject: string | null;
-  role: "hero" | "gallery";
+  /** "hero", "gallery", or the id of the section the picture illustrates. */
+  role: string;
   note: string | null;
 };
 

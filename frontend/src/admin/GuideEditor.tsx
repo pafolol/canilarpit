@@ -26,7 +26,7 @@ import {
 } from "./fields";
 
 const VERDICT_OPTIONS: { value: Verdict; label: string }[] = (
-  ["yes", "kinda", "not_really", "dont"] as Verdict[]
+  ["yes", "kinda", "talk_only", "dont"] as Verdict[]
 ).map((value) => ({ value, label: VERDICT_LABEL[value] }));
 
 const ENTRY_OPTIONS: { value: EntryType; label: string }[] = [

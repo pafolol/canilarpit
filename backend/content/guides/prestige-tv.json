@@ -75,13 +75,13 @@
         "provider": "tvmaze",
         "query": "Mad Men",
         "subject": "Mad Men",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "tvmaze",
         "query": "The Wire",
         "subject": "The Wire",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "A show, a season, and a supporting character. Nobody checks the first two.\n\nEveryone has seen the pilot of everything. Nothing above episode four is safe.",

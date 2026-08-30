@@ -51,11 +51,16 @@ class EntryType(enum.StrEnum):
 
 
 class Verdict(enum.StrEnum):
-    """How far the LARP holds before someone checks."""
+    """How far the LARP holds, and what part of it holds.
+
+    Three of the four are encouraging on purpose: the site exists to help, and
+    "you can hold the conversation but not do the thing" is a useful finding,
+    not a refusal. DONT is reserved for claims that put someone at risk.
+    """
 
     YES = "yes"
     KINDA = "kinda"
-    NOT_REALLY = "not_really"
+    TALK_ONLY = "talk_only"
     DONT = "dont"
 
 

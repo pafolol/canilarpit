@@ -76,13 +76,13 @@
         "provider": "wikimedia",
         "query": "techno DJ nightclub",
         "subject": "A DJ booth",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "pexels",
         "query": "nightclub strobe lights crowd",
         "subject": "A club under strobes",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "Rooms and hours, not tracks. Nobody in this scene identifies music on their phone and nobody admits to wanting to.\n\nThe correct answer to what was played is a mood and a time.",

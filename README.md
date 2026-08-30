@@ -8,6 +8,12 @@ the briefing you read beforehand: the crib sheet, the follow-up question that co
 it, the tells, the cost of being caught, and the honest hours it would take to just
 learn the thing instead.
 
+Three of the four verdicts are a yes. **YES** holds indefinitely, **KINDA** holds at the
+bar and fails at the table, and **TALK ONLY** means the conversation holds but the doing
+does not — you can discuss the instrument, you cannot play it. **DON'T** is reserved for
+claims that endanger or defraud someone, and those entries exist to say so. Filing
+something under DON'T for being merely difficult would make the site useless.
+
 Readers type a word. If a guide exists they read it. If it does not, they ask for it,
 and that demand shows up in the editors' backlog.
 

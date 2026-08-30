@@ -77,13 +77,13 @@
         "provider": "wikimedia",
         "query": "wine bottles cellar",
         "subject": "A wine cellar",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "wikimedia",
         "query": "wine tasting glass",
         "subject": "Tasting",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "A producer, a region, and one flaw. Three items is the entire surface layer, and it holds for about six minutes.\n\nOrder by the glass and ask what was opened today. Curiosity outranks knowledge in this room, which is why the bar is survivable and the table is not.",

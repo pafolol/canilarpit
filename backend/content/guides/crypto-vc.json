@@ -75,13 +75,13 @@
         "provider": "wikimedia",
         "query": "technology conference audience",
         "subject": "A tech conference",
-        "role": "gallery"
+        "role": "crib"
       },
       {
         "provider": "pexels",
         "query": "laptop coworking space",
         "subject": "A co-working desk",
-        "role": "gallery"
+        "role": "tells"
       }
     ],
     "overview": "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.\n\nThe surface layer and the actual layer are the same layer. That is why the clock does not run.",

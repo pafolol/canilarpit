@@ -102,7 +102,10 @@ export default function Entry() {
 
   const clock = clockOf(larp);
   const hero = entry.media.find((m) => m.role === "hero") ?? entry.media[0] ?? null;
-  const gallery = entry.media.filter((m) => m !== hero);
+  const { byBlock, leftover } = placeImages(
+    blocks,
+    entry.media.filter((m) => m !== hero),
+  );
 
   const jump = blocks.map((b) => (
     <a
@@ -169,14 +172,19 @@ export default function Entry() {
           {hero && <Figure media={hero} />}
 
           {blocks.map((b) => (
-            <div key={b.id}>{b.node}</div>
+            <div key={b.id}>
+              {b.node}
+              {(byBlock.get(b.id) ?? []).map((media) => (
+                <Figure key={media.id} media={media} inline />
+              ))}
+            </div>
           ))}
 
-          {gallery.length > 0 && (
+          {leftover.length > 0 && (
             <section className="sec" aria-labelledby="gallery-h">
               <h2 className="sec__h" id="gallery-h">References</h2>
               <div className="gallery">
-                {gallery.map((media) => (
+                {leftover.map((media) => (
                   <Figure key={media.id} media={media} />
                 ))}
               </div>
@@ -230,6 +238,43 @@ export default function Entry() {
       )}
     </div>
   );
+}
+
+/**
+ * Put pictures beside the point they illustrate.
+ *
+ * An image whose role names a section lands under that section; the rest are
+ * spread across the sections that have none, starting after the first so the
+ * hero is not immediately followed by a second picture. Anything left over
+ * falls to the strip at the end.
+ */
+function placeImages(blocks: Block[], images: Media[]) {
+  const byBlock = new Map<string, Media[]>();
+  const ids = new Set(blocks.map((block) => block.id));
+  const loose: Media[] = [];
+
+  const push = (id: string, media: Media) =>
+    byBlock.set(id, [...(byBlock.get(id) ?? []), media]);
+
+  for (const media of images) {
+    if (media.role && ids.has(media.role)) push(media.role, media);
+    else loose.push(media);
+  }
+
+  const leftover: Media[] = [];
+  const open = blocks.slice(1).filter((block) => !byBlock.has(block.id));
+  if (loose.length && open.length) {
+    const step = Math.max(1, Math.floor(open.length / loose.length));
+    loose.forEach((media, index) => {
+      const target = open[index * step];
+      if (target) push(target.id, media);
+      else leftover.push(media);
+    });
+  } else {
+    leftover.push(...loose);
+  }
+
+  return { byBlock, leftover };
 }
 
 function buildBlocks(entry: GuideDetail): Block[] {
@@ -386,10 +431,10 @@ function buildBlocks(entry: GuideDetail): Block[] {
   return blocks;
 }
 
-function Figure({ media }: { media: Media }) {
+function Figure({ media, inline = false }: { media: Media; inline?: boolean }) {
   if (!media.url) return null;
   return (
-    <figure className="figure">
+    <figure className={`figure${inline ? " figure--inline" : ""}`}>
       <img src={media.url} alt={media.alt_text} loading="lazy" />
       <figcaption>
         {media.caption ? <span>{media.caption} </span> : null}
