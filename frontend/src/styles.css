@@ -1,21 +1,23 @@
 /* ============================================================
-   canilarpit — laminated pocket crib card
-   No shadows. Hairlines only. Small type is the point.
+   canilarpit — Night Desk
+   Blue-black ground, never pure black, so photography reads as
+   lit rather than pasted. No shadows. Hairlines only.
    ============================================================ */
 
 :root {
-  --paper:  #DCE0D9;
-  --card:   #F2F3EF;
-  --ink:    #1A1D1A;
-  --ink-2:  #4A5249;  /* secondary, tinted from paper's hue — never gray */
-  --rule:   #A8B0A4;
-  --signal: #0047FF;
-  --stop:   #B0142B;
+  --paper:  #0E1013;  /* page ground */
+  --card:   #171A1F;  /* anything raised */
+  --ink:    #E9EBEE;
+  --ink-2:  #98A0AB;  /* secondary, tinted from the ground's hue — never gray */
+  --rule:   #282D35;  /* hairlines, dividers, disabled */
+  --edge:   #3A4149;  /* a deliberate border: full ink glares on a dark ground */
+  --signal: #5C8DFF;  /* the ballpoint blue, lifted to survive here */
+  --stop:   #FF5C63;
 
   /* doability, as a severity ramp */
-  --v-yes:    #1E5B3C;
-  --v-kinda:  #7A5407;
-  --v-not:    #8E4415;
+  --v-yes:    #43C08A;
+  --v-kinda:  #DDA53C;
+  --v-not:    #E3793E;
   --v-dont:   var(--stop);
 
   --display: "IBM Plex Sans Condensed", "Helvetica Neue", Arial, sans-serif;
@@ -140,7 +142,7 @@ input {
 .shell > main { flex: 1; }
 
 .hdr {
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--edge);
   background: var(--paper);
 }
 .hdr.is-offline { border-bottom-color: var(--rule); }
@@ -516,7 +518,7 @@ input {
 .box__btn {
   min-height: 44px;
   padding: 0 1rem;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--edge);
   background: var(--ink);
   color: var(--paper);
   font-family: var(--display);
@@ -538,7 +540,7 @@ input {
 .caught__h { font-family: var(--display); font-weight: 700; font-size: var(--t-18); text-transform: uppercase; }
 .caught__sub { font-size: var(--t-13); color: var(--ink-2); margin-top: 0.125rem; }
 .caught__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-.caught__item { border-top: 1px solid var(--ink); padding-top: 0.75rem; }
+.caught__item { border-top: 1px solid var(--edge); padding-top: 0.75rem; }
 .caught__where { margin-bottom: 0.5rem; }
 .caught__q {
   font-family: var(--body);
@@ -605,7 +607,7 @@ input {
   text-transform: uppercase;
   letter-spacing: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--edge);
   margin-bottom: 1rem;
 }
 .sec p + p { margin-top: 0.875rem; }
@@ -614,7 +616,7 @@ input {
 /* CribBlock */
 .crib {
   margin-top: 2.5rem;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--edge);
   background: var(--card);
   scroll-margin-top: var(--anchor-top);
 }
@@ -624,7 +626,7 @@ input {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.625rem 0.875rem;
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--edge);
 }
 .crib__title { font-family: var(--display); font-weight: 700; font-size: var(--t-13); text-transform: uppercase; letter-spacing: 0.06em; }
 .crib__copy {
@@ -734,7 +736,7 @@ input {
     inset: auto 0 0 0;
     z-index: 40;
     background: var(--card);
-    border-top: 1px solid var(--ink);
+    border-top: 1px solid var(--edge);
     padding: 1rem var(--gutter) 1.5rem;
   }
   .sheet__link {
@@ -747,7 +749,7 @@ input {
     text-decoration: none;
     border-bottom: var(--hair);
   }
-  .sheet__scrim { position: fixed; inset: 0; z-index: 39; background: rgb(26 29 26 / 0.28); border: 0; }
+  .sheet__scrim { position: fixed; inset: 0; z-index: 39; background: rgb(0 0 0 / 0.62); border: 0; }
 }
 
 /* ============================================================
@@ -779,7 +781,7 @@ input {
 
 .notlisted { padding-block: 4rem 2rem; max-width: 44rem; }
 .notlisted__p { margin-top: 1rem; font-size: var(--t-18); line-height: 1.5; max-width: 46ch; color: var(--ink-2); }
-.notlisted .box { border-top: 1px solid var(--ink); margin-top: 1.5rem; }
+.notlisted .box { border-top: 1px solid var(--edge); margin-top: 1.5rem; }
 
 /* ---------- inspection round fixes ---------- */
 
@@ -881,6 +883,8 @@ select {
   padding-bottom: 1.5rem;
   border-bottom: var(--hair);
 }
+.search__field { position: relative; display: grid; }
+
 .search__input {
   min-height: 3.25rem;
   padding: 0 0.875rem;
@@ -1259,4 +1263,132 @@ select {
 @media (max-width: 767px) {
   .mediaSearch { grid-template-columns: minmax(0, 1fr); }
   .providerList li { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ============================================================
+   Search suggestions
+   ============================================================ */
+
+.sug {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 21rem;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--edge);
+}
+
+.sug__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.4375rem 0.75rem;
+  border-bottom: var(--hair);
+  cursor: pointer;
+}
+.sug__item:last-of-type { border-bottom: 0; }
+.sug__item[aria-selected="true"] { background: var(--paper); }
+.sug__item[aria-selected="true"] .sug__name { text-decoration: underline; text-underline-offset: 0.16em; }
+
+.sug__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-15);
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* the characters that were actually typed */
+.sug__name b { color: var(--ink); font-weight: 700; }
+
+.sug__meta { display: flex; align-items: center; gap: 0.625rem; }
+.sug__cat {
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+
+.sug__hint {
+  padding: 0.375rem 0.75rem;
+  border-top: var(--hair);
+  background: var(--paper);
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+
+/* ============================================================
+   Cross-links between guides, and their preview
+   ============================================================ */
+
+.xwrap { position: relative; display: inline; }
+
+.xlink {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--signal);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+.xlink:hover { color: var(--signal); }
+
+.xcard {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 40;
+  display: grid;
+  gap: 0.5rem;
+  width: 19rem;
+  max-width: 76vw;
+  padding: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--edge);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 140ms var(--ease-out), transform 140ms var(--ease-out);
+  pointer-events: none;
+  text-align: left;
+}
+.xcard--in { opacity: 1; transform: none; }
+.xcard--up { top: auto; bottom: calc(100% + 0.5rem); transform: translateY(4px); }
+.xcard--up.xcard--in { transform: none; }
+
+.xcard__top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.xcard__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-18);
+  text-transform: uppercase;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.xcard__dek { font-size: var(--t-13); line-height: 1.45; color: var(--ink-2); }
+.xcard__go {
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--signal);
+}
+
+/* No hover means no preview; the link still goes where it says. */
+@media (hover: none) {
+  .xcard { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xcard, .xcard--up { transform: none; }
 }

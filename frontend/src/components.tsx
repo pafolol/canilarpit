@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   api,
   ApiError,
@@ -189,8 +189,22 @@ export function TickerRow({ entries }: { entries: GuideCard[] }) {
 
 /* ----------------------------------------------------------------
    SearchField — the front door. One box, one question.
-   Typing updates ?q= after a beat; Enter commits immediately.
+   Typing updates ?q= after a beat and offers the closest entries;
+   Enter goes straight to the one at the top of that list.
    ---------------------------------------------------------------- */
+
+/** Bold the part of a title the person actually typed. */
+function Marked({ text, term }: { text: string; term: string }) {
+  const at = term ? text.toLowerCase().indexOf(term.toLowerCase()) : -1;
+  if (at < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, at)}
+      <b>{text.slice(at, at + term.length)}</b>
+      {text.slice(at + term.length)}
+    </>
+  );
+}
 
 export function SearchField({
   value,
@@ -204,7 +218,11 @@ export function SearchField({
   count: number | null;
 }) {
   const [draft, setDraft] = useState(value);
+  const [hits, setHits] = useState<GuideCard[]>([]);
+  const [open, setOpen] = useState(false);
+  const [cursor, setCursor] = useState(0);
   const dirty = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!dirty.current) setDraft(value);
@@ -219,29 +237,122 @@ export function SearchField({
     return () => clearTimeout(id);
   }, [draft, value, onChange]);
 
+  // Suggestions run faster than the grid does, and are dropped if they land late.
+  useEffect(() => {
+    const term = draft.trim();
+    if (term.length < 2) {
+      setHits([]);
+      return;
+    }
+    let cancelled = false;
+    const id = setTimeout(() => {
+      api
+        .guides({ q: term, sort: "relevance", page_size: 6 })
+        .then((page) => {
+          if (cancelled) return;
+          setHits(page.items);
+          setCursor(0);
+        })
+        .catch(() => !cancelled && setHits([]));
+    }, 120);
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
+  }, [draft]);
+
+  const list = open ? hits : [];
+  const go = (entry: GuideCard) => {
+    setOpen(false);
+    dirty.current = false;
+    navigate(`/entry/${entry.slug}`);
+  };
+
   return (
     <form
       className="search"
       role="search"
       onSubmit={(event) => {
         event.preventDefault();
+        // Enter takes the top suggestion. With nothing to take, it commits the filter.
+        const target = list[cursor] ?? list[0];
+        if (target) {
+          go(target);
+          return;
+        }
         dirty.current = false;
+        setOpen(false);
         onChange(draft);
       }}
     >
-      <label className="u-sr" htmlFor="search-q">Search entries</label>
-      <input
-        id="search-q"
-        className="search__input"
-        type="search"
-        value={draft}
-        placeholder="Type a thing you might claim to know"
-        autoComplete="off"
-        onChange={(event) => {
-          dirty.current = true;
-          setDraft(event.target.value);
-        }}
-      />
+      <div className="search__field">
+        <label className="u-sr" htmlFor="search-q">Search entries</label>
+        <input
+          id="search-q"
+          className="search__input"
+          type="search"
+          value={draft}
+          placeholder="Type a thing you might claim to know"
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={list.length > 0}
+          aria-controls="search-sug"
+          aria-autocomplete="list"
+          aria-activedescendant={list.length ? `sug-${cursor}` : undefined}
+          onChange={(event) => {
+            dirty.current = true;
+            setOpen(true);
+            setDraft(event.target.value);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 120)}
+          onKeyDown={(event) => {
+            if (!list.length) return;
+            if (event.key === "Enter") {
+              // Explicit rather than relying on the form's implicit submission.
+              event.preventDefault();
+              go(list[cursor] ?? list[0]);
+            } else if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setCursor((n) => (n + 1) % list.length);
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setCursor((n) => (n - 1 + list.length) % list.length);
+            } else if (event.key === "Escape") {
+              setOpen(false);
+            }
+          }}
+        />
+        {list.length > 0 && (
+          <ul className="sug" id="search-sug" role="listbox" aria-label="Closest entries">
+            {list.map((entry, i) => (
+              <li
+                key={entry.slug}
+                id={`sug-${i}`}
+                role="option"
+                aria-selected={i === cursor}
+                className="sug__item"
+                onMouseEnter={() => setCursor(i)}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  go(entry);
+                }}
+              >
+                <span className="sug__name">
+                  <Marked text={entry.title} term={draft.trim()} />
+                </span>
+                <span className="sug__meta">
+                  <span className="sug__cat">{entry.category.title}</span>
+                  <VerdictBadge verdict={entry.larp.verdict} />
+                </span>
+              </li>
+            ))}
+            <li className="sug__hint" aria-hidden="true">
+              Enter opens the top one
+            </li>
+          </ul>
+        )}
+      </div>
       <button className="search__btn" type="submit">Search</button>
       <span className="search__status" aria-live="polite">
         {busy ? "searching" : count === null ? "" : `${count} found`}
