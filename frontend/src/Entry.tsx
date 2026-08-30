@@ -12,6 +12,7 @@ import {
   VerdictBadge,
   clockLabel,
 } from "./components";
+import { Linked, LinkedParagraphs } from "./crosslink";
 import NotListed from "./NotListed";
 
 type Block = { id: string; label: string; node: ReactNode };
@@ -241,9 +242,7 @@ function buildBlocks(entry: GuideDetail): Block[] {
     label: "cost",
     node: (
       <Section id="cost" heading="Cost of getting caught">
-        {larp.cost.map((p) => (
-          <p key={p}>{p}</p>
-        ))}
+        <LinkedParagraphs items={larp.cost} exclude={entry.slug} />
       </Section>
     ),
   };
@@ -267,9 +266,7 @@ function buildBlocks(entry: GuideDetail): Block[] {
       label: "surface",
       node: (
         <Section id="surface" heading="The surface layer">
-          {larp.surface.map((p) => (
-            <p key={p}>{p}</p>
-          ))}
+          <LinkedParagraphs items={larp.surface} exclude={entry.slug} />
         </Section>
       ),
     });
@@ -281,9 +278,7 @@ function buildBlocks(entry: GuideDetail): Block[] {
     node: (
       <Section id="follow-up" heading="The follow-up that kills you">
         <p className="sec__pull">{larp.follow_up[0]}</p>
-        {larp.follow_up.slice(1).map((p) => (
-          <p key={p}>{p}</p>
-        ))}
+        <LinkedParagraphs items={larp.follow_up.slice(1)} exclude={entry.slug} />
       </Section>
     ),
   });
@@ -306,15 +301,15 @@ function buildBlocks(entry: GuideDetail): Block[] {
         <Section id="brief" heading="The brief">
           <ul className="brief">
             {content.quick_brief.map((line) => (
-              <li key={line}>{line}</li>
+              <li key={line}>
+                <Linked text={line} exclude={entry.slug} />
+              </li>
             ))}
           </ul>
-          {content.overview
-            .split("\n\n")
-            .filter(Boolean)
-            .map((p) => (
-              <p key={p}>{p}</p>
-            ))}
+          <LinkedParagraphs
+            items={content.overview.split("\n\n").filter(Boolean)}
+            exclude={entry.slug}
+          />
         </Section>
       ),
     });
@@ -331,7 +326,7 @@ function buildBlocks(entry: GuideDetail): Block[] {
               <div className="vocab__row" key={item.term}>
                 <dt>{item.term}</dt>
                 <dd>
-                  {item.meaning}
+                  <Linked text={item.meaning} exclude={entry.slug} />
                   {item.example ? <span className="vocab__eg"> {item.example}</span> : null}
                 </dd>
               </div>
@@ -352,7 +347,9 @@ function buildBlocks(entry: GuideDetail): Block[] {
             {content.questions.map((item) => (
               <div className="qa__row" key={item.question}>
                 <dt>{item.question}</dt>
-                <dd>{item.answer}</dd>
+                <dd>
+                  <Linked text={item.answer} exclude={entry.slug} />
+                </dd>
               </div>
             ))}
           </dl>
