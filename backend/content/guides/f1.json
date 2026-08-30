@@ -45,10 +45,14 @@
         "One race, one strategy call, one complaint about stewarding. Endlessly renewable and never checked.",
         "The fandom quadrupled in four years, so being new is the statistical default rather than a mark against you."
       ],
-      "follow_up": [
-        "\"Were you watching before Drive to Survive?\"",
-        "It is a status question and the lie is checkable through a single 2017 detail. Answering honestly costs nothing, which is why the verdict holds."
-      ],
+      "follow_up": {
+        "question": "\"Were you watching before Drive to Survive?\"",
+        "why": "It is a status question and the lie is checkable through a single 2017 detail. Answering honestly costs nothing, which is why the verdict holds.",
+        "counter": {
+          "move": "Say no. The honest answer is the strong answer here: almost everyone arrived in 2019 or later, and saying so before you are asked removes the only thing anyone could have caught you on.",
+          "holds": "Permanently. The only people who mind arrived eighteen months before you, and they know it."
+        }
+      },
       "tells": [
         "You only know current drivers.",
         "You talk about overtakes and not tyres. The sport is about tyres.",

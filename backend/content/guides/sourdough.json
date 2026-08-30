@@ -45,10 +45,14 @@
         "A hydration number, a flour, and a complaint about your oven. That is the entire first conversation and it renews.",
         "Nothing about this scene happens on a deadline, which is why the clock is long."
       ],
-      "follow_up": [
-        "\"Can I see it?\"",
-        "Everyone photographs the crumb. Having no photograph is the only real failure state, and it is recoverable within a week."
-      ],
+      "follow_up": {
+        "question": "\"Can I see it?\"",
+        "why": "Everyone photographs the crumb. Having no photograph is the only real failure state, and it is recoverable within a week.",
+        "counter": {
+          "move": "Show a loaf that went wrong. Bakers trust failure more than crumb shots, and a dense one with a theory about why is a stronger answer than a perfect photograph with none.",
+          "holds": "Indefinitely. The whole scene is built on comparing failures."
+        }
+      },
       "tells": [
         "You talk about the starter and not the schedule. The schedule is the hobby.",
         "You have no complaint. Every baker has one recurring failure they are mid-argument with.",

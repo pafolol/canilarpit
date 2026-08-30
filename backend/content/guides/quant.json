@@ -47,10 +47,14 @@
         "Vocabulary, one strategy family, and a complaint about data quality. Three items hold an ordinary conversation for about two minutes.",
         "The trouble is that this is a numbers job and the room knows it. Everything you say is fine until somebody asks for a figure, and figures do not come from reading."
       ],
-      "follow_up": [
-        "\"What's your Sharpe?\"",
-        "It is small talk to them. It is a number, you do not have one, and there is no version of not answering that reads as anything other than not having one."
-      ],
+      "follow_up": {
+        "question": "\"What's your Sharpe?\"",
+        "why": "It is small talk to them. It is a number, you do not have one, and there is no version of not answering that reads as anything other than not having one.",
+        "counter": {
+          "move": "Refuse on compliance grounds. \"I can't talk about live numbers\" is what an actual quant says, it is true of almost every desk, and it is the only answer to this question that cannot be followed up.",
+          "holds": "The whole evening. It does not hold in an interview or anywhere money is involved, and that is where this stops being a bluff and becomes fraud."
+        }
+      },
       "tells": [
         "You describe strategies. They describe constraints, because the constraints are the job.",
         "You say alpha. Nobody says alpha.",

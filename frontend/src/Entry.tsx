@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ApiError, api, clockOf, type GuideCard, type GuideDetail, type Media } from "./api";
+import {
+  ApiError,
+  api,
+  clockOf,
+  type Counter,
+  type GuideCard,
+  type GuideDetail,
+  type Media,
+} from "./api";
 import {
   CribBlock,
   ErrorState,
@@ -322,8 +330,12 @@ function buildBlocks(entry: GuideDetail): Block[] {
     label: "follow-up",
     node: (
       <Section id="follow-up" heading="The follow-up that kills you">
-        <p className="sec__pull">{larp.follow_up[0]}</p>
-        <LinkedParagraphs items={larp.follow_up.slice(1)} exclude={entry.slug} />
+        <p className="sec__pull">{larp.follow_up.question}</p>
+        <LinkedParagraphs
+          items={larp.follow_up.why.split("\n\n").filter(Boolean)}
+          exclude={entry.slug}
+        />
+        <CounterBlock counter={larp.follow_up.counter} slug={entry.slug} />
       </Section>
     ),
   });
@@ -429,6 +441,35 @@ function buildBlocks(entry: GuideDetail): Block[] {
   });
 
   return blocks;
+}
+
+/**
+ * The answer to the question above it. Naming the situation the counter fails in
+ * matters as much as the move: an oversold counter gets somebody caught worse
+ * than none at all.
+ */
+function CounterBlock({ counter, slug }: { counter: Counter | null; slug?: string }) {
+  if (!counter) {
+    return (
+      <aside className="counter counter--none">
+        <p className="u-label counter__label">No counter</p>
+        <p className="counter__move">
+          There is not one. That is the finding, and it is why this entry exists.
+        </p>
+      </aside>
+    );
+  }
+  return (
+    <aside className="counter">
+      <p className="u-label counter__label">The counter</p>
+      <p className="counter__move">
+        <Linked text={counter.move} exclude={slug} />
+      </p>
+      <p className="counter__holds">
+        <span className="u-label">Holds</span> {counter.holds}
+      </p>
+    </aside>
+  );
 }
 
 function Figure({ media, inline = false }: { media: Media; inline?: boolean }) {

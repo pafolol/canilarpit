@@ -351,12 +351,75 @@ export default function GuideEditor() {
                   onChange={(surface) => patchLarp({ surface })}
                   hint="What passes on first contact. One paragraph per box."
                 />
-                <ListField
+                <TextArea
                   label="The follow-up that kills you"
-                  values={larp.follow_up}
-                  onChange={(follow_up) => patchLarp({ follow_up })}
-                  hint="First box is the question itself, in quotes."
+                  value={larp.follow_up.question}
+                  rows={2}
+                  onChange={(question) =>
+                    patchLarp({ follow_up: { ...larp.follow_up, question } })
+                  }
+                  hint="The question itself, in quotes."
                 />
+                <TextArea
+                  label="Why it works"
+                  value={larp.follow_up.why}
+                  rows={5}
+                  onChange={(why) => patchLarp({ follow_up: { ...larp.follow_up, why } })}
+                  hint="Blank lines separate paragraphs."
+                />
+                <label className="af af--check">
+                  <input
+                    type="checkbox"
+                    checked={larp.follow_up.counter !== null}
+                    disabled={stop}
+                    onChange={(event) =>
+                      patchLarp({
+                        follow_up: {
+                          ...larp.follow_up,
+                          counter: event.target.checked
+                            ? { move: "", holds: "" }
+                            : null,
+                        },
+                      })
+                    }
+                  />
+                  <span>
+                    This one has a counter
+                    {stop ? " — a DON'T entry never does" : ""}
+                  </span>
+                </label>
+                {larp.follow_up.counter && (
+                  <>
+                    <TextArea
+                      label="The counter"
+                      value={larp.follow_up.counter.move}
+                      rows={4}
+                      onChange={(move) =>
+                        patchLarp({
+                          follow_up: {
+                            ...larp.follow_up,
+                            counter: { ...larp.follow_up.counter!, move },
+                          },
+                        })
+                      }
+                      hint="The words the reader says when the question lands, not the strategy."
+                    />
+                    <TextArea
+                      label="How far it holds"
+                      value={larp.follow_up.counter.holds}
+                      rows={3}
+                      onChange={(holds) =>
+                        patchLarp({
+                          follow_up: {
+                            ...larp.follow_up,
+                            counter: { ...larp.follow_up.counter!, holds },
+                          },
+                        })
+                      }
+                      hint="And the situation it does not survive. An oversold counter is worse than none."
+                    />
+                  </>
+                )}
                 <ListField
                   label="Tells"
                   values={larp.tells}

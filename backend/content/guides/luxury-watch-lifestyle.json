@@ -47,10 +47,14 @@
         "One family, one reference, and a preference. Three items hold a first conversation for about five minutes.",
         "The scene rewards precision and punishes enthusiasm about money. Talk about the object and the clock keeps running; talk about the price and it stops."
       ],
-      "follow_up": [
-        "\"What are you wearing today?\"",
-        "Collectors talk about the watch on their wrist, its scratches, and where the last one came from. A reader has model families and no wrist. The question is not a test, which is exactly why it works."
-      ],
+      "follow_up": {
+        "question": "\"What are you wearing today?\"",
+        "why": "Collectors talk about the watch on their wrist, its scratches, and where the last one came from. A reader has model families and no wrist. The question is not a test, which is exactly why it works.",
+        "counter": {
+          "move": "Answer with whatever is actually on your wrist and say one specific thing you like about it. A cheap watch worn with an opinion reads better than a Submariner you cannot describe.",
+          "holds": "Indefinitely. Collectors respect a coherent choice more than an expensive one, and this is the question they ask to find out which you have."
+        }
+      },
       "tells": [
         "You lead with price. Owners lead with the reference.",
         "You have no complaint about a watch you own. Everyone has one.",

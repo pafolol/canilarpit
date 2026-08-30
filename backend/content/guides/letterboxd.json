@@ -45,10 +45,14 @@
         "A list, a rating, and one sentence. The one sentence is the platform's whole register.",
         "Never write a paragraph. The form is a caption and length reads as effort, which reads as new."
       ],
-      "follow_up": [
-        "\"What have you actually watched this month?\"",
-        "Larpers have a canon. Users have a recent history, and a real one is full of mediocre films watched on a Tuesday for no reason."
-      ],
+      "follow_up": {
+        "question": "\"What have you actually watched this month?\"",
+        "why": "Larpers have a canon. Users have a recent history, and a real one is full of mediocre films watched on a Tuesday for no reason.",
+        "counter": {
+          "move": "Name something ordinary and slightly bad that you watched on a weeknight for no reason. A mediocre film is far more convincing than a masterpiece, because nobody's real month is a curated list.",
+          "holds": "Indefinitely. There is nothing here anybody can check."
+        }
+      },
       "tells": [
         "Every favourite is above four stars. Real accounts have a two-star film they will defend at length.",
         "No rewatches. Nobody who loves film watches everything exactly once.",

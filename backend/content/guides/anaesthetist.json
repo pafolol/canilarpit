@@ -24,10 +24,11 @@
       "dek": "Do not. The claim carries duty implications that outlive the dinner party.",
       "crib": [],
       "surface": [],
-      "follow_up": [
-        "\"What do you use for induction?\"",
-        "There is a small, boring, universally known answer, and every actual anaesthetist gives it without thinking about it first. The pause is the whole tell."
-      ],
+      "follow_up": {
+        "question": "\"What do you use for induction?\"",
+        "why": "There is a small, boring, universally known answer, and every actual anaesthetist gives it without thinking about it first. The pause is the whole tell.",
+        "counter": null
+      },
       "tells": [
         "You talk about surgery. They talk about the twenty minutes before and the twenty minutes after, because that is the job.",
         "You describe drama. The profession is the management of boredom punctuated by four minutes.",

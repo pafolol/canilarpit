@@ -519,7 +519,14 @@ Every create, import, draft-save, and export operation uses this top-level shape
       "dek": "One sentence under the title.",
       "crib": [{"heading": "References", "lines": ["One line worth saying."]}],
       "surface": ["What passes on first contact."],
-      "follow_up": ["\"Which episode did you stop on?\"", "Why that question works."],
+      "follow_up": {
+        "question": "\"Which episode did you stop on?\"",
+        "why": "Why that question works.",
+        "counter": {
+          "move": "What the reader actually says when it lands.",
+          "holds": "How far that carries, and where it fails."
+        }
+      },
       "tells": ["You summarise arcs. Viewers quote lines."],
       "cost": ["What happens when you are caught."],
       "learn": {"hours": 90, "book": "One book", "make": "One thing to do"}
@@ -552,6 +559,12 @@ end, and `crib`, `surface`, `follow-up`, `tells`, `brief`, `words`, `asked`, `co
 `learn` put it under that section. Images without a section are spread evenly through
 the article, so a reader meets a picture beside the point it belongs to. It may be empty, in which case the backend infers a brief from the title and
 any visual cues.
+
+`content.larp.follow_up` names the question that ends the LARP, explains why it works,
+and answers it. `counter` is `{move, holds}` or `null` when the entry honestly has no
+answer; `holds` must say where the counter stops working, because an oversold counter
+gets a reader caught worse than none would. A `dont` verdict must have `counter: null`,
+and the API rejects one that does not.
 
 `content.larp` is required. Its clock rules are enforced at validation time: a `dont`
 verdict must have `exposure_seconds: null`, `unfalsifiable: true` forbids a clock, and

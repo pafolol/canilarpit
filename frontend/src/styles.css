@@ -1407,3 +1407,27 @@ select {
 @media (max-width: 767px) {
   .figure--inline img { max-height: 15rem; }
 }
+
+/* ---------- the counter: the answer, set apart from the diagnosis ---------- */
+
+.counter {
+  margin-top: 1.5rem;
+  padding: 1rem 1.125rem;
+  border: var(--hair);
+  border-left: 2px solid var(--v-yes);
+  background: var(--card);
+}
+.counter__label { display: block; color: var(--v-yes); margin-bottom: 0.5rem; }
+.counter__move { line-height: 1.55; }
+.counter__holds {
+  margin-top: 0.75rem;
+  padding-top: 0.625rem;
+  border-top: var(--hair);
+  font-size: var(--t-13);
+  color: var(--ink-2);
+}
+.counter__holds .u-label { margin-right: 0.5rem; }
+
+/* No counter is a finding too, so it is marked rather than hidden. */
+.counter--none { border-left-color: var(--stop); }
+.counter--none .counter__label { color: var(--stop); }

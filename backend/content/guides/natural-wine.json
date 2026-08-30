@@ -46,10 +46,14 @@
         "A producer, a region, and one flaw. Three items is the entire surface layer, and it holds for about six minutes.",
         "Order by the glass and ask what was opened today. Curiosity outranks knowledge in this room, which is why the bar is survivable and the table is not."
       ],
-      "follow_up": [
-        "\"What did you think of the last vintage?\"",
-        "Vintage variation is the trapdoor. Natural wine moves year to year more than anything else on the list, so a person who has been drinking it has an opinion about 2021 and a person who has been reading about it has a producer name and nothing after it."
-      ],
+      "follow_up": {
+        "question": "\"What did you think of the last vintage?\"",
+        "why": "Vintage variation is the trapdoor. Natural wine moves year to year more than anything else on the list, so a person who has been drinking it has an opinion about 2021 and a person who has been reading about it has a producer name and nothing after it.",
+        "counter": {
+          "move": "Turn it into a question. \"I have only had the 2021 - what did you make of it?\" Curiosity outranks knowledge in this room, and handing the answer back is the move the room is built for.",
+          "holds": "The rest of the evening at the bar. It does not survive a seated tasting, where you will be poured something and asked directly."
+        }
+      },
       "tells": [
         "You call it natural wine. They say the producer.",
         "You praise funk in general. Funk is not a flavour to them, it is a defect they have decided to forgive in three specific bottles.",

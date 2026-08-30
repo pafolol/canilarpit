@@ -173,8 +173,17 @@ content, for all kinds:
       }
     ],
     "surface": ["<1-3 paragraphs: what passes on first contact, and for how long>"],
-    "follow_up": ["<first item is the exact question that kills you, in quotes>",
-                  "<then 1-2 paragraphs on why that question works>"],
+    "follow_up": {
+      "question": "<the exact question that ends it, in quotes>",
+      "why": "<1-2 paragraphs on why that question works>",
+      "counter": {
+        "move": "<what the reader actually says or does when it lands. Concrete
+                  and speakable: give them the sentence, not the strategy.>",
+        "holds": "<how far the counter carries, and the situation it does not
+                   survive. Be honest; a counter that is oversold gets somebody
+                   caught worse than no counter at all.>"
+      }
+    },
     "tells": ["<4-6 items. Each contrasts what a larper does with what a real one does>"],
     "cost": ["<1-3 paragraphs: what actually happens when you are caught>"],
     "learn": {
@@ -241,6 +250,17 @@ photograph you want. Never send a fictional character to a stock photography
 provider: it has never heard of them and will return a stranger.
 
 Use "auto" only when you genuinely cannot tell.
+
+The counter is the part of the guide that does the most work, so write it last
+and write it hardest. The reader is standing in the conversation when the
+question lands, and a strategy is no use to them: hand them the words. The best
+counters are usually one of four moves - answer honestly because honesty is
+unanswerable here, hand the question back because the room would rather teach
+than test, change the axis to something you do know, or decline on a ground the
+room accepts. Say which situation it fails in.
+
+Set `counter` to null only when there genuinely is not one. A "dont" entry must
+have `counter: null`: the answer to that question is not to have claimed it.
 
 A "dont" entry still needs every field. Write `crib` as a single section headed
 "Why this one is different" explaining what the claim actually costs other people,

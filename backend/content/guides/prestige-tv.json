@@ -45,10 +45,14 @@
         "A show, a season, and a supporting character. Nobody checks the first two.",
         "Everyone has seen the pilot of everything. Nothing above episode four is safe."
       ],
-      "follow_up": [
-        "\"Which season?\"",
-        "It is the only question in the form and it gets asked constantly, because seasons are how people who actually watched store the show."
-      ],
+      "follow_up": {
+        "question": "\"Which season?\"",
+        "why": "It is the only question in the form and it gets asked constantly, because seasons are how people who actually watched store the show.",
+        "counter": {
+          "move": "Pick the middle season and complain about it. Every long show has a weak middle and having an opinion about it is proof of attendance in a way that praising the finale is not.",
+          "holds": "A long conversation. It fails against somebody who wants to talk about one specific episode, because that is a memory and not a position."
+        }
+      },
       "tells": [
         "You quote the famous line. Everyone has the famous line, it was in the trailer.",
         "You talk about the writing. Viewers talk about one scene.",

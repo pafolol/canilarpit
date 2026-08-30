@@ -45,10 +45,14 @@
         "Order a filter, ask what is on, ask about the process. Three moves and you are inside the conversation.",
         "Say what you taste even when you are wrong. Being wrong out loud is the accepted entry ritual here, which is why the clock runs so long."
       ],
-      "follow_up": [
-        "\"How do you make it at home?\"",
-        "There is no bluff available. Either there is a grinder on your counter or there is not, and the follow-up to the answer is what grinder."
-      ],
+      "follow_up": {
+        "question": "\"How do you make it at home?\"",
+        "why": "There is no bluff available. Either there is a grinder on your counter or there is not, and the follow-up to the answer is what grinder.",
+        "counter": {
+          "move": "Name your grinder and complain about your water. Both are real constraints, both are what people actually argue about, and neither requires you to have tasted anything in particular.",
+          "holds": "Indefinitely. Nobody is coming to your kitchen to check."
+        }
+      },
       "tells": [
         "You praise the beans. They talk about the roast, the water, and the grinder, in that order.",
         "You say notes of, and then read the bag out loud.",

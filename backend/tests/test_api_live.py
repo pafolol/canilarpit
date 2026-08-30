@@ -238,7 +238,14 @@ def test_an_editor_can_draft_and_publish_a_guide(client: TestClient) -> None:
                 "dek": "An entry written by a test, and it shows.",
                 "crib": [{"heading": "References", "lines": ["One line worth saying."]}],
                 "surface": ["What passes on first contact."],
-                "follow_up": ['"And then what?"'],
+                "follow_up": {
+                    "question": '"And then what?"',
+                    "why": "Because a test document has nowhere else to go.",
+                    "counter": {
+                        "move": "Admit it is a test and change the subject.",
+                        "holds": "Until somebody reads the slug.",
+                    },
+                },
                 "tells": ["You wrote this in a test."],
                 "cost": ["None. It is a test."],
                 "learn": {"hours": 1, "book": "None", "make": "Nothing"},

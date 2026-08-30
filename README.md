@@ -5,8 +5,12 @@ One question per entry: **can you larp it, and for how long before someone catch
 To LARP something is to present yourself as knowing or being something you do not — a
 film you never watched, a scene you do not belong to, a job you do not do. This site is
 the briefing you read beforehand: the crib sheet, the follow-up question that collapses
-it, the tells, the cost of being caught, and the honest hours it would take to just
-learn the thing instead.
+it **and what to say when it lands**, the tells, the cost of being caught, and the
+honest hours it would take to just learn the thing instead.
+
+Every larpable entry answers its own killer question. The counter gives the reader the
+words, not a strategy, and states where it stops working — an oversold counter gets
+somebody caught worse than none. The one entry with no counter says so.
 
 Three of the four verdicts are a yes. **YES** holds indefinitely, **KINDA** holds at the
 bar and fails at the table, and **TALK ONLY** means the conversation holds but the doing

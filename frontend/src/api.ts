@@ -72,10 +72,20 @@ export type ImageQuery = {
   note: string | null;
 };
 
+/** The move that survives the question, and how far it actually carries. */
+export type Counter = { move: string; holds: string };
+
+export type FollowUp = {
+  question: string;
+  why: string;
+  /** null when the entry honestly has no answer to its own question. */
+  counter: Counter | null;
+};
+
 export type LarpProfile = LarpCard & {
   crib: CribSection[];
   surface: string[];
-  follow_up: string[];
+  follow_up: FollowUp;
   tells: string[];
   cost: string[];
   learn: { hours: number; book: string; make: string };

@@ -52,6 +52,25 @@ class CribSection(BaseModel):
         return cleaned
 
 
+class Counter(BaseModel):
+    """The move that survives the question.
+
+    Not every entry has one, and the honest ones say so: a fabricated escape is
+    worse than none, because the reader will try it.
+    """
+
+    move: str = Field(min_length=1, max_length=1200)
+    holds: str = Field(min_length=1, max_length=600)
+
+
+class FollowUp(BaseModel):
+    """The question that ends it, why it works, and what to do when it lands."""
+
+    question: str = Field(min_length=1, max_length=500)
+    why: str = Field(min_length=1, max_length=3000)
+    counter: Counter | None = None
+
+
 class LearnPath(BaseModel):
     """The honest alternative to larping: what it costs to actually know the thing."""
 
@@ -71,7 +90,7 @@ class LarpProfile(BaseModel):
     dek: str = Field(min_length=10, max_length=400)
     crib: list[CribSection] = Field(default_factory=list, max_length=8)
     surface: list[str] = Field(default_factory=list, max_length=10)
-    follow_up: list[str] = Field(min_length=1, max_length=10)
+    follow_up: FollowUp
     tells: list[str] = Field(min_length=1, max_length=15)
     cost: list[str] = Field(min_length=1, max_length=10)
     learn: LearnPath
@@ -101,6 +120,8 @@ class LarpProfile(BaseModel):
                 raise ValueError("exposure_seconds is required unless the guide is unfalsifiable")
             if self.exposure_seconds < 30:
                 raise ValueError("exposure_seconds must be at least 30")
+        if self.verdict == Verdict.DONT and self.follow_up.counter is not None:
+            raise ValueError("a DON'T entry offers no counter; the answer is not to try")
         return self
 
 

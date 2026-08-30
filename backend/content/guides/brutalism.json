@@ -45,10 +45,14 @@
         "A building, its architect, and what it was built for. The third item is where larpers stop.",
         "Photographs carry you a long way here, which is why the clock is generous and the failure is specific."
       ],
-      "follow_up": [
-        "\"Have you been inside one?\"",
-        "The interiors are the argument. Every photograph in circulation is an exterior, so the inside is the one thing no amount of scrolling supplies."
-      ],
+      "follow_up": {
+        "question": "\"Have you been inside one?\"",
+        "why": "The interiors are the argument. Every photograph in circulation is an exterior, so the inside is the one thing no amount of scrolling supplies.",
+        "counter": {
+          "move": "Name the one you have actually stood in, however unglamorous. A car park, a library, a university block. \"Only the Barbican, and only the foyer\" is a better answer than a list, because the list is what a photograph gives you and the foyer is what a visit gives you.",
+          "holds": "Indefinitely. One real building outranks ten saved images, and this scene is unusually willing to take you to the second one."
+        }
+      },
       "tells": [
         "You post exteriors. The people who care talk about corridors, light wells, and how the lifts work.",
         "You call it brutal. The word is about the concrete.",

@@ -45,10 +45,14 @@
         "Vocabulary lasts about three minutes. Then somebody suggests you get on the wall, and the suggestion is friendly.",
         "There is no version of this scene that stays verbal."
       ],
-      "follow_up": [
-        "\"Want to jump on this one?\"",
-        "It is an invitation rather than a test, which is exactly why it is fatal. You can decline once. You cannot decline twice."
-      ],
+      "follow_up": {
+        "question": "\"Want to jump on this one?\"",
+        "why": "It is an invitation rather than a test, which is exactly why it is fatal. You can decline once. You cannot decline twice.",
+        "counter": {
+          "move": "Say you are coming back from a finger injury, then offer to belay. Every climber has had one, nobody can check it, and belaying keeps you at the wall doing something useful instead of standing next to it.",
+          "holds": "One session. It does not survive a second invitation, and the gym will remember that you never got on the wall."
+        }
+      },
       "tells": [
         "Your hands are wrong. Nobody who climbs has those hands.",
         "You know the numbers but not the movement, and you describe routes by grade instead of by what they ask of you.",

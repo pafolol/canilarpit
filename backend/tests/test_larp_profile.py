@@ -12,6 +12,12 @@ from app.schemas.content import GuideDocument, LarpProfile
 CONTENT = Path(__file__).resolve().parent.parent / "content" / "guides"
 
 
+def no_counter(profile: dict) -> dict:
+    """A DON'T entry is valid only without one."""
+    profile["follow_up"] = {**profile["follow_up"], "counter": None}
+    return profile
+
+
 def base_profile(**overrides) -> dict:
     profile = {
         "entry_type": "taste",
@@ -22,7 +28,14 @@ def base_profile(**overrides) -> dict:
         "dek": "Holds at the bar and fails at the table.",
         "crib": [{"heading": "References", "lines": ["One name worth saying."]}],
         "surface": ["What passes on first contact."],
-        "follow_up": ["\"Which vintage?\""],
+        "follow_up": {
+            "question": "\"Which vintage?\"",
+            "why": "Vintage variation is the trapdoor.",
+            "counter": {
+                "move": "Hand the question back and ask what they made of it.",
+                "holds": "The rest of the evening at the bar, not a seated tasting.",
+            },
+        },
         "tells": ["You call it natural wine. They say the producer."],
         "cost": ["Low. The scene forgives ignorance."],
         "learn": {"hours": 20, "book": "One book", "make": "One thing"},
@@ -45,9 +58,12 @@ def test_a_dont_verdict_never_runs_a_clock() -> None:
     with pytest.raises(ValidationError, match="no clock"):
         LarpProfile.model_validate(base_profile(verdict="dont", exposure_seconds=300))
 
-    profile = LarpProfile.model_validate(base_profile(verdict="dont", exposure_seconds=None))
+    profile = LarpProfile.model_validate(
+        no_counter(base_profile(verdict="dont", exposure_seconds=None))
+    )
     assert profile.exposure_seconds is None
     assert profile.unfalsifiable is False
+    assert profile.follow_up.counter is None
 
 
 def test_unfalsifiable_and_a_countdown_are_mutually_exclusive() -> None:
@@ -104,3 +120,22 @@ def test_a_talk_only_guide_still_carries_a_crib_sheet() -> None:
         document = GuideDocument.model_validate_json(path.read_text(encoding="utf-8"))
         if document.larp.verdict is Verdict.TALK_ONLY:
             assert document.larp.crib, f"{document.slug} has no crib sheet"
+
+
+def test_a_dont_entry_offers_no_counter() -> None:
+    """The answer to that question is not to have made the claim."""
+    with pytest.raises(ValidationError, match="offers no counter"):
+        LarpProfile.model_validate(base_profile(verdict="dont", exposure_seconds=None))
+
+
+def test_every_larpable_guide_answers_its_own_question() -> None:
+    for path in CONTENT.glob("*.json"):
+        document = GuideDocument.model_validate_json(path.read_text(encoding="utf-8"))
+        follow_up = document.larp.follow_up
+        assert follow_up.question and follow_up.why
+        if document.larp.verdict is Verdict.DONT:
+            assert follow_up.counter is None
+        else:
+            assert follow_up.counter is not None, f"{document.slug} leaves the reader stuck"
+            # An oversold counter gets somebody caught worse than none at all.
+            assert follow_up.counter.holds, f"{document.slug} does not say how far it carries"

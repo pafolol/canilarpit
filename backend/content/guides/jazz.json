@@ -45,10 +45,14 @@
         "One album, one player who is not the bandleader, one live recording. Two minutes in total.",
         "The surface is short here because the record is usually already playing."
       ],
-      "follow_up": [
-        "\"Who's playing on it?\"",
-        "Personnel is the language of the form and it is printed on the sleeve, so not knowing is not the kind of gap that gets forgiven."
-      ],
+      "follow_up": {
+        "question": "\"Who's playing on it?\"",
+        "why": "Personnel is the language of the form and it is printed on the sleeve, so not knowing is not the kind of gap that gets forgiven.",
+        "counter": {
+          "move": "Answer with the rhythm section instead of the leader - \"the one with Elvin Jones\" - and if you cannot, say you never remember sidemen and ask who they would start with. The room contains a player and the player wants to teach.",
+          "holds": "As long as you keep asking. It converts the conversation into a lesson, which is the only stable position available to you here."
+        }
+      },
       "tells": [
         "You name bandleaders only.",
         "You say improvisation as though the word explained something.",

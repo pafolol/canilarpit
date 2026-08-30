@@ -45,10 +45,14 @@
         "Rooms and hours, not tracks. Nobody in this scene identifies music on their phone and nobody admits to wanting to.",
         "The correct answer to what was played is a mood and a time."
       ],
-      "follow_up": [
-        "\"What time did you get there?\"",
-        "Arrival time is the entire class system of this scene, it is asked casually, and there is no way to guess the right answer because the right answer is different in every city."
-      ],
+      "follow_up": {
+        "question": "\"What time did you get there?\"",
+        "why": "Arrival time is the entire class system of this scene, it is asked casually, and there is no way to guess the right answer because the right answer is different in every city.",
+        "counter": {
+          "move": "Say a time after two, and mention you left before the end because you had something on Sunday. Arrival time is the entire status system and late is always the right answer.",
+          "holds": "The night. It fails against somebody who was actually there and remembers which room was open."
+        }
+      },
       "tells": [
         "You name DJs. They name nights.",
         "You describe the drop. There is no drop, that is a different genre, and nobody will correct you out loud.",

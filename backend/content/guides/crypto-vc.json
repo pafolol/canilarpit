@@ -45,10 +45,14 @@
         "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.",
         "The surface layer and the actual layer are the same layer. That is why the clock does not run."
       ],
-      "follow_up": [
-        "\"What did you pass on?\"",
-        "There is no follow-up that kills you. Any plausible answer holds, and nobody can check, and that is the entire finding."
-      ],
+      "follow_up": {
+        "question": "\"What did you pass on?\"",
+        "why": "There is no follow-up that kills you. Any plausible answer holds, and nobody can check, and that is the entire finding.",
+        "counter": {
+          "move": "Name something that later did well, and say you were wrong about the team rather than the thesis. Being wrong about people is the respectable failure in this room, and every partner has a rehearsed one.",
+          "holds": "Indefinitely. Nobody can audit a deal you did not do."
+        }
+      },
       "tells": [
         "You are too specific. The real ones are vague on purpose and vague in a particular direction.",
         "You have no complaints about your LPs.",

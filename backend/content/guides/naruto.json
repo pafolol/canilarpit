@@ -47,10 +47,14 @@
         "Names, the Hokage, the tailed beasts, and one arc you can describe. Four items carry an ordinary conversation for about seven minutes.",
         "Anime fans are used to explaining, so questions read as interest rather than ignorance. The danger is not being asked, it is answering too fluently."
       ],
-      "follow_up": [
-        "\"Which episode did you stop on?\"",
-        "A viewer has a stopping point, a gap where life got in the way, and a vague memory of which dub or subtitle they watched. A reader has a synopsis and a clean, suspiciously complete timeline."
-      ],
+      "follow_up": {
+        "question": "\"Which episode did you stop on?\"",
+        "why": "A viewer has a stopping point, a gap where life got in the way, and a vague memory of which dub or subtitle they watched. A reader has a synopsis and a clean, suspiciously complete timeline.",
+        "counter": {
+          "move": "Give a gap rather than a number. \"I fell off somewhere in the war arc and never went back\" is what actually happens to people, and it is unanswerable because it is the most common viewing history there is.",
+          "holds": "Indefinitely. The gap is the normal state, not the exception."
+        }
+      },
       "tells": [
         "You summarise arcs. Viewers quote lines.",
         "You have no filler complaints. Everyone who watched it has filler complaints.",
