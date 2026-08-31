@@ -17,6 +17,7 @@ Everything here is registered after the API routers, so `/api/v1/*`, `/health`,
 """
 
 import html
+import json
 import logging
 import re
 from datetime import datetime
@@ -42,6 +43,13 @@ router = APIRouter(include_in_schema=False)
 # rather than left to route ordering alone. A miss under one of these is a 404,
 # not a single-page app that renders "not listed" over a real routing mistake.
 API_PREFIXES = ("api/", "health/", "health", "docs", "redoc", "openapi.json")
+
+# Every path the app renders something real at. Anything else is a 404, and has
+# to say so in the status line: answering 200 with "not listed" is a soft 404,
+# which tells a crawler the page is fine and keeps a dead URL in the index.
+STATIC_PATHS = frozenset(
+    {"", "just-learn-it", "submit", "faq", "privacy", "thanks"}
+)
 
 TITLE_PATTERN = re.compile(r"<title>.*?</title>", re.IGNORECASE | re.DOTALL)
 DESCRIPTION_PATTERN = re.compile(
@@ -90,7 +98,42 @@ def absolute(path: str) -> str:
     return f"{settings.site_origin}{path}"
 
 
-def inject(document: str, *, title: str, description: str, url: str, image: str | None) -> str:
+def json_ld(payload: dict) -> str:
+    """One ld+json block, with `</` escaped so guide prose cannot close the tag."""
+    body = json.dumps(payload, ensure_ascii=False, default=str).replace("</", "<\\/")
+    return f'<script type="application/ld+json">{body}</script>'
+
+
+def breadcrumbs(trail: list[tuple[str, str]]) -> dict:
+    """A BreadcrumbList, which is the one part of this Google still renders."""
+    return {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i, "name": name, "item": absolute(path)}
+            for i, (name, path) in enumerate(trail, start=1)
+        ],
+    }
+
+
+def site_schema() -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "canilarpit",
+        "url": settings.site_origin,
+        "description": "Can you larp it, and for how long before someone catches you?",
+    }
+
+
+def inject(
+    document: str,
+    *,
+    title: str,
+    description: str,
+    url: str,
+    image: str | None,
+    schema: dict | None = None,
+) -> str:
     """Replace the head's title and description, and add the sharing tags.
 
     The originals are replaced rather than appended to: two `<title>` elements
@@ -113,6 +156,8 @@ def inject(document: str, *, title: str, description: str, url: str, image: str 
         tags.append('<meta name="twitter:card" content="summary" />')
     tags.append(f'<meta name="twitter:title" content="{attribute(title)}" />')
     tags.append(f'<meta name="twitter:description" content="{attribute(description)}" />')
+    if schema is not None:
+        tags.append(json_ld(schema))
 
     document = DESCRIPTION_PATTERN.sub("", document, count=1)
     document = TITLE_PATTERN.sub(
@@ -123,23 +168,57 @@ def inject(document: str, *, title: str, description: str, url: str, image: str 
     return document
 
 
-def entry_head(db: Session, slug: str) -> dict[str, str | None] | None:
+def entry_head(db: Session, slug: str) -> dict | None:
     """The guide's own title, dek and approved hero, or None when there is no guide."""
     try:
         guide = published_guide_by_slug(db, slug)
         detail = guide_detail(db, guide)
-    except (HTTPException, SQLAlchemyError):
-        # A missing guide, or a database that is not there: the app still loads
-        # and says so itself. A share card is not worth a 500.
+    except HTTPException:
+        # No such published guide. The caller turns this into a 404.
         return None
+    # SQLAlchemyError is deliberately not caught here. "No such guide" and "could
+    # not look" both used to arrive as None, and the status line has to tell them
+    # apart: a database outage that answered 404 would retire the whole catalogue
+    # from the index at once. serve_app catches it and keeps the page a 200.
 
     hero = next((m for m in detail.media if m.role == "hero" and m.url), None)
     hero = hero or next((m for m in detail.media if m.url), None)
+    description = detail.larp.dek or detail.summary
+    url = absolute(f"/entry/{detail.slug}")
+
+    article: dict = {
+        "@type": "Article",
+        "headline": detail.title,
+        "description": description,
+        "url": url,
+        "mainEntityOfPage": url,
+        "publisher": {"@type": "Organization", "name": "canilarpit", "url": settings.site_origin},
+    }
+    if hero:
+        article["image"] = [hero.url]
+    if detail.published_at:
+        article["datePublished"] = detail.published_at.isoformat()
+    if detail.last_verified_at or detail.published_at:
+        article["dateModified"] = (detail.last_verified_at or detail.published_at).isoformat()
+
     return {
         "title": f"{detail.title} — canilarpit",
-        "description": detail.larp.dek or detail.summary,
-        "url": absolute(f"/entry/{detail.slug}"),
+        "description": description,
+        "url": url,
         "image": hero.url if hero else None,
+        "schema": {
+            "@context": "https://schema.org",
+            "@graph": [
+                article,
+                breadcrumbs(
+                    [
+                        ("Home", "/"),
+                        (detail.category.title, f"/category/{detail.category.slug}"),
+                        (detail.title, f"/entry/{detail.slug}"),
+                    ]
+                ),
+            ],
+        },
     }
 
 
@@ -193,6 +272,8 @@ def sitemap(db: Session = Depends(get_db)) -> Response:
         url_entry("/", newest, "1.0"),
         url_entry("/just-learn-it", newest, "0.7"),
         url_entry("/submit", None, "0.5"),
+        url_entry("/faq", None, "0.4"),
+        url_entry("/privacy", None, "0.2"),
         *[url_entry(f"/category/{slug}", None, "0.6") for slug in categories],
         *[url_entry(f"/entry/{slug}", updated_at, "0.8") for slug, updated_at in guides],
     ]
@@ -220,9 +301,32 @@ def serve_app(path: str, db: Session = Depends(get_db)) -> Response:
             return FileResponse(candidate)
 
     document = index_cache.read()
-    head: dict[str, str | None] | None = None
-    if path.startswith("entry/"):
-        head = entry_head(db, path[len("entry/") :].strip("/"))
+    clean = path.strip("/")
+    head: dict | None = None
+
+    # `known` decides the status line. The app renders its own "not listed" page
+    # either way; what changes is whether a crawler is told to keep the URL.
+    try:
+        if clean.startswith("entry/"):
+            head = entry_head(db, clean[len("entry/") :])
+            known = head is not None
+        elif clean.startswith("category/"):
+            known = (
+                db.scalar(
+                    select(Category.id).where(
+                        Category.slug == clean[len("category/") :],
+                        Category.is_active.is_(True),
+                    )
+                )
+                is not None
+            )
+        else:
+            known = clean in STATIC_PATHS or clean.startswith("admin")
+    except SQLAlchemyError:
+        # Cannot check, so do not claim the page is gone. The app loads and
+        # shows its own error state; a 404 here would be a lie about the URL.
+        known = True
+
     if head is None:
         head = {
             "title": "canilarpit — can you larp it, and for how long?",
@@ -232,6 +336,7 @@ def serve_app(path: str, db: Session = Depends(get_db)) -> Response:
             ),
             "url": absolute(f"/{path}" if path else "/"),
             "image": None,
+            "schema": site_schema() if known else None,
         }
 
     return HTMLResponse(
@@ -241,7 +346,9 @@ def serve_app(path: str, db: Session = Depends(get_db)) -> Response:
             description=head["description"] or "",
             url=head["url"] or settings.site_origin,
             image=head["image"],
-        )
+            schema=head.get("schema"),
+        ),
+        status_code=200 if known else 404,
     )
 
 

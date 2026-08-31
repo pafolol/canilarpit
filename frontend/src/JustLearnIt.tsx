@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type LearnPage } from "./api";
-import { ErrorState, Loading, TypeGlyph, VerdictBadge } from "./components";
+import { ErrorState, Skeleton, TypeGlyph, VerdictBadge } from "./components";
 import { useDocumentTitle } from "./useDocumentTitle";
 
 const HOURS = new Intl.NumberFormat("en-GB");
@@ -90,7 +90,7 @@ export default function JustLearnIt() {
       {error ? (
         <ErrorState error={error} retry={() => setReloads((n) => n + 1)} />
       ) : busy && !page ? (
-        <Loading what="the hours" />
+        <Skeleton variant="rows" count={10} what="the hours" />
       ) : items.length === 0 ? (
         <p className="state">No entry has named its hours yet.</p>
       ) : (

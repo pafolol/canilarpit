@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "canilarpit",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev:mock"],
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}

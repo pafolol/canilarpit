@@ -4,7 +4,6 @@ import {
   api,
   ApiError,
   type Category,
-  type Clock,
   type CribSection,
   type EntryType,
   type GuideCard,
@@ -18,19 +17,6 @@ import {
   VERDICT_LEVEL,
   VERDICT_TONE,
 } from "./data";
-
-const prefersReducedMotion = () =>
-  typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const mmss = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-
-/** Static, spoken-once label. The running digits stay aria-hidden. */
-export function clockLabel(clock: Clock): string {
-  if (clock === null) return "No clock. This one does not run.";
-  if (clock === "indefinite") return "Indefinite. Nothing here is checkable.";
-  const m = Math.round(clock / 60);
-  return `About ${m} ${m === 1 ? "minute" : "minutes"} to exposure.`;
-}
 
 /* ----------------------------------------------------------------
    VerdictBadge — word + glyph + colour. The word is never dropped.
@@ -71,49 +57,6 @@ export function VerdictBadge({ verdict, size = "s" }: { verdict: Verdict; size?:
     <span className={`verdict verdict--${size} verdict--${VERDICT_TONE[verdict]}`}>
       <VerdictMark verdict={verdict} />
       {VERDICT_LABEL[verdict]}
-    </span>
-  );
-}
-
-/* ----------------------------------------------------------------
-   ExposureClock — the one moving thing on an entry page.
-   Counts down while you read. At zero it flips to EXPOSED and stays.
-   ---------------------------------------------------------------- */
-
-export function ExposureClock({
-  seconds,
-  running = false,
-  size = "s",
-  className = "",
-}: {
-  seconds: Clock;
-  running?: boolean;
-  size?: "s" | "l";
-  className?: string;
-}) {
-  const start = typeof seconds === "number" ? seconds : 0;
-  const [left, setLeft] = useState(start);
-
-  useEffect(() => {
-    setLeft(start);
-    if (!running || typeof seconds !== "number" || prefersReducedMotion()) return;
-    const id = setInterval(() => {
-      // Pausing while the tab is hidden costs one line and keeps the value honest.
-      if (document.hidden) return;
-      setLeft((s) => (s <= 0 ? 0 : s - 1));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [seconds, running, start]);
-
-  const cls = (m: string) => `clock ${size === "l" ? "clock--l " : ""}${m} ${className}`.trim();
-
-  if (seconds === null) return <span className={cls("clock--none")} aria-hidden="true">—</span>;
-  if (seconds === "indefinite") return <span className={cls("clock--inf")} aria-hidden="true">∞</span>;
-
-  const exposed = running && left <= 0 && !prefersReducedMotion();
-  return (
-    <span className={cls(exposed ? "clock--exposed" : "")} aria-hidden="true">
-      {exposed ? "EXPOSED" : mmss(running ? left : start)}
     </span>
   );
 }
@@ -210,11 +153,15 @@ export function TickerRow({ entries }: { entries: GuideCard[] }) {
     </Link>
   ));
   return (
-    <div className="ticker">
-      <div className="ticker__track">
-        <div style={{ display: "flex" }}>{run}</div>
-        <div style={{ display: "flex" }} className="ticker__dupe" aria-hidden="true">
-          {run}
+    // Same column as the hero, the filters and the grid: the rule above and
+    // below the ticker starts and stops where the content does.
+    <div className="u-shell">
+      <div className="ticker">
+        <div className="ticker__track">
+          <div style={{ display: "flex" }}>{run}</div>
+          <div style={{ display: "flex" }} className="ticker__dupe" aria-hidden="true">
+            {run}
+          </div>
         </div>
       </div>
     </div>
@@ -739,6 +686,114 @@ export function ErrorState({ error, retry }: { error: unknown; retry?: () => voi
         <button className="chip" onClick={retry}>
           Try again
         </button>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- breadcrumbs */
+
+/**
+ * The trail above an entry: where this page sits, and the way back up.
+ *
+ * The matching BreadcrumbList is emitted server-side in `api/routes/site.py`,
+ * because a crawler reads the HTML that leaves FastAPI and does not wait for
+ * React. This is the visible half; that is the machine-readable half.
+ *
+ * The last crumb is the current page, so it is text rather than a link and
+ * carries `aria-current` instead.
+ */
+export function Breadcrumbs({ trail }: { trail: { label: string; to?: string }[] }) {
+  return (
+    <nav className="crumbs" aria-label="Breadcrumb">
+      <ol className="crumbs__list">
+        {trail.map((crumb, i) => (
+          <li className="crumbs__item" key={`${crumb.label}-${i}`}>
+            {crumb.to ? (
+              <Link className="crumbs__link" to={crumb.to}>
+                {crumb.label}
+              </Link>
+            ) : (
+              <span aria-current="page">{crumb.label}</span>
+            )}
+            {i < trail.length - 1 && (
+              <span className="crumbs__sep" aria-hidden="true">
+                /
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+/* ---------------------------------------------------------------- skeletons */
+
+/**
+ * Loading states shaped like the thing that is coming.
+ *
+ * A line of text that says "Loading entries…" is replaced by a grid a moment
+ * later, and everything on the page jumps. These placeholders hold the same
+ * boxes the real content lands in, so nothing moves when it arrives.
+ *
+ * The bars are `aria-hidden` and the announcement is a single visually hidden
+ * line: a screen reader should hear "loading", not twenty empty list items.
+ * `role="status"` makes it polite rather than an interruption.
+ */
+export function Skeleton({
+  variant = "cards",
+  count = 8,
+  what = "entries",
+}: {
+  variant?: "cards" | "rows" | "article";
+  count?: number;
+  what?: string;
+}) {
+  const items = Array.from({ length: count }, (_, i) => i);
+
+  return (
+    <div className="skel" role="status" aria-busy="true">
+      <span className="u-sr">Loading {what}…</span>
+
+      {variant === "cards" && (
+        <div className="grid" aria-hidden="true">
+          {items.map((i) => (
+            <div className="skel__card" key={i}>
+              <div className="skel__cardtop">
+                <span className="skel__bar skel__bar--xs" />
+                <span className="skel__bar skel__bar--xs" />
+              </div>
+              <div className="skel__cardbody">
+                <span className="skel__bar skel__bar--title" />
+                <span className="skel__bar" />
+                <span className="skel__bar skel__bar--short" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {variant === "rows" && (
+        <div className="skel__rows" aria-hidden="true">
+          {items.map((i) => (
+            <div className="skel__row" key={i}>
+              <span className="skel__bar skel__bar--xs" />
+              <span className="skel__bar skel__bar--short" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {variant === "article" && (
+        <div className="skel__doc" aria-hidden="true">
+          <span className="skel__bar skel__bar--head" />
+          <span className="skel__bar skel__bar--title" />
+          <span className="skel__bar" />
+          <span className="skel__bar" />
+          <span className="skel__bar skel__bar--short" />
+          <div className="skel__block" />
+        </div>
       )}
     </div>
   );

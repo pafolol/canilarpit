@@ -27,7 +27,6 @@ export type MediaKind = "stock" | "external" | "generated" | "uploaded";
 export type JobStatus = "queued" | "running" | "review" | "completed" | "failed" | "cancelled";
 
 /** seconds to exposure, "indefinite" when nothing is checkable, null on a DON'T */
-export type Clock = number | "indefinite" | null;
 
 export type CategorySummary = { id: string; slug: string; title: string };
 
@@ -685,7 +684,3 @@ export const api = {
 
 /* ---------------------------------------------------------------- helpers */
 
-export function clockOf(larp: Pick<LarpCard, "exposure_seconds" | "unfalsifiable">): Clock {
-  if (larp.unfalsifiable) return "indefinite";
-  return larp.exposure_seconds;
-}

@@ -7,7 +7,7 @@
 
 import type { EntryType, Verdict } from "./api";
 
-export type { Clock, CribSection, EntryType, GuideCard, GuideDetail, Verdict } from "./api";
+export type { CribSection, EntryType, GuideCard, GuideDetail, Verdict } from "./api";
 
 export const VERDICTS: Verdict[] = ["yes", "kinda", "talk_only", "dont"];
 export const TYPES: EntryType[] = ["scene", "taste", "role"];

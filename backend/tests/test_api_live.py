@@ -996,6 +996,6 @@ def test_the_app_never_shadows_the_api(client: TestClient) -> None:
     assert client.get("/health/live").json() == {"status": "ok"}
     assert client.get("/openapi.json").status_code == 200
     # Anything else is the single-page app, which renders its own "not listed".
-    unknown = client.get("/spot-the-larper")
-    assert unknown.status_code == 200
-    assert unknown.headers["content-type"].startswith("text/html")
+    owned = client.get("/just-learn-it")
+    assert owned.status_code == 200
+    assert owned.headers["content-type"].startswith("text/html")
