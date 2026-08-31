@@ -316,7 +316,6 @@ input {
   border-bottom: var(--hair);
 }
 .card__type { display: inline-flex; align-items: center; gap: 0.4rem; }
-.card__clock { font-size: var(--t-13); }
 
 .card__body {
   flex: 1;
@@ -380,7 +379,7 @@ input {
   white-space: nowrap;
 }
 .ticker__item:hover { text-decoration: underline; text-underline-offset: 0.2em; }
-.ticker__item .clock { font-size: var(--t-13); }
+.ticker__item .reads { font-size: var(--t-13); }
 .ticker__sep { color: var(--rule); }
 
 /* ============================================================
@@ -543,20 +542,10 @@ input {
 .box__msg { grid-column: 1 / -1; font-size: var(--t-15); }
 .box__msg--fail { color: var(--stop); }
 
-/* CAUGHT stories */
-.caught { padding-block: 2.5rem; border-top: var(--hair); }
-.caught__h { font-family: var(--display); font-weight: 700; font-size: var(--t-18); text-transform: uppercase; }
-.caught__sub { font-size: var(--t-13); color: var(--ink-2); margin-top: 0.125rem; }
-.caught__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-.caught__item { border-top: 1px solid var(--edge); padding-top: 0.75rem; }
-.caught__where { margin-bottom: 0.5rem; }
-.caught__q {
-  font-family: var(--body);
-  font-size: var(--t-18);
-  line-height: 1.4;
-  font-style: italic;
-}
-.caught__after { font-size: var(--t-13); color: var(--ink-2); margin-top: 0.5rem; }
+/* A band below the grid: a rule, a heading, and one idea. */
+.band { padding-block: 2.5rem; border-top: var(--hair); }
+.band__h { font-family: var(--display); font-weight: 700; font-size: var(--t-18); text-transform: uppercase; }
+.band__sub { font-size: var(--t-13); color: var(--ink-2); margin-top: 0.125rem; }
 
 /* ============================================================
    Entry page
@@ -695,14 +684,12 @@ input {
 @media (max-width: 1199px) {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .entry { grid-template-columns: 200px minmax(0, 1fr); gap: 2rem; }
-  .caught__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 767px) {
   :root { --gutter: 1rem; }
 
   .grid { grid-template-columns: minmax(0, 1fr); }
-  .caught__list { grid-template-columns: minmax(0, 1fr); }
 
   .hdr__nav { gap: 0.875rem; }
   .hdr__link--type { display: none; }
@@ -1588,4 +1575,449 @@ select {
   margin-top: 1rem;
   font-size: var(--t-13);
   color: var(--ink-2);
+}
+
+/* ============================================================
+   Presence — the only thing on the page about right now
+   rather than about the entry. Always the real number.
+   ============================================================ */
+
+.presence {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem var(--gutter);
+  border-bottom: var(--hair);
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.presence__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--v-yes);
+  flex: none;
+}
+.presence__n {
+  color: var(--ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- read counts ---------- */
+
+.reads {
+  font-family: var(--data);
+  font-size: var(--t-11);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+/* Stands where the countdown stood, and keeps its blue. */
+.reads--compact {
+  color: var(--signal);
+  font-size: var(--t-13);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.doc__reads {
+  margin-top: 0.5rem;
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+/* Inside .doc__reads it is a run-on, not its own line. */
+.doc__reads .doc__credit { margin-top: 0; display: inline; }
+
+/* ---------- Most larped ---------- */
+
+/* Sits in a .band, so it needs only its own list. */
+.ranked__list { margin-top: 1.25rem; display: grid; }
+.ranked__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: var(--hair);
+}
+.ranked__pos {
+  font-family: var(--data);
+  font-size: var(--t-11);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+  width: 2ch;
+}
+.ranked__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-15);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.ranked__name:hover { border-bottom-color: var(--signal); }
+.ranked__n {
+  margin-left: auto;
+  font-family: var(--data);
+  font-size: var(--t-13);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  flex: none;
+}
+
+/* ============================================================
+   Just learn it — the honest alternative, priced in hours
+   ============================================================ */
+
+.learnpage__note {
+  max-width: 52ch;
+  font-size: var(--t-15);
+  color: var(--ink-2);
+  margin-top: 1rem;
+}
+.learnpage__sortbar { display: flex; gap: 0.5rem; margin: 1.5rem 0 0.5rem; }
+
+.learnlist { display: grid; }
+.learnrow {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 1.125rem 0;
+  border-bottom: var(--hair);
+}
+.learnrow__hours {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  border-right: var(--hair);
+  padding-right: 1rem;
+}
+.learnrow__n {
+  font-family: var(--data);
+  font-weight: 500;
+  font-size: var(--t-24);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.learnrow__weight {
+  font-family: var(--data);
+  font-size: var(--t-11);
+  color: var(--ink-2);
+  margin-top: 0.25rem;
+}
+.learnrow__top { display: flex; align-items: baseline; gap: 0.625rem; flex-wrap: wrap; }
+.learnrow__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-18);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.learnrow__name:hover { border-bottom-color: var(--signal); }
+.learnrow__cat {
+  margin-left: auto;
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.learnrow__cat:hover { color: var(--signal); }
+.learnrow__pair {
+  margin-top: 0.625rem;
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+}
+.learnrow__pair dt { padding-top: 0.15rem; }
+.learnrow__pair dd { margin: 0; font-size: var(--t-15); }
+
+@media (max-width: 767px) {
+  .learnrow { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .learnrow__hours {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.5rem;
+    border-right: 0;
+    padding-right: 0;
+  }
+  .learnrow__weight { margin-top: 0; margin-left: auto; }
+  .learnrow__pair { grid-template-columns: minmax(0, 1fr); gap: 0.125rem; }
+  .learnrow__pair dd { margin-bottom: 0.5rem; }
+  .ranked__row { flex-wrap: wrap; }
+}
+
+/* ============================================================
+   Print — the thing this design has always claimed to be.
+
+   The stylesheet's own header calls an entry "a laminated pocket
+   crib card" and there was never a print rule to make one. On
+   paper the site becomes exactly that: the title, the verdict,
+   the crib sheet, the lines to say, and the tells. Ink on white,
+   nothing that moves, nothing that needs a network.
+   ============================================================ */
+
+@media print {
+  /* The whole palette inverts through the tokens rather than through
+     a hundred overrides. Colour prints as grey and reads as noise. */
+  :root {
+    --paper: #fff;
+    --card: #fff;
+    --ink: #000;
+    --ink-2: #444;
+    --rule: #bbb;
+    --edge: #666;
+    --signal: #000;
+    --signal-deep: #000;
+    --stop: #000;
+    --v-yes: #000;
+    --v-kinda: #000;
+    --v-talk: #000;
+    --v-dont: #000;
+  }
+
+  html { scrollbar-width: auto; }
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 10.5pt;
+    line-height: 1.4;
+  }
+
+  @page { margin: 14mm; }
+
+  /* Chrome, navigation, and everything that only exists on a screen. */
+  .presence,
+  .hdr,
+  .ftr,
+  .rail,
+  .ticker,
+  .filters,
+  .entrybar,
+  .sheet,
+  .sheet__scrim,
+  .search,
+  .hero,
+  .box,
+  .band,
+  .empty__offer,
+  .crib__copy,
+  .doc__reads,
+  .figure,
+  .gallery,
+  .state {
+    display: none !important;
+  }
+
+  /* One column: the rail is gone, so the grid that made room for it goes too. */
+  .entry { display: block; }
+  .u-shell { max-width: none; padding-inline: 0; }
+  .shell > main { flex: none; }
+
+  /* Sources, References and Next door are all direct children of the article;
+     the sections worth printing live inside a .doc__block. */
+  .doc > .sec { display: none; }
+  .doc__block { display: none; }
+  .doc__block[data-block="crib"],
+  .doc__block[data-block="phrases"],
+  .doc__block[data-block="tells"] {
+    display: block;
+    break-inside: avoid;
+  }
+
+  .doc__head { border-bottom: 1px solid #000; padding-bottom: 0.5rem; }
+  .doc__name { font-size: 20pt; }
+  .doc__dek { font-size: 11pt; max-width: none; }
+
+  .crib { border: 1px solid #000; background: #fff; }
+  .crib__body { break-inside: avoid; }
+  .sec__h, .crib__title { font-size: 12pt; }
+
+  /* A URL nobody can click is worth its address; one in the crib is not. */
+  a { color: #000; text-decoration: none; }
+
+  /* The clock is a countdown on a screen and a lie on paper. */
+  .clock { display: none; }
+}
+
+/* ============================================================
+   Just learn it, on the front page.
+
+   The link was one word in the footer, which is nowhere. This is
+   the site's own counter-argument and it gets a band: the total
+   in hours, the three cheapest, and the way through.
+   ============================================================ */
+
+.learnband { border-top: 1px solid var(--edge); }
+
+.learnband__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.learnband__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  flex: none;
+}
+.learnband__n {
+  font-family: var(--data);
+  font-weight: 500;
+  font-size: var(--t-34);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--signal);
+}
+.learnband__total .u-label { margin-top: 0.25rem; }
+
+.learnband__list {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.learnband__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  border-top: 1px solid var(--edge);
+  padding-top: 0.75rem;
+}
+.learnband__hours {
+  font-family: var(--data);
+  font-weight: 500;
+  font-size: var(--t-18);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  flex: none;
+  min-width: 3.5ch;
+}
+.learnband__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-15);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.learnband__name:hover { border-bottom-color: var(--signal); }
+
+.learnband__cta {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-15);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: var(--signal);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.125rem;
+}
+.learnband__cta:hover { border-bottom-color: var(--signal); }
+
+/* The header link to it, marked like Spot but in ink rather than signal. */
+.hdr__learn { white-space: nowrap; }
+
+@media (max-width: 1199px) {
+  .learnband__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .learnband__list { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .learnband__top { gap: 1rem; }
+  .learnband__total { align-items: flex-start; text-align: left; }
+  .learnband__n { font-size: var(--t-24); }
+}
+
+/* ============================================================
+   Hard spoilers — the escape hatch, behind frosted glass.
+
+   Blurred rather than hidden, because the reader has to know it
+   is there to decide to use it. Marked in --stop: this is the
+   only thing on an entry that costs somebody else something.
+   ============================================================ */
+
+.spoil {
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--stop);
+  background: var(--card);
+  padding: 1.125rem 1.25rem 1.25rem;
+}
+.spoil .sec__h { color: var(--stop); }
+
+.spoil__lede {
+  margin-top: 0.375rem;
+  font-size: var(--t-13);
+  color: var(--ink-2);
+  max-width: 56ch;
+}
+
+.spoil__toggle {
+  margin-top: 0.875rem;
+  font-family: var(--data);
+  font-size: var(--t-11);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--edge);
+  padding: 0.375rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+}
+.spoil__toggle:hover { border-color: var(--stop); color: var(--stop); }
+
+.spoil__list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 1rem;
+  filter: blur(7px);
+  user-select: none;
+  /* Nothing inside is reachable while it is covered, by mouse or by tab. */
+  pointer-events: none;
+  transition: filter 240ms var(--ease-out);
+}
+.spoil__list.is-open {
+  filter: none;
+  user-select: auto;
+  pointer-events: auto;
+}
+
+.spoil__item { border-top: 1px solid var(--rule); padding-top: 0.75rem; }
+.spoil__reveal {
+  font-family: var(--body);
+  font-size: var(--t-18);
+  line-height: 1.45;
+}
+.spoil__why, .spoil__where {
+  margin-top: 0.5rem;
+  font-size: var(--t-13);
+  color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spoil__list { transition: none; }
 }

@@ -1,7 +1,7 @@
 /** Small form primitives shared by the guide editor. */
 
 import type { ReactNode } from "react";
-import type { CribSection, Phrase } from "../api";
+import type { CribSection, HardSpoiler, Phrase } from "../api";
 
 export function Field({
   label,
@@ -347,6 +347,74 @@ export function PhraseEditor({
         onClick={() => onChange([...phrases, { line: "", when: "", invites: null }])}
       >
         Add phrase
+      </button>
+    </div>
+  );
+}
+
+export function SpoilerEditor({
+  spoilers,
+  onChange,
+}: {
+  spoilers: HardSpoiler[];
+  onChange: (next: HardSpoiler[]) => void;
+}) {
+  const replace = (index: number, spoiler: HardSpoiler) => {
+    const next = [...spoilers];
+    next[index] = spoiler;
+    onChange(next);
+  };
+
+  return (
+    <div className="af">
+      <span className="af__label">Hard spoilers</span>
+      <span className="af__hint">
+        Only for something with a plot. The one fact a summary cannot give you &mdash; Mr.
+        Robot is Elliot, Reiner is the Armored Titan. Leave it empty rather than guess:
+        a wrong reveal gets somebody caught worse than no reveal.
+      </span>
+      {spoilers.map((spoiler, index) => (
+        <div className="af__crib" key={index}>
+          <div className="af__row">
+            <input
+              className="af__input"
+              value={spoiler.reveal}
+              placeholder="The reveal, stated flat"
+              onChange={(event) => replace(index, { ...spoiler, reveal: event.target.value })}
+            />
+            <button
+              type="button"
+              className="af__drop"
+              aria-label={`Remove spoiler ${index + 1}`}
+              onClick={() => onChange(spoilers.filter((_, i) => i !== index))}
+            >
+              ×
+            </button>
+          </div>
+          <input
+            className="af__input"
+            value={spoiler.lands_because}
+            placeholder="Why holding this proves you watched it"
+            onChange={(event) =>
+              replace(index, { ...spoiler, lands_because: event.target.value })
+            }
+          />
+          <input
+            className="af__input"
+            value={spoiler.where ?? ""}
+            placeholder="Optional: how far in it happens"
+            onChange={(event) =>
+              replace(index, { ...spoiler, where: event.target.value || null })
+            }
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        className="af__add"
+        onClick={() => onChange([...spoilers, { reveal: "", lands_because: "", where: null }])}
+      >
+        Add a spoiler
       </button>
     </div>
   );

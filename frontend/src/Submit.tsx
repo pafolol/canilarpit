@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import SubmissionForm from "./SubmissionForm";
+import { useDocumentTitle } from "./useDocumentTitle";
 
 /**
  * The long version, on its own page.
@@ -11,6 +12,10 @@ import SubmissionForm from "./SubmissionForm";
 export default function Submit() {
   const [params] = useSearchParams();
   const topic = params.get("topic") ?? "";
+  useDocumentTitle(
+    "Write it with us",
+    "Suggest an entry. An editor reads every one, checks it, and your name goes on it if you want it there.",
+  );
 
   return (
     <div className="u-shell">

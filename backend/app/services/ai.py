@@ -216,9 +216,24 @@ content, for all kinds:
   "vocabulary": [{"term": "<insider word>", "meaning": "<meaning>", "example": null}],
   "common_mistakes": ["<what gives newcomers away>"],
   "questions": [{"question": "<what you will be asked>", "answer": "<how to answer>"}],
+  "hard_spoilers": [
+    {
+      "reveal": "<the load-bearing secret of the plot, stated flat>",
+      "lands_because": "<why holding this proves attendance and a summary does not>",
+      "where": "<optional: how far in it happens, so nobody drops it on a beginner>"
+    }
+  ],
   "extra_sections": [],
   "spoiler_warning": <true when the guide reveals plot>
 }
+
+"hard_spoilers" is for anime, screen, and anything else with a plot people can
+be caught on; leave it [] everywhere else. Give 1-3. These are the escape hatch:
+the reader is being interrogated and produces the one fact that cannot be got
+from a summary - that Mr. Robot is Elliot, that Reiner is the Armored Titan.
+Pick the reveal the fandom treats as the dividing line between having watched it
+and having read about it. Never invent one; if you are not certain of the plot,
+return [].
 
 The template carries its own fields on top of those. Pick it by what the subject
 IS, because that decides what the reader needs:
@@ -227,12 +242,13 @@ anime - anime and manga.
   "premise", "ending_summary", "characters" (at least one, with
   {"name", "role", "fate", "relationships"}), "major_events" ({"title",
   "description", "spoiler_level": "low"|"medium"|"major", "citations"}),
-  "fandom_debates" (strings).
+  "fandom_debates" (strings). Always fill "hard_spoilers" for these.
 
 screen - films and live-action series. Anything with an ending people argue about.
   "premise", "ending_summary", "characters", "major_events" as above, and
   "where_it_dips" (strings): the weak season, the bad sequel, the stretch
-  everybody skips. Knowing where something sags is proof of attendance.
+  everybody skips. Knowing where something sags is proof of attendance. Always
+  fill "hard_spoilers" for these.
 
 lifestyle - a scene with objects, places and a look.
   "aesthetic", "brands" ({"name", "significance", "typical_price", "citations"}),

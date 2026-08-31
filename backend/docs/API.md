@@ -199,7 +199,7 @@ Query parameters:
 | `guide_type` | enum, optional | Filters by `anime`, `lifestyle`, or `general` |
 | `entry_type` | enum, repeatable | Filters by `scene`, `taste`, or `role` |
 | `verdict` | enum, repeatable | Filters by `yes`, `kinda`, `not_really`, or `dont` |
-| `sort` | enum | `relevance`, `newest`, or `title`; defaults to `relevance` |
+| `sort` | enum | `relevance`, `newest`, `title`, or `popular`; defaults to `relevance` |
 | `page` | integer | One-based page; defaults to `1` |
 | `page_size` | integer | Defaults to `20`, maximum `100` |
 
@@ -207,7 +207,8 @@ Query parameters:
 result; the two parameters intersect. `?verdict=dont&entry_type=role` returns roles you
 should not claim.
 
-When `q` is absent, `relevance` behaves like newest-first. Search is read-only and does not create a
+When `q` is absent, `relevance` behaves like newest-first. `popular` orders by `view_count`,
+which is deduplicated readers rather than requests. Search is read-only and does not create a
 guide, topic request, or account history entry.
 
 Success `200`: paginated guide cards.
@@ -233,6 +234,7 @@ Important response fields:
 | `aliases` | Alternative names for display or SEO |
 | `sources` | Citations referenced by content fact items |
 | `media` | Approved images only, already ordered by `sort_order` |
+| `view_count` | Deduplicated readers; also present on every card |
 | `last_verified_at` | When factual content was last reviewed |
 
 Anime content includes `premise`, `ending_summary`, `characters`, `major_events`, and
@@ -262,6 +264,85 @@ Query parameter `limit` defaults to `6` and accepts `1` through `20`.
 Success `200`: an array of guide cards, which may be empty.
 
 Failure `404`: the source guide is not published or does not exist.
+
+### `POST /api/v1/guides/{slug}/view`
+
+Access: Public.
+
+Counts one read of one entry, and returns the guide's new total.
+
+Deduplicated to one counted view per anonymous client per guide per `VIEW_DEDUPE_SECONDS`
+(default 1800). Inside that window the call succeeds, `counted` is `false`, and the total does
+not move. Without the deduplication the number would be a refresh count rather than a
+readership, so treat `view_count` as people, not requests.
+
+The client is identified by the same anonymous HMAC the submission form uses: no raw address is
+stored. The route is limited to 120 requests per hour per client fingerprint.
+
+Success `200`:
+
+```json
+{"slug": "naruto", "view_count": 412, "counted": true}
+```
+
+Failure `404`: no published guide has this slug.
+
+Frontend behavior: call it once, after the entry has loaded, and treat a failure as nothing.
+A count is decoration; the entry is the page.
+
+### `POST /api/v1/presence`
+
+Access: Public.
+
+Records that this client is on the site and returns how many are. One row per anonymous
+client, held in PostgreSQL rather than in memory so the number survives a restart and stays
+correct under more than one worker.
+
+`current` counts clients seen within `PRESENCE_WINDOW_SECONDS` (default 120). Rows older than
+`PRESENCE_TTL_SECONDS` (default 300) are swept on every call; the longer sweep window leaves
+slack for one missed heartbeat. The count is always the real one, including when it is `1`.
+
+Success `200`:
+
+```json
+{"current": 3}
+```
+
+Frontend behavior: a heartbeat roughly every 45 seconds, paused while the tab is hidden.
+
+### `GET /api/v1/learn`
+
+Access: Public.
+
+Every published entry, priced in the hours it takes to actually learn the thing, with the one
+book and the one thing to make. `hours` is read from the denormalized `guides.learn_hours`
+column so the sort happens in SQL; `book` and `make` come from the live published document.
+
+Query parameter `sort` accepts `hours` (default, cheapest first) or `title` (case-insensitive
+A to Z).
+
+Success `200`:
+
+```json
+{
+  "items": [
+    {
+      "slug": "letterboxd",
+      "title": "Letterboxd",
+      "category": {"id": "...", "slug": "screen", "title": "Screen"},
+      "entry_type": "taste",
+      "verdict": "kinda",
+      "hours": 8,
+      "book": "...",
+      "make": "..."
+    }
+  ],
+  "total_hours": 21503
+}
+```
+
+The verdict travels with each row deliberately: forty hours against a `yes` is a choice, and
+forty hours against a `dont` is the only route there is.
 
 ### `POST /api/v1/topic-requests`
 
@@ -1134,6 +1215,28 @@ Success `200` returns `{"processed": true}` for a new event and `{"processed": f
 previously processed retry.
 
 The frontend must never call this endpoint directly.
+
+## Served Pages
+
+These are not JSON endpoints. They exist only when `FRONTEND_DIST` contains a built app —
+the normal development case, where Vite serves the frontend and proxies here, mounts none of
+them. They are registered after every API router, so `/api/v1/*`, `/health`, `/docs` and
+`/openapi.json` always win.
+
+| Route | Returns |
+|---|---|
+| `GET /robots.txt` | Crawl rules, and the sitemap's absolute URL |
+| `GET /sitemap.xml` | Every published guide with `lastmod`, plus the category pages, `/`, `/just-learn-it` and `/submit` |
+| `GET /{path}` | `index.html`, or a real file from the build when one matches |
+
+For `/entry/{slug}` the served HTML has the guide's own `<title>`, `description`, `og:title`,
+`og:description`, `og:url`, `og:image` (its approved hero) and `twitter:card` injected before it
+leaves the server. This has to happen here: Slack, Discord, WhatsApp and search crawlers do not
+run JavaScript, so meta tags set from React reach none of them. `SITE_BASE_URL` supplies the
+absolute origin those tags need.
+
+Because the injected tags describe only the first page loaded, the frontend keeps the tab honest
+across client-side navigation with its own `useDocumentTitle` hook.
 
 ## Recommended Frontend Flows
 

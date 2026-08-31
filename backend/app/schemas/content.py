@@ -89,6 +89,30 @@ class FollowUp(BaseModel):
     counter: Counter | None = None
 
 
+class HardSpoiler(BaseModel):
+    """The reveal you produce when somebody is about to catch you.
+
+    Not trivia, and not a plot summary. The load-bearing secret of the thing:
+    what a person who actually watched it carries and a summary-reader does not.
+    Knowing that Mr. Robot is Elliot ends the interrogation, because there is no
+    way to hold that and not have seen it.
+
+    It is a weapon with a price. Firing it ruins the thing for whoever hears it,
+    which is why the section stays blurred until the reader asks for it, and why
+    `where` names how far in it happens - nobody should drop a final-season
+    reveal on somebody who is three episodes deep.
+    """
+
+    reveal: str = Field(min_length=1, max_length=600)
+    lands_because: str = Field(min_length=1, max_length=800)
+    where: str | None = Field(default=None, max_length=200)
+
+    @field_validator("reveal", "lands_because")
+    @classmethod
+    def tidy(cls, value: str) -> str:
+        return " ".join(value.split())
+
+
 class LearnPath(BaseModel):
     """The honest alternative to larping: what it costs to actually know the thing."""
 
@@ -189,6 +213,7 @@ class CommonGuideContent(BaseModel):
     vocabulary: list[VocabularyItem] = Field(default_factory=list, max_length=50)
     common_mistakes: list[str] = Field(default_factory=list, max_length=30)
     questions: list[QuestionAnswer] = Field(default_factory=list, max_length=30)
+    hard_spoilers: list[HardSpoiler] = Field(default_factory=list, max_length=6)
     extra_sections: list[ExtraSection] = Field(default_factory=list, max_length=20)
     spoiler_warning: bool = False
 

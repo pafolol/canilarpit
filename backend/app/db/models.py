@@ -207,6 +207,12 @@ class Guide(TimestampMixin, Base):
     flags: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
     dek: Mapped[str] = mapped_column(Text, default="", server_default="")
     credit_name: Mapped[str | None] = mapped_column(String(80))
+    # Denormalised from the published document so /learn sorts in SQL rather than
+    # by opening every revision, and so a card can carry the number.
+    learn_hours: Mapped[int | None] = mapped_column(Integer)
+    view_count: Mapped[int] = mapped_column(
+        BigInteger, default=0, server_default="0", nullable=False, index=True
+    )
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
@@ -350,6 +356,45 @@ class GuideHistory(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
     )
     view_count: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+
+
+class GuideView(Base):
+    """One anonymous read of one entry.
+
+    Rows exist so the counter can be deduped: without a window per client per
+    guide the number is a refresh count, and this site does not print numbers it
+    does not mean. `client_hash` is the same HMAC the submission form uses, so no
+    raw address is stored here either.
+    """
+
+    __tablename__ = "guide_views"
+    __table_args__ = (
+        Index("ix_guide_views_guide_client_seen", "guide_id", "client_hash", "viewed_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    guide_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("guides.id", ondelete="CASCADE"), index=True
+    )
+    client_hash: Mapped[str] = mapped_column(String(64), index=True)
+    viewed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
+
+
+class Presence(Base):
+    """Who is on the site right now, one row per anonymous client.
+
+    In the database rather than in memory so the number survives a restart and
+    stays right if the API ever runs more than one worker.
+    """
+
+    __tablename__ = "presence"
+
+    client_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    last_seen: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
 
 
 class SearchHistory(Base):

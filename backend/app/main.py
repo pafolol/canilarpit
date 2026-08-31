@@ -9,6 +9,7 @@ from sqlalchemy.exc import OperationalError
 
 from app.api.router import api_router
 from app.api.routes.health import router as health_router
+from app.api.routes.site import mount_frontend
 from app.core.config import settings
 from app.core.rate_limit import limiter
 
@@ -62,7 +63,13 @@ def handle_database_unavailable(request: Request, exc: OperationalError) -> JSON
 app.include_router(health_router)
 app.include_router(api_router, prefix=settings.api_v1_prefix)
 
+# Last, and on purpose: the frontend's catch-all would otherwise swallow
+# /api/v1/*, /health, /docs and /openapi.json. With no build on disk nothing is
+# mounted at all, and the API answers at the root as it always did.
+frontend_mounted = mount_frontend(app)
 
-@app.get("/", include_in_schema=False)
-def root() -> dict[str, str]:
-    return {"name": settings.app_name, "docs": "/docs"}
+if not frontend_mounted:
+
+    @app.get("/", include_in_schema=False)
+    def root() -> dict[str, str]:
+        return {"name": settings.app_name, "docs": "/docs"}

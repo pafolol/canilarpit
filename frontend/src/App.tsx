@@ -3,7 +3,9 @@ import { Link, NavLink, Route, Routes, useLocation, useParams } from "react-rout
 import AdminApp from "./admin/AdminApp";
 import Entry from "./Entry";
 import Home from "./Home";
+import JustLearnIt from "./JustLearnIt";
 import NotListed from "./NotListed";
+import Presence from "./Presence";
 import Submit from "./Submit";
 
 function CategoryRoute() {
@@ -36,6 +38,9 @@ export default function App() {
 
   return (
     <div className="shell">
+      {/* The one thing on the page that is about right now rather than about the entry. */}
+      <Presence />
+
       {/* Offline turns the header hairline to --rule. No modal. */}
       <header className={`hdr${offline ? " is-offline" : ""}`}>
         <div className="hdr__in u-shell">
@@ -44,6 +49,7 @@ export default function App() {
             <NavLink className="hdr__link hdr__link--type" to="/?type=scene">Scenes</NavLink>
             <NavLink className="hdr__link hdr__link--type" to="/?type=taste">Taste</NavLink>
             <NavLink className="hdr__link hdr__link--type" to="/?type=role">Roles</NavLink>
+            <NavLink className="hdr__link hdr__learn" to="/just-learn-it">Just learn it</NavLink>
             <NavLink className="hdr__link hdr__spot" to="/spot-the-larper">Spot →</NavLink>
           </nav>
         </div>
@@ -60,10 +66,7 @@ export default function App() {
             path="/spot-the-larper"
             element={<NotListed note="Every tell on the site, as one flat list. It comes after the entry pages." />}
           />
-          <Route
-            path="/just-learn-it"
-            element={<NotListed note="Hours, the one book, the one thing to make. It comes after the entry pages." />}
-          />
+          <Route path="/just-learn-it" element={<JustLearnIt />} />
           <Route path="/stats" element={<NotListed note="Counts, medians, and what gets submitted most. It comes later." />} />
           <Route path="*" element={<NotListed slug={pathname} />} />
         </Routes>

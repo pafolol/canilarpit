@@ -12,13 +12,15 @@ request. Point DATABASE_URL at a scratch database, not production.
 """
 
 import json
+import re
 import uuid
 from collections.abc import Iterator
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import delete, func, select, text, update
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
@@ -28,6 +30,8 @@ from app.db.models import (
     Guide,
     GuideMedia,
     GuideStatus,
+    GuideView,
+    Presence,
     Submission,
     SubmissionStatus,
     TopicRequest,
@@ -35,7 +39,7 @@ from app.db.models import (
     UserRole,
 )
 from app.db.session import SessionLocal
-from app.main import app
+from app.main import app, frontend_mounted
 from app.schemas.content import GuideDocument
 
 EDITOR_ID = "test:editor"
@@ -127,6 +131,11 @@ def client() -> Iterator[TestClient]:
         db.execute(delete(BlockedClient))
         db.execute(delete(User).where(User.clerk_user_id == EDITOR_ID))
         db.commit()
+
+    # guide_views and presence are deliberately absent here. This database is
+    # somebody's development site as well as a fixture, and its view counts are
+    # real reads by real people. Each counting test restores exactly the rows it
+    # created; a blanket delete would quietly destroy the rest.
 
 
 def test_readiness_reaches_postgres(client: TestClient) -> None:
@@ -695,3 +704,298 @@ def test_an_editor_can_draft_and_publish_a_guide(client: TestClient) -> None:
         client.post(f"/api/v1/admin/guides/{guide_id}/archive", headers=DEV_HEADERS)
 
     assert client.get(f"/api/v1/guides/{slug}").status_code == 404, "archiving unpublishes"
+
+# ---------------------------------------------------------------- counting
+
+COUNTED_SLUG = "natural-wine"
+
+
+def guide_id_for(db, slug: str) -> uuid.UUID:
+    return db.scalar(select(Guide.id).where(Guide.slug == slug))
+
+
+def stored_views(slug: str) -> int:
+    with SessionLocal() as db:
+        return db.scalar(select(Guide.view_count).where(Guide.slug == slug)) or 0
+
+
+def view_ids(slug: str) -> set[uuid.UUID]:
+    """The rows that were already there.
+
+    Everything the counting tests touch is scoped against this set, because the
+    reads in this database belong to whoever was using the site, not to pytest.
+    """
+    with SessionLocal() as db:
+        return set(
+            db.scalars(
+                select(GuideView.id).where(GuideView.guide_id == guide_id_for(db, slug))
+            ).all()
+        )
+
+
+def ours(guide_id: uuid.UUID, keep: set[uuid.UUID]):
+    """Rows for this guide that this test created."""
+    clause = GuideView.guide_id == guide_id
+    return clause if not keep else (clause & GuideView.id.not_in(keep))
+
+
+def age_views(slug: str, seconds: int, keep: set[uuid.UUID]) -> None:
+    """Push this test's own view rows back in time, out of the dedupe window."""
+    with SessionLocal() as db:
+        db.execute(
+            update(GuideView)
+            .where(ours(guide_id_for(db, slug), keep))
+            .values(viewed_at=func.now() - timedelta(seconds=seconds))
+        )
+        db.commit()
+
+
+def reset_views(slug: str, to: int, keep: set[uuid.UUID]) -> None:
+    """Put the guide back exactly as it was found: its rows, and its total."""
+    with SessionLocal() as db:
+        guide_id = guide_id_for(db, slug)
+        db.execute(delete(GuideView).where(ours(guide_id, keep)))
+        db.execute(update(Guide).where(Guide.id == guide_id).values(view_count=to))
+        db.commit()
+
+
+def test_a_second_read_inside_the_window_does_not_count_twice(client: TestClient) -> None:
+    """Without the dedupe the number is a refresh count, not a readership."""
+    before = stored_views(COUNTED_SLUG)
+    existing = view_ids(COUNTED_SLUG)
+    try:
+        first = client.post(f"/api/v1/guides/{COUNTED_SLUG}/view").json()
+        assert first["counted"] is True
+        assert first["view_count"] == before + 1
+
+        again = client.post(f"/api/v1/guides/{COUNTED_SLUG}/view").json()
+        assert again["counted"] is False, "a reload is not a second reader"
+        assert again["view_count"] == before + 1
+        assert stored_views(COUNTED_SLUG) == before + 1
+
+        # The same reader, tomorrow. That is a second reading, and it counts.
+        age_views(COUNTED_SLUG, settings.view_dedupe_seconds + 60, existing)
+        later = client.post(f"/api/v1/guides/{COUNTED_SLUG}/view").json()
+        assert later["counted"] is True
+        assert later["view_count"] == before + 2
+    finally:
+        reset_views(COUNTED_SLUG, before, existing)
+
+
+def test_the_count_travels_with_the_card_and_sorts(client: TestClient) -> None:
+    """`popular` orders by readers.
+
+    Asserted as a relation rather than a position: other entries carry real
+    counts, so which one is top is not this suite's to decide.
+    """
+    before = stored_views(COUNTED_SLUG)
+    existing = view_ids(COUNTED_SLUG)
+    try:
+        client.post(f"/api/v1/guides/{COUNTED_SLUG}/view")
+
+        detail = client.get(f"/api/v1/guides/{COUNTED_SLUG}").json()
+        assert detail["view_count"] == before + 1
+
+        ranked = client.get(
+            "/api/v1/guides", params={"sort": "popular", "page_size": 100}
+        ).json()["items"]
+        counts = [item["view_count"] for item in ranked]
+        assert counts == sorted(counts, reverse=True), "most read first, all the way down"
+
+        position = {item["slug"]: index for index, item in enumerate(ranked)}
+        unread = next((item["slug"] for item in ranked if item["view_count"] == 0), None)
+        assert unread is not None, "the catalog still holds something nobody has opened"
+        assert position[COUNTED_SLUG] < position[unread], "a read entry outranks an unread one"
+    finally:
+        reset_views(COUNTED_SLUG, before, existing)
+
+
+def test_a_view_of_a_missing_guide_is_a_404(client: TestClient) -> None:
+    assert client.post("/api/v1/guides/not-a-real-guide/view").status_code == 404
+
+
+# Three planted clients, and the two windows that tell them apart.
+STALE = "test-presence-stale"
+RECENT = "test-presence-recent"
+LURKER = "test-presence-lurker"
+
+
+def plant_presence(client_hash: str, seconds_ago: int) -> None:
+    with SessionLocal() as db:
+        db.execute(
+            text(
+                "INSERT INTO presence (client_hash, last_seen) "
+                "VALUES (:hash, now() - make_interval(secs => :seconds)) "
+                "ON CONFLICT (client_hash) DO UPDATE SET last_seen = EXCLUDED.last_seen"
+            ),
+            {"hash": client_hash, "seconds": seconds_ago},
+        )
+        db.commit()
+
+
+def presence_rows() -> tuple[set[str], set[str]]:
+    """Every row, and the subset recent enough to be counted."""
+    with SessionLocal() as db:
+        kept = set(db.scalars(select(Presence.client_hash)).all())
+        fresh = set(
+            db.scalars(
+                select(Presence.client_hash).where(
+                    Presence.last_seen
+                    >= func.now() - timedelta(seconds=settings.presence_window_seconds)
+                )
+            ).all()
+        )
+    return kept, fresh
+
+
+def test_presence_counts_only_recent_rows(client: TestClient) -> None:
+    """Two windows, and a row can be on either side of each.
+
+    Half a minute ago is here. Two and a half minutes ago is still a row — one
+    missed heartbeat does not evict somebody who is reading — but it is not a
+    person on the site. Six minutes ago is neither.
+    """
+    plant_presence(STALE, settings.presence_ttl_seconds + 60)
+    plant_presence(RECENT, 30)
+    plant_presence(LURKER, settings.presence_window_seconds + 30)
+    try:
+        current = client.post("/api/v1/presence").json()["current"]
+        kept, fresh = presence_rows()
+
+        assert STALE not in kept, "the sweep runs on every heartbeat"
+        assert RECENT in fresh, "half a minute ago is on the site"
+        assert LURKER in kept, "inside the TTL, so the row survives a missed beat"
+        assert LURKER not in fresh, "outside the window, so it is not a reader"
+
+        # At least the caller and the recent row, and never more than the rows
+        # that actually qualify. Real readers may be beating alongside this.
+        assert current >= 2
+        assert current <= len(fresh) + 1
+    finally:
+        with SessionLocal() as db:
+            db.execute(delete(Presence).where(Presence.client_hash.in_([STALE, RECENT, LURKER])))
+            db.commit()
+
+
+def test_a_second_heartbeat_from_one_client_is_still_one_person(client: TestClient) -> None:
+    before, _ = presence_rows()
+    client.post("/api/v1/presence")
+    once, _ = presence_rows()
+    client.post("/api/v1/presence")
+    twice, _ = presence_rows()
+
+    assert len(once - before) <= 1, "a heartbeat is one row at most"
+    assert not (twice - once), "beating again updates that row rather than adding another"
+
+
+# ---------------------------------------------------------------- just learn it
+
+
+def test_learn_sorts_by_hours_and_carries_the_verdict(client: TestClient) -> None:
+    body = client.get("/api/v1/learn").json()
+    assert body["items"], "every published guide names its hours"
+
+    hours = [row["hours"] for row in body["items"]]
+    assert hours == sorted(hours), "cheapest first is the point of the page"
+    assert body["total_hours"] == sum(hours)
+
+    row = next(item for item in body["items"] if item["slug"] == "natural-wine")
+    assert row["book"], "the one book comes out of the live document"
+    assert row["make"], "so does the one thing to make"
+    assert row["verdict"] in {"yes", "kinda", "talk_only", "dont"}
+
+    titles = [item["title"] for item in client.get(
+        "/api/v1/learn", params={"sort": "title"}
+    ).json()["items"]]
+    assert titles == sorted(titles, key=str.lower)
+
+
+def test_learn_lists_only_published_guides(client: TestClient) -> None:
+    listed = {row["slug"] for row in client.get("/api/v1/learn").json()["items"]}
+    with SessionLocal() as db:
+        published = set(
+            db.scalars(select(Guide.slug).where(Guide.status == GuideStatus.PUBLISHED)).all()
+        )
+        unpublished = set(
+            db.scalars(select(Guide.slug).where(Guide.status != GuideStatus.PUBLISHED)).all()
+        )
+    assert listed <= published
+    assert not (listed & unpublished)
+
+
+# ---------------------------------------------------------------- findability
+
+NO_BUILD = "no built frontend; run `npm run build`"
+
+
+def test_robots_points_at_the_sitemap_and_keeps_crawlers_off_the_panel(
+    client: TestClient,
+) -> None:
+    if not frontend_mounted:
+        pytest.skip(NO_BUILD)
+    body = client.get("/robots.txt").text
+    assert "Disallow: /admin" in body
+    assert f"{settings.site_origin}/sitemap.xml" in body
+
+
+def test_the_sitemap_lists_every_published_guide_and_no_drafts(client: TestClient) -> None:
+    if not frontend_mounted:
+        pytest.skip(NO_BUILD)
+    response = client.get("/sitemap.xml")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/xml")
+
+    with SessionLocal() as db:
+        published = set(
+            db.scalars(select(Guide.slug).where(Guide.status == GuideStatus.PUBLISHED)).all()
+        )
+        drafts = set(
+            db.scalars(select(Guide.slug).where(Guide.status != GuideStatus.PUBLISHED)).all()
+        )
+
+    listed = set(re.findall(r"<loc>[^<]*/entry/([^<]+)</loc>", response.text))
+    assert listed == published
+    assert not (listed & drafts), "a draft is not a page anybody can open"
+    assert f"<loc>{settings.site_origin}/</loc>" in response.text
+
+
+def test_an_entry_url_serves_the_app_with_its_own_sharing_tags(client: TestClient) -> None:
+    """The check that matters: nothing that reads a link runs JavaScript.
+
+    If the preview only works in a browser, the preview is not fixed.
+    """
+    if not frontend_mounted:
+        pytest.skip(NO_BUILD)
+    response = client.get("/entry/natural-wine")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+
+    page = response.text
+    head = page.split("</head>")[0]
+    detail = client.get("/api/v1/guides/natural-wine").json()
+    expected = f"{detail['title']} — canilarpit"
+
+    assert f"<title>{expected}</title>" in head
+    assert head.count("<title>") == 1, "a second title would be the generic one"
+    assert f'property="og:title" content="{expected}"' in head
+    assert f'property="og:url" content="{settings.site_origin}/entry/natural-wine"' in head
+    assert 'property="og:description"' in head
+    assert head.count('name="description"') == 1, "the generic description was replaced"
+    if detail["media"]:
+        assert 'property="og:image"' in head
+        assert 'name="twitter:card" content="summary_large_image"' in head
+    # And it is still the app: the built bundle is what the browser then runs.
+    assert "/assets/" in page
+
+
+def test_the_app_never_shadows_the_api(client: TestClient) -> None:
+    if not frontend_mounted:
+        pytest.skip(NO_BUILD)
+    assert client.get("/api/v1/guides/not-a-real-guide").status_code == 404
+    assert client.get("/api/v1/nothing-here").status_code == 404
+    assert client.get("/health/live").json() == {"status": "ok"}
+    assert client.get("/openapi.json").status_code == 200
+    # Anything else is the single-page app, which renders its own "not listed".
+    unknown = client.get("/spot-the-larper")
+    assert unknown.status_code == 200
+    assert unknown.headers["content-type"].startswith("text/html")

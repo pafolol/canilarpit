@@ -12,8 +12,8 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { api, clockOf, type GuideCard } from "./api";
-import { ExposureClock, TypeGlyph, VerdictBadge } from "./components";
+import { api, type GuideCard } from "./api";
+import { ReadCount, TypeGlyph, VerdictBadge } from "./components";
 
 /* ---------------------------------------------------------------- index */
 
@@ -143,7 +143,7 @@ function GuidePeek({ guide, label }: { guide: GuideCard; label: string }) {
       >
         <span className="xcard__top">
           <TypeGlyph type={guide.larp.entry_type} label />
-          <ExposureClock seconds={clockOf(guide.larp)} />
+          <ReadCount count={guide.view_count} compact />
         </span>
         <span className="xcard__name">{guide.title}</span>
         <VerdictBadge verdict={guide.larp.verdict} />

@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   api,
   ApiError,
-  clockOf,
   type Category,
   type Clock,
   type CribSection,
@@ -141,12 +140,47 @@ export function FlagChips({ flags, stack = false }: { flags: string[]; stack?: b
   );
 }
 
+/* ----------------------------------------------------------------
+   ReadCount — deduped readers, printed plainly or not at all.
+   ---------------------------------------------------------------- */
+
+const COUNT = new Intl.NumberFormat("en-GB");
+
+/**
+ * One read per person per entry per half hour, counted server-side.
+ *
+ * Two forms, and they treat zero differently on purpose. The sentence says
+ * "nobody has larped this yet", because a nought beside a headline reads as a
+ * verdict on the entry rather than on the day it shipped. The compact form
+ * stands in a stat slot, where a card that says nothing looks broken, so it
+ * prints the number it has.
+ */
+export function ReadCount({ count, compact = false }: { count: number | null; compact?: boolean }) {
+  if (count === null) return null;
+  if (compact) {
+    return (
+      <span className="reads reads--compact" title={`${COUNT.format(count)} have larped this`}>
+        {COUNT.format(count)} larped
+      </span>
+    );
+  }
+  return (
+    <span className="reads">
+      {count < 1
+        ? "Nobody has larped this yet."
+        : count === 1
+          ? "One person has larped this."
+          : `${COUNT.format(count)} have larped this.`}
+    </span>
+  );
+}
+
 export function EntryCard({ entry }: { entry: GuideCard }) {
   return (
     <Link className="card" to={`/entry/${entry.slug}`}>
       <div className="card__top">
         <TypeGlyph type={entry.larp.entry_type} label />
-        <ExposureClock seconds={clockOf(entry.larp)} className="card__clock" />
+        <ReadCount count={entry.view_count} compact />
       </div>
       <div className="card__body">
         <h3 className="card__name">{entry.title}</h3>
@@ -171,7 +205,7 @@ export function TickerRow({ entries }: { entries: GuideCard[] }) {
     <Link className="ticker__item" key={e.slug} to={`/entry/${e.slug}`}>
       <span className="glyph" aria-hidden="true">{TYPE_GLYPH[e.larp.entry_type]}</span>
       {e.title.toUpperCase()}
-      <ExposureClock seconds={clockOf(e.larp)} />
+      <ReadCount count={e.view_count} compact />
       <span className="ticker__sep" aria-hidden="true">·</span>
     </Link>
   ));

@@ -66,6 +66,8 @@ class GuideListItem(BaseModel):
     guide_type: GuideType
     category: CategorySummary
     larp: LarpCard
+    # Deduped readers, not requests. See POST /guides/{slug}/view.
+    view_count: int = 0
     published_at: datetime | None
 
 
@@ -120,6 +122,7 @@ class GuideDetail(BaseModel):
     media: list[MediaResponse]
     # Whoever suggested it, when a reader did.
     credit_name: str | None = None
+    view_count: int = 0
     published_at: datetime | None
     last_verified_at: datetime | None
 
@@ -142,6 +145,42 @@ class TopicRequestResponse(BaseModel):
     request_count: int | None = None
     recorded: bool
     matching_guide: GuideListItem | None = None
+
+
+class LearnRow(BaseModel):
+    """One line of /just-learn-it: the honest cost of not larping it.
+
+    The verdict travels with it on purpose. Forty hours against a YES is a
+    choice; forty hours against a DON'T is the only route there is.
+    """
+
+    slug: str
+    title: str
+    category: CategorySummary
+    entry_type: EntryType
+    verdict: Verdict
+    hours: int
+    book: str
+    make: str
+
+
+class LearnPage(BaseModel):
+    items: list[LearnRow]
+    total_hours: int
+
+
+class ViewReceipt(BaseModel):
+    """What a counted read returns. `counted` is false inside the dedupe window."""
+
+    slug: str
+    view_count: int
+    counted: bool
+
+
+class PresenceResponse(BaseModel):
+    """How many anonymous clients have checked in recently. Always the real number."""
+
+    current: int
 
 
 class UserResponse(ORMModel):
