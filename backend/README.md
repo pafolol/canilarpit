@@ -39,29 +39,31 @@ Docker is not used by this project.
 
 From the repository root, `npm run setup` does all of this. By hand, from `backend/`:
 
-```powershell
-python -m venv ..\.venv
-..\.venv\Scripts\Activate.ps1
+```bash
+python3 -m venv ../.venv
+source ../.venv/bin/activate
 python -m pip install -e ".[dev]"
-Copy-Item .env.example .env
+cp .env.example .env
 ```
 
-Create a database with credentials that work on your machine:
+Create a database with credentials that work on your machine. On macOS the client tools
+come from `brew install postgresql@17` and stay off the PATH, so add them first:
 
-```powershell
-createdb -U postgres canilarpit
+```bash
+export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+createdb -O postgres canilarpit
 ```
 
 Set `DATABASE_URL` in `.env`, then migrate and seed:
 
-```powershell
+```bash
 python -m alembic upgrade head
 canilarpit seed
 ```
 
 Start the API:
 
-```powershell
+```bash
 uvicorn app.main:app --reload
 ```
 
@@ -91,7 +93,7 @@ Point the `user.created`, `user.updated`, and `user.deleted` webhooks at
 
 After an account signs in once and calls `GET /api/v1/me`, give it a role:
 
-```powershell
+```bash
 canilarpit set-role user_clerk_id admin
 ```
 
@@ -113,7 +115,7 @@ Reviewed guide files live in `content/guides/`. `canilarpit seed` publishes them
 creates the default categories. The CMS endpoints edit database drafts, and the export
 endpoint produces the same portable JSON for Git review.
 
-```powershell
+```bash
 canilarpit import-guide content/guides/naruto.json --publish
 canilarpit export-guide naruto content/guides/naruto.json
 ```
@@ -152,7 +154,7 @@ offering the button.
 
 Jobs can also be drained by a separate process:
 
-```powershell
+```bash
 canilarpit work --limit 5
 ```
 
@@ -199,7 +201,7 @@ Free-text providers are filtered by term overlap before results are returned.
 Assets from TVmaze, AniList, Jikan and fanart.tv carry `editorial_only` in their
 metadata: usable with credit, rights held by the copyright owner.
 
-```powershell
+```bash
 canilarpit backfill-images --replace
 ```
 
@@ -226,7 +228,7 @@ Only `approved` assets appear on a public guide page.
 
 ## Checks
 
-```powershell
+```bash
 python -m ruff check .
 python -m pytest
 python -m alembic upgrade head --sql

@@ -27,7 +27,7 @@ and that demand shows up in the editors' backlog.
 canilarpit/
 ├── backend/     FastAPI + PostgreSQL: catalog, editorial CMS, guide generation
 ├── frontend/    React + Vite: the public reading interface and the admin panel
-└── scripts/     Setup, dev, migrate, seed, check
+└── scripts/     The same tasks in PowerShell, for Windows
 ```
 
 The two halves used to be separate branches. They are one repo now: `backend/` owns the
@@ -36,15 +36,35 @@ in the interface holds its own copy of the content.
 
 ## Quick start
 
-```powershell
+macOS, with [Homebrew](https://brew.sh). Node and Python 3.11+ come from `brew install
+node python`. The database is its own step:
+
+```bash
+brew install postgresql@17
+brew services start postgresql@17
+```
+
+The formula is versioned, so its client tools stay off the PATH, and the cluster it
+creates has no `postgres` role — which is the one the stock `DATABASE_URL` asks for.
+Both are a one-time fix:
+
+```bash
+export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+psql -d postgres -c "CREATE ROLE postgres LOGIN SUPERUSER PASSWORD 'postgres'"
+createdb -O postgres canilarpit
+```
+
+Then:
+
+```bash
 npm run setup
 ```
 
 That creates `.venv`, installs both halves, and writes `backend/.env` and
-`frontend/.env` from their examples. Then point `DATABASE_URL` at a database you have
-created, and:
+`frontend/.env` from their examples. The stock `DATABASE_URL` already names the database
+you just created, so nothing needs editing:
 
-```powershell
+```bash
 npm run db:migrate
 npm run db:seed
 npm run dev
@@ -65,12 +85,12 @@ refuses that bypass outright when `APP_ENV=production`.
 
 The first sign-in creates a `member`. Promote it once:
 
-```powershell
-.venv\Scripts\python.exe -m app.cli set-role local-admin admin
+```bash
+.venv/bin/python -m app.cli set-role local-admin admin
 ```
 
-(run from `backend/`, or use `canilarpit set-role local-admin admin` with the venv
-active). Reload `/admin` and the catalog appears.
+(from the repo root, or `canilarpit set-role local-admin admin` with the venv active).
+Reload `/admin` and the catalog appears.
 
 ## Generating a guide
 
@@ -128,9 +148,9 @@ or show. Those assets are stored with `editorial_only` set, the admin panel labe
 
 To illustrate guides that have none:
 
-```powershell
-.venv\Scripts\canilarpit.exe backfill-images          # published guides missing images
-.venv\Scripts\canilarpit.exe backfill-images --replace # rebuild all of them
+```bash
+.venv/bin/canilarpit backfill-images          # published guides missing images
+.venv/bin/canilarpit backfill-images --replace # rebuild all of them
 ```
 
 The guide editor has a **Regenerate** button that rewrites an existing guide from its
@@ -140,8 +160,8 @@ refetch the pictures as well.
 
 Generation runs inside the API process as a background task. For a separate worker:
 
-```powershell
-canilarpit work --limit 5
+```bash
+.venv/bin/canilarpit work --limit 5
 ```
 
 ## Reader submissions
@@ -202,13 +222,18 @@ card the design has always claimed to be.
 
 ## Checks
 
-```powershell
+```bash
 npm run check
 ```
 
 Runs `ruff`, `pytest`, `oxlint`, and the production build. The tests in
 `backend/tests/test_api_live.py` exercise the real API against PostgreSQL and skip
 themselves when no seeded database is reachable, so the suite is useful either way.
+
+Two of them want more than a database. `test_the_seeded_guides_are_illustrated` expects
+`backfill-images` to have run, and `test_regenerating_an_unknown_guide_is_a_404` expects
+generation to be configured — the endpoint answers 503 before it looks the guide up, so
+any non-empty `OPENAI_API_KEY` satisfies it.
 
 ## What is where
 
