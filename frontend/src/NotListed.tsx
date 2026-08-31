@@ -1,4 +1,4 @@
-import { SubmitBox } from "./components";
+import SubmissionForm from "./SubmissionForm";
 
 const asTopic = (slug?: string) =>
   (slug ?? "").replace(/^\/+/, "").replace(/[-_/]+/g, " ").trim();
@@ -16,7 +16,7 @@ export default function NotListed({ slug, note }: { slug?: string; note?: string
             </>
           )}
         </p>
-        {!note && <SubmitBox topic={asTopic(slug)} />}
+        {!note && <SubmissionForm topic={asTopic(slug)} />}
       </section>
     </div>
   );

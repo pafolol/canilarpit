@@ -18,11 +18,22 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, select, text
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.db.models import Guide, GuideMedia, GuideStatus, TopicRequest, User, UserRole
+from app.db.models import (
+    BlockedClient,
+    Category,
+    Guide,
+    GuideMedia,
+    GuideStatus,
+    Submission,
+    SubmissionStatus,
+    TopicRequest,
+    User,
+    UserRole,
+)
 from app.db.session import SessionLocal
 from app.main import app
 from app.schemas.content import GuideDocument
@@ -32,6 +43,7 @@ EDITOR_ID = "test:editor"
 GUIDE_PREFIX = "test-larp-"
 TOPIC_PREFIX = "test topic "
 CONTENT = Path(__file__).resolve().parent.parent / "content" / "guides"
+SUBMISSION_PREFIX = "Test submission "
 DEV_HEADERS = {
     "X-Dev-Clerk-User-Id": EDITOR_ID,
     "X-Dev-Email": "editor@example.test",
@@ -109,6 +121,10 @@ def client() -> Iterator[TestClient]:
         db.execute(
             delete(TopicRequest).where(TopicRequest.normalized_topic.startswith(TOPIC_PREFIX))
         )
+        db.execute(
+            delete(Submission).where(Submission.topic.startswith(SUBMISSION_PREFIX))
+        )
+        db.execute(delete(BlockedClient))
         db.execute(delete(User).where(User.clerk_user_id == EDITOR_ID))
         db.commit()
 
@@ -365,6 +381,159 @@ def test_swapping_an_unknown_placement_is_a_404(client: TestClient) -> None:
         headers=DEV_HEADERS,
     )
     assert response.status_code == 404
+
+
+SUBMISSION_NOTES = (
+    "Orienteering is a running sport where you navigate between control points "
+    "with a map and a compass. People argue about route choice and attack points, "
+    "and the tell is not being able to fold a map while running."
+)
+
+
+def open_form(client: TestClient) -> str:
+    return client.get("/api/v1/submissions/form").json()["token"]
+
+
+def send(client: TestClient, token: str, **overrides):
+    body = {"topic": "Orienteering", "notes": SUBMISSION_NOTES, "token": token}
+    body.update(overrides)
+    return client.post("/api/v1/submissions", json=body)
+
+
+def submission_count() -> int:
+    with SessionLocal() as db:
+        return db.scalar(select(func.count()).select_from(Submission)) or 0
+
+
+def test_a_submission_needs_a_token_from_the_form(client: TestClient) -> None:
+    assert send(client, "v1.1.deadbeef").status_code == 400
+
+
+def test_a_submission_sent_instantly_is_refused(client: TestClient) -> None:
+    """A person reads the form. A script posts the moment it loads."""
+    response = send(client, open_form(client))
+    assert response.status_code == 400
+    assert "faster" in response.json()["detail"]
+
+
+def test_the_honeypot_is_silent(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "submission_min_seconds", 0.0)
+    response = send(client, open_form(client), website="http://spam.example")
+    assert response.status_code == 400
+    assert "honeypot" not in response.json()["detail"].lower()
+
+
+def test_a_thin_submission_is_refused(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "submission_min_seconds", 0.0)
+    assert send(client, open_form(client), notes="dunno").status_code == 422
+
+
+def test_a_topic_that_exists_points_at_the_guide_and_stores_nothing(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "submission_min_seconds", 0.0)
+    before = submission_count()
+    response = send(client, open_form(client), topic="Sourdough")
+
+    assert response.status_code == 200, "nothing was created, so this is not a 201"
+    body = response.json()
+    assert body["received"] is False
+    assert body["matching_guide"]["slug"] == "sourdough"
+    assert submission_count() == before
+
+
+def test_a_real_submission_is_stored_with_its_credit_and_no_raw_address(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "submission_min_seconds", 0.0)
+    topic = f"{SUBMISSION_PREFIX}{uuid.uuid4().hex[:8]}"
+    response = send(
+        client, open_form(client), topic=topic, credit_name="A reader", category_slug="sport"
+    )
+    assert response.status_code == 201, response.text
+    assert "A reader" in response.json()["message"]
+
+    with SessionLocal() as db:
+        row = db.scalar(select(Submission).where(Submission.topic == topic))
+        assert row is not None
+        assert row.status is SubmissionStatus.PENDING
+        assert row.credit_name == "A reader"
+        assert row.category_id is not None
+        assert len(row.client_hash) == 64
+        assert "127.0.0.1" not in row.client_hash, "no raw address is stored"
+
+
+def test_the_same_client_cannot_send_the_same_topic_twice(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "submission_min_seconds", 0.0)
+    topic = f"{SUBMISSION_PREFIX}{uuid.uuid4().hex[:8]}"
+    assert send(client, open_form(client), topic=topic).status_code == 201
+    assert send(client, open_form(client), topic=topic).status_code == 409
+
+
+def test_the_pending_quota_bounds_the_queue(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The real limit is rows waiting, not requests made."""
+    monkeypatch.setattr(settings, "submission_min_seconds", 0.0)
+    monkeypatch.setattr(settings, "submission_max_pending", 1)
+    # Earlier tests in this file share the fingerprint, so start from zero.
+    with SessionLocal() as db:
+        db.execute(delete(Submission).where(Submission.topic.startswith(SUBMISSION_PREFIX)))
+        db.commit()
+
+    first = f"{SUBMISSION_PREFIX}{uuid.uuid4().hex[:8]}"
+    second = f"{SUBMISSION_PREFIX}{uuid.uuid4().hex[:8]}"
+    assert send(client, open_form(client), topic=first).status_code == 201
+    blocked = send(client, open_form(client), topic=second)
+    assert blocked.status_code == 429
+    assert "waiting" in blocked.json()["detail"]
+
+
+def test_a_blocked_client_is_turned_away(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "submission_min_seconds", 0.0)
+    topic = f"{SUBMISSION_PREFIX}{uuid.uuid4().hex[:8]}"
+    assert send(client, open_form(client), topic=topic).status_code == 201
+
+    with SessionLocal() as db:
+        row = db.scalar(select(Submission).where(Submission.topic == topic))
+        db.add(BlockedClient(client_hash=row.client_hash, reason="test"))
+        db.commit()
+    try:
+        blocked = send(
+            client, open_form(client), topic=f"{SUBMISSION_PREFIX}{uuid.uuid4().hex[:8]}"
+        )
+        assert blocked.status_code == 429
+    finally:
+        with SessionLocal() as db:
+            db.execute(delete(BlockedClient))
+            db.commit()
+
+
+def test_submissions_are_editor_only(client: TestClient) -> None:
+    assert client.get("/api/v1/admin/submissions").status_code == 401
+
+
+def test_an_editor_sees_the_queue(client: TestClient) -> None:
+    body = client.get("/api/v1/admin/submissions", headers=DEV_HEADERS).json()
+    assert "items" in body
+    assert "pagination" in body
+
+
+def test_an_admin_can_promote_a_suggested_category(client: TestClient) -> None:
+    name = f"test cat {uuid.uuid4().hex[:6]}"
+    response = client.post("/api/v1/admin/categories", json={"name": name}, headers=DEV_HEADERS)
+    assert response.status_code == 201, response.text
+    created = response.json()
+    assert created["slug"].startswith("test-cat-")
+    with SessionLocal() as db:
+        db.execute(delete(Category).where(Category.slug == created["slug"]))
+        db.commit()
 
 
 def test_admin_routes_refuse_anonymous_callers(client: TestClient) -> None:

@@ -96,6 +96,17 @@ class ApprovalStatus(enum.StrEnum):
     BROKEN = "broken"
 
 
+class SubmissionStatus(enum.StrEnum):
+    """A reader's suggestion, from arrival to a published guide."""
+
+    PENDING = "pending"
+    SCREENED = "screened"
+    DRAFTED = "drafted"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    SPAM = "spam"
+
+
 class ResearchJobStatus(enum.StrEnum):
     QUEUED = "queued"
     RUNNING = "running"
@@ -195,6 +206,7 @@ class Guide(TimestampMixin, Base):
     unfalsifiable: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     flags: Mapped[list[str]] = mapped_column(JSONB, default=list, server_default="[]")
     dek: Mapped[str] = mapped_column(Text, default="", server_default="")
+    credit_name: Mapped[str | None] = mapped_column(String(80))
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
@@ -406,6 +418,77 @@ class ResearchJob(TimestampMixin, Base):
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Submission(Base):
+    """A guide suggested by a reader.
+
+    No raw client identifier is stored. `client_hash` is an HMAC of the address
+    and user agent with a server secret, which is enough to rate limit and to
+    block a persistent abuser, and useless for identifying anybody.
+    """
+
+    __tablename__ = "submissions"
+    __table_args__ = (
+        Index("ix_submissions_status_created", "status", "created_at"),
+        Index("ix_submissions_client", "client_hash", "created_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    topic: Mapped[str] = mapped_column(String(200))
+    normalized_topic: Mapped[str] = mapped_column(String(200), index=True)
+    notes: Mapped[str] = mapped_column(Text)
+    guide_type: Mapped[GuideType | None] = mapped_column(
+        enum_type(GuideType, "submission_guide_type")
+    )
+    entry_type: Mapped[EntryType | None] = mapped_column(
+        enum_type(EntryType, "submission_entry_type")
+    )
+    category_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("categories.id", ondelete="SET NULL")
+    )
+    suggested_category: Mapped[str | None] = mapped_column(String(80))
+    credit_name: Mapped[str | None] = mapped_column(String(80))
+
+    status: Mapped[SubmissionStatus] = mapped_column(
+        enum_type(SubmissionStatus, "submission_status"),
+        default=SubmissionStatus.PENDING,
+        server_default="pending",
+        index=True,
+    )
+    screening: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    review_notes: Mapped[str | None] = mapped_column(Text)
+    created_guide_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("guides.id", ondelete="SET NULL")
+    )
+    reviewed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL")
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    client_hash: Mapped[str] = mapped_column(String(64), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+class BlockedClient(Base):
+    """A client hash an editor has had enough of. Cheap, reversible, anonymous."""
+
+    __tablename__ = "blocked_clients"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    client_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    reason: Mapped[str | None] = mapped_column(Text)
+    blocked_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
 
 class AuditLog(Base):

@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [guides, setGuides] = useState<AdminGuide[]>([]);
   const [topics, setTopics] = useState<TopicRequestRow[]>([]);
   const [jobs, setJobs] = useState<ResearchJob[]>([]);
+  const [waiting, setWaiting] = useState(0);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [reloads, setReloads] = useState(0);
@@ -30,12 +31,14 @@ export default function Dashboard() {
       api.admin.guides({ status: status || undefined, page_size: 50 }),
       api.admin.topicRequests({ page_size: 12 }),
       api.admin.jobs({ page_size: 8 }),
+      api.admin.submissions({ status: "pending", page_size: 1 }),
     ])
-      .then(([guidePage, topicPage, jobPage]) => {
+      .then(([guidePage, topicPage, jobPage, submissionPage]) => {
         if (cancelled) return;
         setGuides(guidePage.items);
         setTopics(topicPage.items);
         setJobs(jobPage.items);
+        setWaiting(submissionPage.pagination.total);
         setError(null);
       })
       .catch((cause) => !cancelled && setError(cause))
@@ -50,6 +53,12 @@ export default function Dashboard() {
 
   return (
     <div className="admin__grid">
+      {waiting > 0 && (
+        <p className="admin__ok panel--wide" role="status">
+          {waiting} reader {waiting === 1 ? "submission is" : "submissions are"} waiting.{" "}
+          <Link to="/admin/submissions">Read them</Link>.
+        </p>
+      )}
       <section className="panel panel--wide">
         <div className="panel__head">
           <h2 className="panel__h">Guides</h2>

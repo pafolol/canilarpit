@@ -12,6 +12,7 @@ from app.db.models import (
     MediaKind,
     ResearchJobStatus,
     RevisionStatus,
+    SubmissionStatus,
     UserRole,
     Verdict,
 )
@@ -117,6 +118,8 @@ class GuideDetail(BaseModel):
     aliases: list[str]
     sources: list[SourceResponse]
     media: list[MediaResponse]
+    # Whoever suggested it, when a reader did.
+    credit_name: str | None = None
     published_at: datetime | None
     last_verified_at: datetime | None
 
@@ -441,3 +444,96 @@ class SiteConfigResponse(BaseModel):
     app_env: str
     dev_auth_bypass: bool
     clerk_configured: bool
+
+
+class SubmissionFormToken(BaseModel):
+    """Handed out with the form and required back with the submission."""
+
+    token: str
+    min_seconds: float
+    expires_in: int
+
+
+class SubmissionCreate(BaseModel):
+    topic: str = Field(min_length=2, max_length=200)
+    notes: str = Field(min_length=1, max_length=4000)
+    guide_type: GuideType | None = None
+    entry_type: EntryType | None = None
+    category_slug: str | None = Field(default=None, max_length=80)
+    suggested_category: str | None = Field(default=None, max_length=80)
+    credit_name: str | None = Field(default=None, max_length=80)
+    token: str = Field(min_length=1, max_length=300)
+    # Hidden in the layout and labelled "leave this empty". Browsers do; bots do not.
+    website: str | None = Field(default=None, max_length=200)
+
+    @field_validator("topic")
+    @classmethod
+    def valid_topic(cls, value: str) -> str:
+        cleaned = " ".join(value.split())
+        if len(normalize_text(cleaned)) < 2:
+            raise ValueError("topic must contain at least two letters or numbers")
+        return cleaned
+
+    @field_validator("credit_name", "suggested_category")
+    @classmethod
+    def tidy_optional(cls, value: str | None) -> str | None:
+        cleaned = " ".join(value.split()) if value else None
+        return cleaned or None
+
+    @model_validator(mode="after")
+    def one_category_choice(self) -> "SubmissionCreate":
+        if self.category_slug and self.suggested_category:
+            raise ValueError("choose an existing category or suggest one, not both")
+        return self
+
+
+class SubmissionReceipt(BaseModel):
+    """What the sender is told. Deliberately thin: no ids they could poll."""
+
+    received: bool
+    topic: str
+    message: str
+    matching_guide: GuideListItem | None = None
+
+
+class SubmissionAdminItem(ORMModel):
+    id: uuid.UUID
+    topic: str
+    normalized_topic: str
+    notes: str
+    guide_type: GuideType | None
+    entry_type: EntryType | None
+    category: CategorySummary | None = None
+    suggested_category: str | None
+    credit_name: str | None
+    status: SubmissionStatus
+    screening: dict[str, Any] | None
+    review_notes: str | None
+    created_guide_id: uuid.UUID | None
+    reviewed_at: datetime | None
+    created_at: datetime
+    # Anonymous, and shown only so an editor can block a persistent nuisance.
+    client_hash: str
+
+
+class SubmissionAdminPage(BaseModel):
+    items: list[SubmissionAdminItem]
+    pagination: PaginationMeta
+
+
+class SubmissionDecision(BaseModel):
+    review_notes: str | None = Field(default=None, max_length=2000)
+    block_client: bool = False
+
+
+class CategoryCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=80)
+    description: str = Field(default="", max_length=1000)
+    sort_order: int = Field(default=500, ge=0, le=10000)
+
+
+class CategoryUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=120)
+    description: str | None = Field(default=None, max_length=1000)
+    sort_order: int | None = Field(default=None, ge=0, le=10000)
+    is_active: bool | None = None

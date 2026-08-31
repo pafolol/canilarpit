@@ -4,6 +4,7 @@ import { Loading } from "../components";
 import Dashboard from "./Dashboard";
 import Generate from "./Generate";
 import GuideEditor from "./GuideEditor";
+import Submissions from "./Submissions";
 import SignIn from "./SignIn";
 
 export default function AdminApp() {
@@ -52,6 +53,9 @@ export default function AdminApp() {
         <NavLink className="admin__link" to="/admin" end>
           Catalog
         </NavLink>
+        <NavLink className="admin__link" to="/admin/submissions">
+          Submissions
+        </NavLink>
         <NavLink className="admin__link" to="/admin/generate">
           Generate
         </NavLink>
@@ -65,6 +69,7 @@ export default function AdminApp() {
 
       <Routes>
         <Route index element={<Dashboard />} />
+        <Route path="submissions" element={<Submissions />} />
         <Route path="generate" element={<Generate />} />
         <Route path="guides/:id" element={<GuideEditor />} />
       </Routes>

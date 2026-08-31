@@ -584,3 +584,71 @@ def inferred_brief(document: GuideDocument) -> list[ImageQuery]:
         queries.append(ImageQuery(query=cue, subject=document.title))
     queries.append(ImageQuery(query=document.title, subject=document.title))
     return queries
+
+
+SCREEN_PROMPT = """\
+You are triaging a reader's suggestion for canilarpit before an editor spends \
+time on it. Answer with one JSON object and nothing else:
+
+{
+  "verdict": "<accept | reject | spam>",
+  "reason": "<one sentence an editor reads, and which may be shown to the sender>",
+  "guide_type": "<the content template. Exactly one of: %(types)s. Null if unsure.
+                  This is not the category; do not answer with a category here.>",
+  "entry_type": "<scene | taste | role, or null>",
+  "category_slug": "<the subject area. Exactly one of: %(categories)s. Null if unsure.>",
+  "concerns": ["<anything an editor should know before publishing>"]
+}
+
+"accept" means this is a real subject somebody could plausibly want to bluff \
+about, and there is enough here to write from. Be generous: a thin suggestion \
+about a real thing is still work worth doing, and the note only has to show the \
+sender means it.
+
+"reject" means the subject is not something anybody could larp, the note is \
+empty of content, or the site already covers it. Say which.
+
+"spam" means advertising, abuse, gibberish, or an attempt to use the form as a \
+channel for something else.
+
+Reject, and say so in `concerns`, when the subject is a private individual \
+rather than a public figure or a public body of work. A guide about how to \
+impersonate somebody's neighbour is not what this site is. The same goes for \
+anything whose point is to defraud or endanger a named person."""
+
+
+def screen_submission(
+    topic: str,
+    notes: str,
+    *,
+    category_slugs: Sequence[str],
+    credit: str | None = None,
+    complete: CompletionFn | None = None,
+) -> dict[str, Any]:
+    """Triage one submission. Cheap, and it runs before anything expensive."""
+    call = complete or chat_completion
+    system = SCREEN_PROMPT % {
+        "types": " | ".join(guide_type.value for guide_type in GuideType),
+        "categories": ", ".join(category_slugs),
+    }
+    submission = f"Topic: {topic}\n\nWhat the sender says they know:\n{notes}"
+    if credit:
+        submission += f"\n\nThey asked to be credited as: {credit}"
+
+    completion = call(
+        [{"role": "system", "content": system}, {"role": "user", "content": submission}]
+    )
+    try:
+        payload = json.loads(_strip_fence(completion.text))
+    except json.JSONDecodeError as exc:
+        raise AiGenerationFailed("The screening reply was not JSON") from exc
+    if not isinstance(payload, dict) or payload.get("verdict") not in {
+        "accept",
+        "reject",
+        "spam",
+    }:
+        raise AiGenerationFailed("The screening reply had no usable verdict")
+
+    payload["input_tokens"] = completion.input_tokens
+    payload["output_tokens"] = completion.output_tokens
+    return payload

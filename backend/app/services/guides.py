@@ -452,6 +452,7 @@ def guide_detail(db: Session, guide: Guide) -> GuideDetail:
             for source in sources
         ],
         media=[media_response(asset, link) for link, asset in media_rows],
+        credit_name=guide.credit_name,
         published_at=guide.published_at,
         last_verified_at=document.last_verified_at,
     )

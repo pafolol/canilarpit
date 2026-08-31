@@ -174,6 +174,9 @@ export default function Entry() {
               <VerdictBadge verdict={larp.verdict} size="m" />
             </div>
             <p className="doc__dek">{larp.dek}</p>
+            {entry.credit_name ? (
+              <p className="doc__credit">Suggested by {entry.credit_name}</p>
+            ) : null}
             {entry.content.spoiler_warning && (
               <p className="doc__spoiler">Spoilers below. That is the point.</p>
             )}

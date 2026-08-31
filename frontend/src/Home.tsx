@@ -11,6 +11,7 @@ import {
   TickerRow,
   useFilters,
 } from "./components";
+import SubmissionForm from "./SubmissionForm";
 import { caught } from "./data";
 
 const PAGE_SIZE = 48;
@@ -103,7 +104,7 @@ export default function Home({ category }: { category?: string }) {
                 <p>
                   Nothing written for <span className="u-data">{f.q}</span> yet.
                 </p>
-                <SubmitBox topic={f.q} />
+                <SubmissionForm topic={f.q} />
               </>
             ) : (
               <>

@@ -52,6 +52,27 @@ class Settings(BaseSettings):
     s3_region: str = "auto"
     media_public_base_url: str | None = None
 
+    # ------------------------------------------------------- reader submissions
+    # Signs the form token and derives the anonymous client hash. Rotating it
+    # invalidates open forms and every stored client hash, which is the intended
+    # way to reset a block list.
+    submission_secret: str = "dev-only-change-me"
+    # True only when the app really is behind a proxy that sets the header;
+    # otherwise anybody can mint a fresh identity per request by setting it.
+    trust_forwarded_for: bool = False
+    # Two different jobs. The request limits are a flood guard and count every
+    # attempt, including ones rejected for a bad token, so they are loose enough
+    # that a person who mistypes twice is not locked out for an hour. What
+    # actually bounds the editorial queue is max_pending, which counts rows and
+    # frees up as an editor works through them.
+    submissions_per_hour: str = "20/hour"
+    submissions_per_day: str = "60/day"
+    submission_max_pending: int = 3
+    submission_min_seconds: float = 4.0
+    submission_token_ttl_seconds: int = 3600
+    submission_min_notes: int = 80
+    submission_max_links: int = 2
+
     default_page_size: int = 20
     max_page_size: int = 100
 
@@ -90,6 +111,8 @@ class Settings(BaseSettings):
             raise ValueError(
                 "Production Clerk auth requires an audience or authorized-party allowlist"
             )
+        if self.is_production and self.submission_secret == "dev-only-change-me":
+            raise ValueError("SUBMISSION_SECRET must be set in production")
         return self
 
 

@@ -144,6 +144,33 @@ Generation runs inside the API process as a background task. For a separate work
 canilarpit work --limit 5
 ```
 
+## Reader submissions
+
+When a search finds nothing, the reader is offered a form rather than a request button:
+what the thing is, what somebody would need to know, which category it belongs in or one
+they would like added, and a name to be credited under. An editor reviews it, a model
+screens and drafts it, and a human publishes it. The credit appears on the entry.
+
+It is the only unauthenticated endpoint that stores prose, so it has five independent
+obstacles in front of it, and none of them shares a weakness with the others:
+
+1. **A signed form token**, bound to the client and the moment it was issued.
+2. **A minimum delay** between opening the form and sending it. People read; scripts do not.
+3. **A honeypot field** the layout hides, so anything in it did not come from a person.
+4. **Limits.** Requests are flood-limited per client fingerprint rather than per address,
+   because behind a proxy everybody shares one address. The real bound is a database
+   quota on how many submissions one client can have waiting.
+5. **Content heuristics**: length, word variety, and how much of it is links.
+
+No raw address is stored anywhere. A submission carries an HMAC of address, user agent
+and language under `SUBMISSION_SECRET` — enough to count against and to block, useless
+for identifying anybody. Rotating the secret clears every stored hash, which is how you
+reset a block list. Set it before deploying: the app refuses to start in production
+without one.
+
+**Reviewing costs money, so only an editor can trigger it.** Nothing an anonymous
+request does reaches a model.
+
 ## Checks
 
 ```powershell

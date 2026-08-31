@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.security import require_admin, require_editor
 from app.db.models import (
     ApprovalStatus,
+    Category,
     Guide,
     GuideAlias,
     GuideMedia,
@@ -21,6 +22,8 @@ from app.db.models import (
     ResearchJob,
     ResearchJobStatus,
     RevisionStatus,
+    Submission,
+    SubmissionStatus,
     TopicRequest,
     User,
     UserRole,
@@ -30,6 +33,9 @@ from app.schemas.api import (
     AdminGuidePage,
     AdminGuideResponse,
     AiStatusResponse,
+    CategoryCreate,
+    CategoryResponse,
+    CategoryUpdate,
     GuideGenerateRequest,
     GuideMediaLinkCreate,
     GuidePublishRequest,
@@ -44,6 +50,9 @@ from app.schemas.api import (
     ResearchJobCreate,
     ResearchJobPage,
     ResearchJobResponse,
+    SubmissionAdminItem,
+    SubmissionAdminPage,
+    SubmissionDecision,
     TopicRequestAdminItem,
     TopicRequestAdminPage,
     UploadPresignRequest,
@@ -51,11 +60,13 @@ from app.schemas.api import (
 )
 from app.schemas.content import GuideDocument
 from app.services import images
+from app.services import submissions as submission_service
 from app.services.audit import add_audit_log
 from app.services.generation import queue_generation_job, run_generation_job
 from app.services.guides import (
     admin_guide_response,
     archive_guide,
+    category_summary,
     create_guide,
     document_hash,
     get_category_by_slug,
@@ -1009,4 +1020,189 @@ def image_search(
         provider=results[0].provider if results else provider,
         results=results,
         warnings=warnings,
+    )
+
+
+# ---------------------------------------------------------------- submissions
+
+
+def submission_admin_item(db: Session, submission: Submission) -> SubmissionAdminItem:
+    category = db.get(Category, submission.category_id) if submission.category_id else None
+    return SubmissionAdminItem(
+        id=submission.id,
+        topic=submission.topic,
+        normalized_topic=submission.normalized_topic,
+        notes=submission.notes,
+        guide_type=submission.guide_type,
+        entry_type=submission.entry_type,
+        category=category_summary(category) if category else None,
+        suggested_category=submission.suggested_category,
+        credit_name=submission.credit_name,
+        status=submission.status,
+        screening=submission.screening,
+        review_notes=submission.review_notes,
+        created_guide_id=submission.created_guide_id,
+        reviewed_at=submission.reviewed_at,
+        created_at=submission.created_at,
+        client_hash=submission.client_hash,
+    )
+
+
+@router.get("/submissions", response_model=SubmissionAdminPage)
+def list_submissions(
+    submission_status: SubmissionStatus | None = Query(default=None, alias="status"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=settings.default_page_size, ge=1, le=settings.max_page_size),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_editor),
+) -> SubmissionAdminPage:
+    query = select(Submission)
+    if submission_status:
+        query = query.where(Submission.status == submission_status)
+    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
+    items = db.scalars(
+        query.order_by(Submission.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    return SubmissionAdminPage(
+        items=[submission_admin_item(db, item) for item in items],
+        pagination=pagination(page, page_size, total),
+    )
+
+
+@router.post("/submissions/{submission_id}/review", response_model=SubmissionAdminItem)
+def review_submission(
+    submission_id: uuid.UUID,
+    generate: bool = Query(default=True),
+    db: Session = Depends(get_db),
+    user: User = Depends(require_editor),
+) -> SubmissionAdminItem:
+    """Screen it, and write the draft when it passes.
+
+    This is where a submission first costs money, which is why it is an editor
+    pressing a button rather than anything an anonymous request can reach.
+    """
+    if not settings.ai_configured:
+        raise HTTPException(status_code=503, detail="Review needs a model. Set OPENAI_API_KEY.")
+
+    submission = submission_service.submission_or_404(db, submission_id)
+    if submission.status in {SubmissionStatus.ACCEPTED, SubmissionStatus.SPAM}:
+        raise HTTPException(status_code=409, detail="This submission is already settled")
+
+    reviewed = submission_service.review_submission(db, submission, user, generate=generate)
+    add_audit_log(
+        db,
+        user,
+        "submission.reviewed",
+        "submission",
+        reviewed.id,
+        {"status": reviewed.status.value},
+    )
+    db.commit()
+    return submission_admin_item(db, reviewed)
+
+
+@router.post("/submissions/{submission_id}/accept", response_model=SubmissionAdminItem)
+def accept_submission(
+    submission_id: uuid.UUID,
+    payload: SubmissionDecision,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+) -> SubmissionAdminItem:
+    """Mark it accepted. Publishing the draft it produced is still a separate act."""
+    submission = submission_service.submission_or_404(db, submission_id)
+    if submission.created_guide_id is None:
+        raise HTTPException(
+            status_code=409, detail="Nothing has been drafted from this submission yet"
+        )
+    updated = submission_service.set_status(
+        db, submission, SubmissionStatus.ACCEPTED, user, payload.review_notes
+    )
+    add_audit_log(db, user, "submission.accepted", "submission", updated.id)
+    db.commit()
+    return submission_admin_item(db, updated)
+
+
+@router.post("/submissions/{submission_id}/reject", response_model=SubmissionAdminItem)
+def reject_submission(
+    submission_id: uuid.UUID,
+    payload: SubmissionDecision,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_editor),
+) -> SubmissionAdminItem:
+    """Turn it down, and optionally stop that client sending more."""
+    submission = submission_service.submission_or_404(db, submission_id)
+    new_status = SubmissionStatus.SPAM if payload.block_client else SubmissionStatus.REJECTED
+    updated = submission_service.set_status(
+        db, submission, new_status, user, payload.review_notes
+    )
+    if payload.block_client:
+        submission_service.block_client(
+            db, updated.client_hash, user, payload.review_notes or "Marked as spam"
+        )
+    add_audit_log(
+        db,
+        user,
+        "submission.rejected",
+        "submission",
+        updated.id,
+        {"blocked": payload.block_client},
+    )
+    db.commit()
+    return submission_admin_item(db, updated)
+
+
+# ---------------------------------------------------------------- categories
+
+
+@router.post("/categories", response_model=CategoryResponse, status_code=201)
+def create_category(
+    payload: CategoryCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+) -> CategoryResponse:
+    """Promote a reader's suggested category into a real one."""
+    category = submission_service.promote_category(
+        db, payload.name, user, payload.description, payload.sort_order
+    )
+    add_audit_log(db, user, "category.created", "category", category.id, {"slug": category.slug})
+    db.commit()
+    return CategoryResponse(
+        id=category.id,
+        slug=category.slug,
+        title=category.title,
+        description=category.description,
+        sort_order=category.sort_order,
+        published_guide_count=0,
+    )
+
+
+@router.patch("/categories/{category_id}", response_model=CategoryResponse)
+def update_category(
+    category_id: uuid.UUID,
+    payload: CategoryUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_admin),
+) -> CategoryResponse:
+    category = db.get(Category, category_id)
+    if category is None:
+        raise HTTPException(status_code=404, detail="Category not found")
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(category, field, value)
+    add_audit_log(db, user, "category.updated", "category", category.id)
+    db.commit()
+    db.refresh(category)
+    published = db.scalar(
+        select(func.count())
+        .select_from(Guide)
+        .where(Guide.category_id == category.id, Guide.status == GuideStatus.PUBLISHED)
+    )
+    return CategoryResponse(
+        id=category.id,
+        slug=category.slug,
+        title=category.title,
+        description=category.description,
+        sort_order=category.sort_order,
+        published_guide_count=published or 0,
     )

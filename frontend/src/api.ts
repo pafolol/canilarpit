@@ -195,7 +195,63 @@ export type GuideDetail = GuideCard & {
   aliases: string[];
   sources: SourceRef[];
   media: Media[];
+  /** The reader who suggested it, when a reader did. */
+  credit_name: string | null;
   last_verified_at: string | null;
+};
+
+export type SubmissionStatus =
+  | "pending"
+  | "screened"
+  | "drafted"
+  | "accepted"
+  | "rejected"
+  | "spam";
+
+/** Handed out with the form; a submission is refused without it. */
+export type SubmissionFormToken = {
+  token: string;
+  min_seconds: number;
+  expires_in: number;
+};
+
+export type SubmissionDraft = {
+  topic: string;
+  notes: string;
+  guide_type?: GuideType | null;
+  entry_type?: EntryType | null;
+  category_slug?: string | null;
+  suggested_category?: string | null;
+  credit_name?: string | null;
+  token: string;
+  /** Hidden by the layout. A browser leaves it empty; a naive bot does not. */
+  website?: string | null;
+};
+
+export type SubmissionReceipt = {
+  received: boolean;
+  topic: string;
+  message: string;
+  matching_guide: GuideCard | null;
+};
+
+export type Submission = {
+  id: string;
+  topic: string;
+  normalized_topic: string;
+  notes: string;
+  guide_type: GuideType | null;
+  entry_type: EntryType | null;
+  category: CategorySummary | null;
+  suggested_category: string | null;
+  credit_name: string | null;
+  status: SubmissionStatus;
+  screening: Record<string, unknown> | null;
+  review_notes: string | null;
+  created_guide_id: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  client_hash: string;
 };
 
 export type Pagination = { page: number; page_size: number; total: number; pages: number };
@@ -428,6 +484,12 @@ export const api = {
   guide: (slug: string) => request<GuideDetail>(`${V1}/guides/${encodeURIComponent(slug)}`),
   related: (slug: string, limit = 6) =>
     request<GuideCard[]>(`${V1}/guides/${encodeURIComponent(slug)}/related${query({ limit })}`),
+  submissionForm: () => request<SubmissionFormToken>(`${V1}/submissions/form`),
+  submit: (draft: SubmissionDraft) =>
+    request<SubmissionReceipt>(`${V1}/submissions`, {
+      method: "POST",
+      body: JSON.stringify(draft),
+    }),
   requestTopic: (topic: string) =>
     request<TopicRequestResult>(`${V1}/topic-requests`, {
       method: "POST",
@@ -443,6 +505,32 @@ export const api = {
 
   /* -------------------------------------------------------------- admin */
   admin: {
+    submissions: (params: { status?: SubmissionStatus; page?: number; page_size?: number } = {}) =>
+      request<Page<Submission>>(`${V1}/admin/submissions${query(params)}`, {}, true),
+    reviewSubmission: (id: string, generate = true) =>
+      request<Submission>(
+        `${V1}/admin/submissions/${id}/review${query({ generate })}`,
+        { method: "POST" },
+        true,
+      ),
+    acceptSubmission: (id: string, review_notes: string | null = null) =>
+      request<Submission>(
+        `${V1}/admin/submissions/${id}/accept`,
+        { method: "POST", body: JSON.stringify({ review_notes }) },
+        true,
+      ),
+    rejectSubmission: (id: string, review_notes: string | null, block_client = false) =>
+      request<Submission>(
+        `${V1}/admin/submissions/${id}/reject`,
+        { method: "POST", body: JSON.stringify({ review_notes, block_client }) },
+        true,
+      ),
+    createCategory: (payload: { name: string; description?: string; sort_order?: number }) =>
+      request<Category>(
+        `${V1}/admin/categories`,
+        { method: "POST", body: JSON.stringify(payload) },
+        true,
+      ),
     aiStatus: () => request<AiStatus>(`${V1}/admin/ai/status`, {}, true),
     generate: (payload: {
       topic: string;

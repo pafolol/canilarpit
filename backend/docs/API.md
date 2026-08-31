@@ -1013,6 +1013,114 @@ Allowed target statuses are `review`, `completed`, and `failed`. A failed result
 `error_message`. The endpoint stores arbitrary result JSON but does not automatically publish or
 convert it into a guide; an editor must review it and use the guide create/import endpoint.
 
+## Reader Submissions
+
+A reader who searches for something the catalogue does not have can suggest a guide
+rather than only a topic name. This is the only unauthenticated endpoint on the site
+that stores prose, so it is guarded in five independent ways, and it never spends money:
+an editor decides when a model looks at a submission.
+
+### `GET /api/v1/submissions/form`
+
+Access: Public.
+
+Opens the form. The token returned is bound to this client and this moment.
+
+```json
+{"token": "v1.1788145566.858ece...", "min_seconds": 4.0, "expires_in": 3600}
+```
+
+The frontend sends the token back with the submission. It is refused if it was issued to
+a different client, is older than `expires_in`, or comes back sooner than `min_seconds`,
+because a person reads a form and a script does not.
+
+### `POST /api/v1/submissions`
+
+Access: Public. Rate limited per client fingerprint, not per address: behind a proxy
+every visitor shares one address, and an address-keyed limit would let one person close
+the form for everybody.
+
+```json
+{
+  "topic": "Orienteering",
+  "notes": "What somebody would need to know. At least 80 characters.",
+  "guide_type": "craft",
+  "entry_type": "scene",
+  "category_slug": "sport",
+  "suggested_category": null,
+  "credit_name": "A reader",
+  "token": "v1.1788145566.858ece...",
+  "website": null
+}
+```
+
+`category_slug` and `suggested_category` are mutually exclusive: pick an existing
+category or propose a new one, which an editor may promote. `credit_name` is optional and
+appears on the published guide as "Suggested by". `website` is a honeypot: the layout
+hides it, so anything in it did not come from a person.
+
+Success `201`: `{"received": true, "topic": "...", "message": "..."}`.
+
+Success `200` with `received: false` when a published guide already answers the topic;
+the response carries that guide card and nothing is stored.
+
+| Status | Cause |
+|---|---|
+| `400` | Missing, forged, expired or too-fresh token, or the honeypot was filled |
+| `409` | This client already has this topic in the queue |
+| `422` | Notes too short, repetitive, or mostly links |
+| `429` | Flood limit, pending quota reached, or this client is blocked |
+
+`429` is deliberately the same for all three, so a blocked client learns nothing.
+
+Nothing identifying is stored. Submissions carry a `client_hash`: an HMAC-SHA256 of
+address, user agent and language under `SUBMISSION_SECRET`. It is enough to count against
+and to block, and useless for identifying a person. Rotating the secret clears every
+stored hash, which is how a block list is reset.
+
+### `GET /api/v1/admin/submissions`
+
+Access: Editor. Query parameters are `status`, `page` and `page_size`. Statuses are
+`pending`, `screened`, `drafted`, `accepted`, `rejected` and `spam`.
+
+### `POST /api/v1/admin/submissions/{submission_id}/review`
+
+Access: Editor. Query parameter `generate` defaults to `true`.
+
+Screens the submission, and writes a draft guide when it passes. Two model calls, and the
+first is cheap: an obvious advert is marked `spam` without ever reaching generation.
+
+The screening verdict is stored on the submission and shown to the editor. `accept` moves
+it to `drafted` with `created_guide_id` set; `reject` and `spam` are terminal. The
+sender's note is passed to the writer as a lead, explicitly not as text to reproduce.
+
+Failure `409`: already accepted or marked spam. Failure `503`: no `OPENAI_API_KEY`.
+
+### `POST /api/v1/admin/submissions/{submission_id}/accept`
+
+Access: Admin. Marks the submission accepted. Publishing the draft it produced is still a
+separate act, on the guide itself.
+
+Failure `409`: nothing has been drafted from it yet.
+
+### `POST /api/v1/admin/submissions/{submission_id}/reject`
+
+Access: Editor. Body is `{"review_notes": null, "block_client": false}`. With
+`block_client` true the submission is marked `spam` and that client hash is added to the
+block list, which is anonymous and reversible.
+
+### `POST /api/v1/admin/categories`
+
+Access: Admin. Promotes a suggested category into a real one.
+
+Request `{"name": "Birding", "description": "", "sort_order": 500}`. The slug is derived
+from the name; an existing inactive category with that slug is reactivated rather than
+duplicated. Success `201`: the category.
+
+### `PATCH /api/v1/admin/categories/{category_id}`
+
+Access: Admin. Accepts `title`, `description`, `sort_order` and `is_active`.
+
 ## Clerk Webhook
 
 ### `POST /api/v1/webhooks/clerk`

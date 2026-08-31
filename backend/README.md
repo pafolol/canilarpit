@@ -155,6 +155,26 @@ canilarpit work --limit 5
 `app.workers.research.claim_next_research_job` claims jobs atomically with
 `SKIP LOCKED` for a worker deployed elsewhere.
 
+## Reader submissions
+
+`POST /api/v1/submissions` is the only unauthenticated endpoint that stores prose.
+`app/core/antiabuse.py` holds the obstacles in front of it: a signed form token bound to
+the client, a minimum delay before it can be sent, a honeypot field, content heuristics,
+and a client fingerprint that rate limits and the block list are counted against.
+
+```dotenv
+SUBMISSION_SECRET=...        # required in production; signs tokens and fingerprints
+TRUST_FORWARDED_FOR=false    # true only behind a proxy that really sets the header
+SUBMISSION_MAX_PENDING=3     # the real limit: rows waiting, not requests made
+```
+
+No raw address is stored. Rotating `SUBMISSION_SECRET` invalidates every stored client
+hash, which is how a block list is cleared.
+
+Reviewing a submission is what costs money, so it is an editor action:
+`POST /admin/submissions/{id}/review` screens it, then drafts a guide if it passes. An
+obvious advert is marked spam by the cheap screening call and never reaches generation.
+
 ## Images
 
 `app/services/images.py` is a registry of providers, not a single search. Pexels and fanart.tv
