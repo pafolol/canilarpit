@@ -126,7 +126,7 @@ Return a JSON object with exactly these top-level keys:
   "slug": "<kebab-case, 2-160 chars, derived from the title>",
   "title": "<display name, 2-200 chars>",
   "summary": "<10-1000 chars, one or two sentences, what this entry covers>",
-  "guide_type": "<anime | screen | lifestyle | craft | profession | general>",
+  "guide_type": "<anime | screen | lifestyle | person | craft | profession | general>",
   "category_slug": "<one of: %(categories)s>",
   "aliases": ["<other names people search for; may be empty>"],
   "content": { ... see below ... },
@@ -238,6 +238,17 @@ lifestyle - a scene with objects, places and a look.
   "aesthetic", "brands" ({"name", "significance", "typical_price", "citations"}),
   "visual_cues", "locations" (strings), "media_scenarios" ({"title",
   "description", "search_terms", "generation_prompt": null}).
+
+person - a named individual whose work people claim to know: a director, a
+  theorist, a novelist, a musician.
+  "who": one or two paragraphs on who they are and why they come up.
+  "works" ({"title", "year", "why"}): what people cite, and what each is for.
+  "eras" (strings): the phases, because saying which one you prefer is how this
+  is actually discussed. "positions": what they actually argue, as opposed to
+  what they are assumed to. "misattributions": the quote they never said, the
+  work they disowned, the position everybody assigns them and they rejected.
+  That last field does more work than the bibliography; lead with it if you have
+  a good one.
 
 craft - a practised skill somebody can hand you the equipment for: baking,
   climbing, brewing, welding, picking locks.
@@ -391,7 +402,8 @@ def build_prompt(
         request.append(
             "Choose guide_type yourself, by what the subject is: anime for anime and "
             "manga, screen for films and live-action series, lifestyle for a scene "
-            "with objects and a look, craft for a practised skill somebody could "
+            "with objects and a look, person for a named individual whose work "
+            "people claim to know, craft for a practised skill somebody could "
             "hand you the equipment for, profession for a job title, general only "
             "when none of those fit."
         )

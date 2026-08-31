@@ -539,6 +539,7 @@ function buildBlocks(entry: GuideDetail): Block[] {
 const MATERIAL_HEADING: Record<GuideType, string> = {
   anime: "The story",
   screen: "The story",
+  person: "The work",
   lifestyle: "The look",
   craft: "The craft",
   profession: "The job",
@@ -603,6 +604,14 @@ function materialFor(content: GuideContent, slug: string): ReactNode {
       </div>,
     );
   }
+  if (content.who) {
+    parts.push(
+      <div className="material__group" key="who">
+        <h3 className="u-label material__h">Who they are</h3>
+        <LinkedParagraphs items={content.who.split("\n\n").filter(Boolean)} exclude={slug} />
+      </div>,
+    );
+  }
   if (content.day_to_day) {
     parts.push(
       <div className="material__group" key="day">
@@ -631,6 +640,21 @@ function materialFor(content: GuideContent, slug: string): ReactNode {
           exclude={slug}
         />
       </div>,
+    );
+  }
+
+  // Half of larping a person is the thing they are wrongly credited with, so it
+  // gets the same treatment as a red line rather than being buried in a list.
+  if (content.misattributions?.length) {
+    parts.push(
+      <aside className="counter" key="misattributed">
+        <p className="u-label counter__label">What they are wrongly credited with</p>
+        <ul className="material__list">
+          {content.misattributions.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </aside>,
     );
   }
 
@@ -670,6 +694,17 @@ function materialFor(content: GuideContent, slug: string): ReactNode {
         aside: c.fate,
       }))}
     />,
+    <Pairs
+      key="works"
+      title="The work people cite"
+      items={(content.works ?? []).map((w) => ({
+        term: w.title,
+        detail: w.why,
+        aside: w.year,
+      }))}
+    />,
+    <Facts key="eras" title="The phases" items={content.eras ?? []} />,
+    <Facts key="positions" title="What they actually argue" items={content.positions ?? []} />,
     <Pairs
       key="tools"
       title="The kit"

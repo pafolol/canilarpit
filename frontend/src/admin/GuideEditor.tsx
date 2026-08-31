@@ -41,6 +41,7 @@ const GUIDE_TYPE_OPTIONS: { value: GuideType; label: string }[] = [
   { value: "anime", label: "Anime" },
   { value: "screen", label: "Screen" },
   { value: "lifestyle", label: "Lifestyle" },
+  { value: "person", label: "Person" },
   { value: "craft", label: "Craft" },
   { value: "profession", label: "Profession" },
   { value: "general", label: "General" },

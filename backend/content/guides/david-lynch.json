@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "slug": "david-lynch",
+  "title": "David Lynch",
+  "summary": "This entry covers how to bluff a conversational taste for David Lynch: the films, the reputation, the touchstone works, and the opinions that pass on first contact. It gives you enough to survive a casual exchange about Lynch as a director, but not a technical debate or a scene-by-scene breakdown.",
+  "guide_type": "person",
+  "category_slug": "film",
+  "aliases": [
+    "lynchian",
+    "lynch"
+  ],
+  "content": {
+    "larp": {
+      "entry_type": "taste",
+      "verdict": "kinda",
+      "exposure_seconds": 180,
+      "unfalsifiable": false,
+      "flags": [
+        "HIGH VOCAB",
+        "THEY WANT YOUR FAVOURITE",
+        "NAMED SCENES"
+      ],
+      "dek": "The reputation, the atmosphere and the four famous titles carry a whole evening. What ends it is being asked what a scene meant.",
+      "crib": [
+        {
+          "heading": "References",
+          "lines": [
+            "Blue Velvet (1986)",
+            "Twin Peaks (1990–1991, 2017)",
+            "Mulholland Drive (2001)",
+            "Eraserhead (1977)",
+            "Lost Highway (1997)",
+            "The Elephant Man (1980)"
+          ]
+        },
+        {
+          "heading": "Opinions to hold",
+          "lines": [
+            "Lynch’s work is dreamlike, often disturbing, and open to interpretation.",
+            "Twin Peaks changed television by blending the surreal with the everyday.",
+            "Mulholland Drive is a puzzle film that rewards repeated viewing.",
+            "His use of sound design and music is as important as the visuals.",
+            "He resists explaining his own films and prefers ambiguity."
+          ]
+        }
+      ],
+      "phrases": [
+        {
+          "line": "It’s got that classic Lynchian atmosphere—equal parts beautiful and unsettling.",
+          "when": "Asked what makes a Lynch film distinctive."
+        },
+        {
+          "line": "I still can’t decide if Mulholland Drive is a love story, a nightmare, or both.",
+          "when": "When someone brings up Mulholland Drive."
+        },
+        {
+          "line": "The return of Twin Peaks was more like a 17-hour movie than a regular season.",
+          "when": "During a discussion about Twin Peaks: The Return.",
+          "invites": "Which part stood out to you most?"
+        },
+        {
+          "line": "His sound design always puts me on edge, like in Eraserhead.",
+          "when": "When the subject of Lynch’s technical style comes up."
+        },
+        {
+          "line": "He’s one of the few directors who really trusts the audience to make their own meaning.",
+          "when": "When someone asks why people revisit his films."
+        }
+      ],
+      "surface": [
+        "You can discuss Lynch’s reputation for surreal, ambiguous films, mention his most famous works, and talk about his influence on modern cinema. The conversation holds if it stays on the level of mood, reputation, or broad strokes.",
+        "You are safe as long as nobody asks for specifics about plot, minor characters, or asks you to explain a particular scene or episode. General admiration and references to his style will pass for taste."
+      ],
+      "follow_up": {
+        "question": "\"What's your favourite scene?\"",
+        "why": "It sounds like small talk and it is not. A viewer answers instantly and physically - the diner, the audition, the corridor - because Lynch works through images that stay with you whether you understood them or not. A reader reaches for a title instead, and titles are what you get from reading.\n\nIt is worse than the usual version of this question because there is no consensus answer to borrow. Everybody's is different, which is the point of him.",
+        "counter": {
+          "move": "Answer with a sound rather than a scene. \"The room tone in the Red Room, and whatever he does to the voices\" is specific, true of the whole body of work, and it moves the conversation to sound design, which is where people who actually love him want to be anyway.",
+          "holds": "The rest of the evening. It does not survive somebody asking which episode, because that is a memory and you do not have one."
+        }
+      },
+      "tells": [
+        "A real fan names minor characters or quotes dialogue; a larper stays vague.",
+        "A real fan has a strong opinion on the ending of Mulholland Drive or Twin Peaks: The Return; a larper avoids specifics.",
+        "A real fan can discuss Lynch’s collaborations, like with Angelo Badalamenti; a larper just mentions 'the music.'",
+        "A real fan references Lynch’s short films or art; a larper sticks to the big movies.",
+        "A real fan can point to a scene and say why it’s disturbing or beautiful; a larper repeats 'dreamlike' or 'surreal.'"
+      ],
+      "cost": [
+        "If you are caught, you will be gently corrected, excluded from deeper conversation, or asked if you’ve actually seen the work. Lynch fans enjoy teaching, but they do not respect surface-level bluffing, and will quickly lose interest.",
+        "In a group of casual viewers, you may get away with it. Among fans, you will be ignored or ribbed for pretending."
+      ],
+      "learn": {
+        "hours": 30,
+        "book": "Room to Dream by David Lynch and Kristine McKenna",
+        "make": "Watch Blue Velvet, Twin Peaks (at least the first season), and Mulholland Drive."
+      }
+    },
+    "image_brief": [
+      {
+        "provider": "wikimedia",
+        "query": "David Lynch",
+        "subject": "David Lynch",
+        "role": "hero"
+      },
+      {
+        "provider": "fanart",
+        "query": "Twin Peaks",
+        "subject": "Twin Peaks",
+        "role": "crib"
+      },
+      {
+        "provider": "pexels",
+        "query": "red velvet stage curtains",
+        "subject": "The Red Room, more or less",
+        "role": "phrases"
+      },
+      {
+        "provider": "wikimedia",
+        "query": "Mulholland Drive Los Angeles",
+        "subject": "Mulholland Drive",
+        "role": "tells"
+      }
+    ],
+    "overview": "David Lynch is one of the most recognisable and referenced American directors. His work is characterised by dream logic, surrealism, and a deliberate refusal to explain meaning. Lynch’s films and television series are touchstones for fans of the strange and the uncanny, and his influence stretches from art cinema to mainstream TV. His fans are enthusiastic, detail-oriented, and often enjoy debating interpretations and hidden meanings. Lynch’s reputation is built as much on his persona as on his films: he is known for his distinctive voice, his interest in meditation, and his multi-disciplinary artistic output. To pass as a Lynch fan, you must be able to name his major works, describe the mood they create, and hold a conversation about ambiguity, the blending of the ordinary and the bizarre, and the impact of Twin Peaks on television.",
+    "quick_brief": [
+      "David Lynch is best known for surreal films and the TV series Twin Peaks.",
+      "His films often refuse clear explanations and feature dreamlike logic.",
+      "Blue Velvet and Mulholland Drive are essential viewing.",
+      "Twin Peaks blended soap opera, crime, and supernatural elements.",
+      "He is famous for unsettling sound design and striking visuals.",
+      "He rarely explains his work, preferring ambiguity.",
+      "He practices transcendental meditation.",
+      "His style is often called 'Lynchian.'"
+    ],
+    "essential_facts": [],
+    "talking_points": [],
+    "vocabulary": [],
+    "common_mistakes": [],
+    "questions": [],
+    "extra_sections": [],
+    "spoiler_warning": false,
+    "kind": "person",
+    "who": "David Lynch was an American filmmaker, painter and musician whose work put the uncanny inside the ordinary: suburban lawns with something under them, rooms that hum, dialogue delivered a half-beat wrong. He directed Eraserhead, The Elephant Man, Blue Velvet, Wild at Heart, Lost Highway, Mulholland Drive and Inland Empire, and co-created Twin Peaks with Mark Frost. He died in January 2025.\n\nThe thing to understand before saying anything is that he refused, consistently and for fifty years, to explain what his films meant. That refusal is the centre of how people talk about him, and treating a Lynch film as a puzzle with a solution is the fastest way to sound like you have read about him rather than watched him.",
+    "works": [
+      {
+        "title": "Eraserhead",
+        "year": "1977",
+        "why": "Cult debut; set the tone for his surreal, industrial, nightmarish style."
+      },
+      {
+        "title": "Blue Velvet",
+        "year": "1986",
+        "why": "Defined Lynch’s take on suburban darkness; iconic for its unsettling mood."
+      },
+      {
+        "title": "Twin Peaks",
+        "year": "1990",
+        "why": "Groundbreaking TV; a blend of soap opera, crime, and the supernatural."
+      },
+      {
+        "title": "Lost Highway",
+        "year": "1997",
+        "why": "Noted for its structure and noir influences; a favourite among die-hard fans."
+      },
+      {
+        "title": "Mulholland Drive",
+        "year": "2001",
+        "why": "Critically acclaimed; widely seen as his masterpiece and a defining puzzle film."
+      },
+      {
+        "title": "Inland Empire",
+        "year": "2006",
+        "why": "Experimental and challenging; tests even Lynch fans."
+      },
+      {
+        "title": "The Elephant Man",
+        "year": "1980",
+        "why": "His most conventional film; earned him mainstream recognition and Oscar nominations."
+      }
+    ],
+    "eras": [
+      "Early Surrealism (Eraserhead, The Elephant Man)",
+      "Suburban Nightmares (Blue Velvet, Twin Peaks)",
+      "Hollywood Noir (Lost Highway, Mulholland Drive)",
+      "Digital Experimentation (Inland Empire, late shorts)"
+    ],
+    "positions": [
+      "Lynch refuses to explain his films, insisting viewers create their own interpretations.",
+      "He believes in the power of dreams and the subconscious in art.",
+      "He is an advocate for transcendental meditation and credits it with his creativity."
+    ],
+    "misattributions": [
+      "He is often credited with writing all of Twin Peaks. Mark Frost co-created it and wrote a great deal of it, and saying so is an instant signal.",
+      "'The owls are not what they seem' gets quoted as something Lynch said. It is a line from the show.",
+      "Dune (1984) turns up in lists of his films. He disowned it, having lost final cut, and versions exist with the direction credited to a pseudonym."
+    ]
+  },
+  "sources": []
+}

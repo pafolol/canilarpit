@@ -47,6 +47,7 @@ class GuideType(enum.StrEnum):
     ANIME = "anime"
     SCREEN = "screen"
     LIFESTYLE = "lifestyle"
+    PERSON = "person"
     CRAFT = "craft"
     PROFESSION = "profession"
     GENERAL = "general"

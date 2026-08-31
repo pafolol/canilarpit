@@ -16,6 +16,7 @@ const GUIDE_TYPES: { value: GuideType | ""; label: string }[] = [
   { value: "anime", label: "Anime — plot, characters, endings, fandom" },
   { value: "screen", label: "Screen — films and series, and how they end" },
   { value: "lifestyle", label: "Lifestyle — brands, objects, places, a look" },
+  { value: "person", label: "Person — a named individual whose work people cite" },
   { value: "craft", label: "Craft — a skill somebody can hand you the kit for" },
   { value: "profession", label: "Profession — a job title, and where it becomes fraud" },
   { value: "general", label: "General — everything with no better home" },

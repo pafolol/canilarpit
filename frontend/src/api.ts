@@ -16,6 +16,7 @@ export type GuideType =
   | "anime"
   | "screen"
   | "lifestyle"
+  | "person"
   | "craft"
   | "profession"
   | "general";
@@ -125,6 +126,12 @@ export type GuideContent = {
   major_events?: { title: string; description: string; spoiler_level: string; citations: string[] }[];
   fandom_debates?: string[];
   where_it_dips?: string[];
+  // person
+  who?: string;
+  works?: { title: string; year: string | null; why: string }[];
+  eras?: string[];
+  positions?: string[];
+  misattributions?: string[];
   // craft
   proof_of_work?: string;
   tools?: { name: string; why: string; typical_price: string | null }[];

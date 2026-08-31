@@ -177,6 +177,7 @@ def test_every_guide_type_has_a_template_that_fits_it() -> None:
         GuideType.ANIME,
         GuideType.SCREEN,
         GuideType.LIFESTYLE,
+        GuideType.PERSON,
         GuideType.CRAFT,
         GuideType.PROFESSION,
     }, "the seed content should exercise every template"
@@ -209,3 +210,18 @@ def test_a_craft_guide_says_what_a_practitioner_can_show() -> None:
         if isinstance(document.content, CraftGuideContent):
             assert document.content.proof_of_work
             assert document.content.tools or document.content.techniques
+
+
+def test_a_person_guide_says_what_they_are_wrongly_credited_with() -> None:
+    """The misattribution does more work than the bibliography."""
+    from app.schemas.content import PersonGuideContent
+
+    found = False
+    for path in CONTENT.glob("*.json"):
+        document = GuideDocument.model_validate_json(path.read_text(encoding="utf-8"))
+        if isinstance(document.content, PersonGuideContent):
+            found = True
+            assert document.content.who
+            assert document.content.works, f"{document.slug} cites no work"
+            assert document.content.misattributions, f"{document.slug} names none"
+    assert found, "no seed guide exercises the person template"

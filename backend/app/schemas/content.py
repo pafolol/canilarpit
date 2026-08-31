@@ -256,6 +256,29 @@ class ScreenGuideContent(CommonGuideContent):
     where_it_dips: list[str] = Field(default_factory=list, max_length=20)
 
 
+class WorkItem(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    year: str | None = Field(default=None, max_length=40)
+    why: str = Field(min_length=1, max_length=1000)
+
+
+class PersonGuideContent(CommonGuideContent):
+    """A named individual whose work people claim to know.
+
+    `misattributions` is the field that earns this template. Half of larping a
+    person is the quote they never said, the film they disowned, or the position
+    everybody assigns them that they spent years arguing against - and knowing
+    one of those is more convincing than knowing the whole bibliography.
+    """
+
+    kind: Literal["person"] = "person"
+    who: str = Field(min_length=1, max_length=3000)
+    works: list[WorkItem] = Field(default_factory=list, max_length=40)
+    eras: list[str] = Field(default_factory=list, max_length=20)
+    positions: list[str] = Field(default_factory=list, max_length=20)
+    misattributions: list[str] = Field(default_factory=list, max_length=20)
+
+
 class ToolItem(BaseModel):
     name: str = Field(min_length=1, max_length=160)
     why: str = Field(min_length=1, max_length=1000)
@@ -301,6 +324,7 @@ GuideContent = Annotated[
     AnimeGuideContent
     | ScreenGuideContent
     | LifestyleGuideContent
+    | PersonGuideContent
     | CraftGuideContent
     | ProfessionGuideContent
     | GeneralGuideContent,
