@@ -26,8 +26,6 @@ export type ApprovalStatus = "draft" | "approved" | "rejected" | "broken";
 export type MediaKind = "stock" | "external" | "generated" | "uploaded";
 export type JobStatus = "queued" | "running" | "review" | "completed" | "failed" | "cancelled";
 
-/** seconds to exposure, "indefinite" when nothing is checkable, null on a DON'T */
-
 export type CategorySummary = { id: string; slug: string; title: string };
 
 export type Category = CategorySummary & {

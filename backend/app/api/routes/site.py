@@ -186,13 +186,15 @@ def entry_head(db: Session, slug: str) -> dict | None:
     description = detail.larp.dek or detail.summary
     url = absolute(f"/entry/{detail.slug}")
 
+    org = {"@type": "Organization", "name": "canilarpit", "url": settings.site_origin}
     article: dict = {
         "@type": "Article",
         "headline": detail.title,
         "description": description,
         "url": url,
         "mainEntityOfPage": url,
-        "publisher": {"@type": "Organization", "name": "canilarpit", "url": settings.site_origin},
+        "author": org,
+        "publisher": org,
     }
     if hero:
         article["image"] = [hero.url]
@@ -321,7 +323,7 @@ def serve_app(path: str, db: Session = Depends(get_db)) -> Response:
                 is not None
             )
         else:
-            known = clean in STATIC_PATHS or clean.startswith("admin")
+            known = clean in STATIC_PATHS or clean == "admin" or clean.startswith("admin/")
     except SQLAlchemyError:
         # Cannot check, so do not claim the page is gone. The app loads and
         # shows its own error state; a 404 here would be a lie about the URL.
