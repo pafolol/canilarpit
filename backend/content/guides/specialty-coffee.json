@@ -41,6 +41,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "What's the roast date?",
+          "when": "Handed a bag or standing at a counter. The single most convincing question in the scene."
+        },
+        {
+          "line": "My water's the problem, not the beans.",
+          "when": "Asked how it tastes at home. True of almost everyone and it moves the subject to chemistry."
+        },
+        {
+          "line": "I'd rather it were under-extracted than bitter.",
+          "when": "Asked for a preference. A real position that costs nothing to hold."
+        }
+      ],
       "surface": [
         "Order a filter, ask what is on, ask about the process. Three moves and you are inside the conversation.",
         "Say what you taste even when you are wrong. Being wrong out loud is the accepted entry ritual here, which is why the clock runs so long."

@@ -4,7 +4,7 @@ One question per entry: **can you larp it, and for how long before someone catch
 
 To LARP something is to present yourself as knowing or being something you do not — a
 film you never watched, a scene you do not belong to, a job you do not do. This site is
-the briefing you read beforehand: the crib sheet, the follow-up question that collapses
+the briefing you read beforehand: the crib sheet, the lines to actually say, the follow-up question that collapses
 it **and what to say when it lands**, the tells, the cost of being caught, and the
 honest hours it would take to just learn the thing instead.
 

@@ -41,6 +41,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "It's a tyre race now.",
+          "when": "Any race, any era, any conversation. Almost always true and it is the sport's real subject."
+        },
+        {
+          "line": "He was never getting past on that compound.",
+          "when": "An overtake that did not happen. Blaming the tyre is the correct analysis nine times in ten."
+        },
+        {
+          "line": "I came in with Drive to Survive, like everyone.",
+          "when": "Asked how long you have watched. Honesty is the strongest position available here."
+        }
+      ],
       "surface": [
         "One race, one strategy call, one complaint about stewarding. Endlessly renewable and never checked.",
         "The fandom quadrupled in four years, so being new is the statistical default rather than a mark against you."

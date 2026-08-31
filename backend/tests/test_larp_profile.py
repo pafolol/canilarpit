@@ -13,8 +13,9 @@ CONTENT = Path(__file__).resolve().parent.parent / "content" / "guides"
 
 
 def no_counter(profile: dict) -> dict:
-    """A DON'T entry is valid only without one."""
+    """A DON'T entry is valid only without a counter, and without lines to say."""
     profile["follow_up"] = {**profile["follow_up"], "counter": None}
+    profile["phrases"] = []
     return profile
 
 
@@ -27,6 +28,7 @@ def base_profile(**overrides) -> dict:
         "flags": ["HIGH VOCAB"],
         "dek": "Holds at the bar and fails at the table.",
         "crib": [{"heading": "References", "lines": ["One name worth saying."]}],
+        "phrases": [{"line": "It's a bit reduced.", "when": "The first pour."}],
         "surface": ["What passes on first contact."],
         "follow_up": {
             "question": "\"Which vintage?\"",
@@ -139,3 +141,25 @@ def test_every_larpable_guide_answers_its_own_question() -> None:
             assert follow_up.counter is not None, f"{document.slug} leaves the reader stuck"
             # An oversold counter gets somebody caught worse than none at all.
             assert follow_up.counter.holds, f"{document.slug} does not say how far it carries"
+
+
+def test_a_dont_entry_hands_out_no_lines() -> None:
+    profile = no_counter(base_profile(verdict="dont", exposure_seconds=None))
+    profile["phrases"] = [{"line": "Anything at all.", "when": "Never."}]
+    with pytest.raises(ValidationError, match="hands out no lines"):
+        LarpProfile.model_validate(profile)
+
+
+def test_every_larpable_guide_hands_over_something_to_say() -> None:
+    """The crib is what to know; phrases are what comes out of your mouth."""
+    for path in CONTENT.glob("*.json"):
+        document = GuideDocument.model_validate_json(path.read_text(encoding="utf-8"))
+        phrases = document.larp.phrases
+        if document.larp.verdict is Verdict.DONT:
+            assert not phrases
+            continue
+        assert len(phrases) >= 2, f"{document.slug} has nothing to say"
+        for phrase in phrases:
+            assert phrase.line and phrase.when
+            # A phrase is spoken, so it stays short enough to actually say.
+            assert len(phrase.line) <= 200

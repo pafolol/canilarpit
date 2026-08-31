@@ -43,6 +43,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "I skipped the filler, like everyone.",
+          "when": "Any gap in your viewing. It is the universally correct answer."
+        },
+        {
+          "line": "The Pain arc is the peak and nothing after it touches that.",
+          "when": "Asked for a favourite. Widely held, and it explains why you stopped."
+        },
+        {
+          "line": "I fell off during the war and never went back.",
+          "when": "Asked how far you got. The most common viewing history there is."
+        }
+      ],
       "surface": [
         "Names, the Hokage, the tailed beasts, and one arc you can describe. Four items carry an ordinary conversation for about seven minutes.",
         "Anime fans are used to explaining, so questions read as interest rather than ignorance. The danger is not being asked, it is answering too fluently."

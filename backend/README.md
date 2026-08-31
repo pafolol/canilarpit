@@ -5,8 +5,8 @@ generation. Missing topics are counted so editors can decide what to write next.
 
 Every guide answers one question — *can you larp it, and for how long?* — so every
 guide document carries a `content.larp` block: a verdict, an exposure clock, the crib
-sheet, the follow-up that collapses it, the tells, the cost, and the honest hours it
-would take to just learn the thing. See `app/schemas/content.py`.
+sheet, the phrases to say out loud, the follow-up that collapses it, the tells, the
+cost, and the honest hours it would take to just learn the thing. See `app/schemas/content.py`.
 
 `follow_up` is `{question, why, counter}`. The counter is the move that survives the
 question plus an honest note on how far it carries, or `null` when the entry has no

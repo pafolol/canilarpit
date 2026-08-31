@@ -161,17 +161,46 @@ def test_requesting_an_existing_topic_points_at_the_guide(client: TestClient) ->
 
 def test_a_written_topic_leaves_the_backlog(client: TestClient) -> None:
     """The backlog is work to do, so a topic somebody has written is not on it."""
-    client.post("/api/v1/topic-requests", json={"topic": "Natural wine"})
+    unwritten = f"Test topic {uuid.uuid4().hex[:8]}"
+    client.post("/api/v1/topic-requests", json={"topic": unwritten})
 
-    backlog = client.get("/api/v1/admin/topic-requests", headers=DEV_HEADERS).json()
-    assert not any(item["normalized_topic"] == "natural wine" for item in backlog["items"])
+    # POST /topic-requests refuses to record a topic that already has a guide, so
+    # a row for one is written straight to the table. This is the state a request
+    # made before the guide existed leaves behind.
+    written = f"Test topic {uuid.uuid4().hex[:8]}"
+    with SessionLocal() as db:
+        db.execute(delete(TopicRequest).where(TopicRequest.normalized_topic == "natural wine"))
+        db.add(
+            TopicRequest(topic=written, normalized_topic="natural wine", request_count=3)
+        )
+        db.commit()
 
-    everything = client.get(
-        "/api/v1/admin/topic-requests",
-        params={"include_written": True},
-        headers=DEV_HEADERS,
-    ).json()
-    assert everything["pagination"]["total"] >= backlog["pagination"]["total"]
+    try:
+        backlog = client.get(
+            "/api/v1/admin/topic-requests", params={"page_size": 100}, headers=DEV_HEADERS
+        ).json()
+        topics = {item["topic"] for item in backlog["items"]}
+
+        assert written not in topics, "natural-wine is published, so that is not work"
+        # The positive half matters as much: a correlation bug in the filter once
+        # hid the entire backlog, and an absence-only assertion sails past that.
+        assert unwritten in topics, "an unwritten topic must stay on the backlog"
+
+        everything = client.get(
+            "/api/v1/admin/topic-requests",
+            params={"include_written": True, "page_size": 100},
+            headers=DEV_HEADERS,
+        ).json()
+        assert written in {item["topic"] for item in everything["items"]}
+        assert everything["pagination"]["total"] > backlog["pagination"]["total"]
+    finally:
+        # This row is keyed on a real guide's topic, so the prefix teardown that
+        # catches the rest of the suite's rows would leave it behind.
+        with SessionLocal() as db:
+            db.execute(
+                delete(TopicRequest).where(TopicRequest.normalized_topic == "natural wine")
+            )
+            db.commit()
 
 
 def test_an_editor_can_dismiss_a_request(client: TestClient) -> None:

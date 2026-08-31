@@ -19,6 +19,7 @@ import MediaPanel from "./MediaPanel";
 import {
   CribEditor,
   CsvField,
+  PhraseEditor,
   ListField,
   NumberField,
   SelectField,
@@ -411,6 +412,11 @@ export default function GuideEditor() {
             {larp && (
               <>
                 <CribEditor sections={larp.crib} onChange={(crib) => patchLarp({ crib })} />
+                <PhraseEditor
+                  phrases={larp.phrases}
+                  disabled={stop}
+                  onChange={(phrases) => patchLarp({ phrases })}
+                />
                 <ListField
                   label="The surface layer"
                   values={larp.surface}

@@ -41,6 +41,21 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "I'm coming back from a finger thing.",
+          "when": "Handed a problem you cannot climb. Universal, unfalsifiable, and it buys you the session.",
+          "invites": "Sympathy, and a long conversation about pulleys. Know the word A2."
+        },
+        {
+          "line": "It's not the grade, it's the reach.",
+          "when": "Watching somebody fail a problem. Talking about movement rather than numbers is the tell of a climber."
+        },
+        {
+          "line": "I'll work it next session.",
+          "when": "Asked whether you are getting on the wall. Postponement is normal here."
+        }
+      ],
       "surface": [
         "Vocabulary lasts about three minutes. Then somebody suggests you get on the wall, and the suggestion is friendly.",
         "There is no version of this scene that stays verbal."

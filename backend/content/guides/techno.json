@@ -41,6 +41,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "We got there about three.",
+          "when": "Asked about any night. Arrival time is the entire status system."
+        },
+        {
+          "line": "It was better downstairs.",
+          "when": "Asked about a specific club. There is always a downstairs and it was always better."
+        },
+        {
+          "line": "I left before the end. I had something on Sunday.",
+          "when": "Asked how long you stayed. Leaving early is a flex once you arrived late."
+        }
+      ],
       "surface": [
         "Rooms and hours, not tracks. Nobody in this scene identifies music on their phone and nobody admits to wanting to.",
         "The correct answer to what was played is a mood and a time."

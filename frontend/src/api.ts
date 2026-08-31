@@ -71,6 +71,9 @@ export type ImageQuery = {
   note: string | null;
 };
 
+/** One line the reader says out loud, and the moment to use it. */
+export type Phrase = { line: string; when: string; invites: string | null };
+
 /** The move that survives the question, and how far it actually carries. */
 export type Counter = { move: string; holds: string };
 
@@ -83,6 +86,7 @@ export type FollowUp = {
 
 export type LarpProfile = LarpCard & {
   crib: CribSection[];
+  phrases: Phrase[];
   surface: string[];
   follow_up: FollowUp;
   tells: string[];

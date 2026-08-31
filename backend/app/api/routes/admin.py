@@ -3,7 +3,7 @@ import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response
-from sqlalchemy import exists, func, or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -484,20 +484,29 @@ def topic_already_written():
     being a request. Matching mirrors POST /topic-requests: the normalized topic
     as a slug, or any of the guide's aliases.
     """
-    return exists(
-        select(Guide.id).where(
+    # Two flat EXISTS rather than one nested inside another: nesting let
+    # SQLAlchemy put topic_requests in the inner FROM instead of correlating it,
+    # which asked "does any topic match any alias" and hid the whole backlog.
+    by_slug = (
+        select(Guide.id)
+        .where(
             Guide.status == GuideStatus.PUBLISHED,
-            or_(
-                Guide.slug == func.replace(TopicRequest.normalized_topic, " ", "-"),
-                exists(
-                    select(GuideAlias.id).where(
-                        GuideAlias.guide_id == Guide.id,
-                        GuideAlias.normalized_alias == TopicRequest.normalized_topic,
-                    )
-                ),
-            ),
+            Guide.slug == func.replace(TopicRequest.normalized_topic, " ", "-"),
         )
+        .correlate(TopicRequest)
+        .exists()
     )
+    by_alias = (
+        select(GuideAlias.id)
+        .join(Guide, Guide.id == GuideAlias.guide_id)
+        .where(
+            Guide.status == GuideStatus.PUBLISHED,
+            GuideAlias.normalized_alias == TopicRequest.normalized_topic,
+        )
+        .correlate(TopicRequest)
+        .exists()
+    )
+    return or_(by_slug, by_alias)
 
 
 @router.get("/topic-requests", response_model=TopicRequestAdminPage)

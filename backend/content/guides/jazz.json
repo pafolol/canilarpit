@@ -41,6 +41,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "Who's on drums?",
+          "when": "Any record goes on. Asking about the rhythm section is what listeners do and leaders do not."
+        },
+        {
+          "line": "I'll take the live version.",
+          "when": "Any album is mentioned. Almost always a defensible preference."
+        },
+        {
+          "line": "It's the space, not the notes.",
+          "when": "Asked why you like a player. Vague, true, and the room agrees."
+        }
+      ],
       "surface": [
         "One album, one player who is not the bandleader, one live recording. Two minutes in total.",
         "The surface is short here because the record is usually already playing."

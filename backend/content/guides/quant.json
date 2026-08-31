@@ -43,6 +43,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "I can't talk about live numbers.",
+          "when": "Asked for any figure at all. What an actual quant says, and it cannot be followed up."
+        },
+        {
+          "line": "The backtest was beautiful, which was the problem.",
+          "when": "Asked about a strategy. Self-deprecating, and it signals you know overfitting."
+        },
+        {
+          "line": "Execution ate most of it.",
+          "when": "Asked why something did not work. True of nearly every strategy anyone has run."
+        }
+      ],
       "surface": [
         "Vocabulary, one strategy family, and a complaint about data quality. Three items hold an ordinary conversation for about two minutes.",
         "The trouble is that this is a numbers job and the room knows it. Everything you say is fine until somebody asks for a figure, and figures do not come from reading."

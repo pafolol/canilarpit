@@ -41,6 +41,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "We passed, and I was wrong about the team.",
+          "when": "Asked about anything that later did well. Being wrong about people is the respectable failure."
+        },
+        {
+          "line": "It's a distribution problem, not a tech problem.",
+          "when": "Asked about any project. Sounds like judgement and commits you to nothing."
+        },
+        {
+          "line": "I'm mostly heads-down on portfolio right now.",
+          "when": "Asked what you are looking at. Vague in the direction the room expects."
+        }
+      ],
       "surface": [
         "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.",
         "The surface layer and the actual layer are the same layer. That is why the clock does not run."

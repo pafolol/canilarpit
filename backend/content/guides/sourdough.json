@@ -41,6 +41,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "My starter's been sulking.",
+          "when": "Asked how the baking is going. Every baker's starter sulks."
+        },
+        {
+          "line": "That's a high hydration, isn't it?",
+          "when": "Shown a loaf with an open crumb. Correct often enough, and it is the right axis."
+        },
+        {
+          "line": "I under-proof more than I over-proof.",
+          "when": "Asked what goes wrong. Naming your own recurring failure is the mark of a baker."
+        }
+      ],
       "surface": [
         "A hydration number, a flour, and a complaint about your oven. That is the entire first conversation and it renews.",
         "Nothing about this scene happens on a deadline, which is why the clock is long."

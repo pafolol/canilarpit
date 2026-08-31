@@ -41,6 +41,21 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "Season three is where it loses the thread.",
+          "when": "Any long-running show. There is always a weak middle and this is proof of attendance.",
+          "invites": "\"What happens in three?\" Move to why the pacing changed, not what happened."
+        },
+        {
+          "line": "I'm one episode from the end and I'm rationing it.",
+          "when": "Asked whether you have finished. It explains the gap and flatters the show."
+        },
+        {
+          "line": "It's the one scene everybody talks about, and it earned it.",
+          "when": "Somebody mentions the famous episode. Agreement costs nothing."
+        }
+      ],
       "surface": [
         "A show, a season, and a supporting character. Nobody checks the first two.",
         "Everyone has seen the pilot of everything. Nothing above episode four is safe."

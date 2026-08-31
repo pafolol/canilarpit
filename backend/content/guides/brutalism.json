@@ -41,6 +41,20 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "It photographs better than it works.",
+          "when": "Any famous building. It is the honest position and separates you from the poster crowd."
+        },
+        {
+          "line": "Have you been inside?",
+          "when": "Somebody shows you an exterior. The interior is the whole argument."
+        },
+        {
+          "line": "The concrete was meant to be seen wet.",
+          "when": "Somebody complains about the staining. True, and nobody expects you to know it."
+        }
+      ],
       "surface": [
         "A building, its architect, and what it was built for. The third item is where larpers stop.",
         "Photographs carry you a long way here, which is why the clock is generous and the failure is specific."

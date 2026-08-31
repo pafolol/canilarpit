@@ -560,6 +560,10 @@ end, and `crib`, `surface`, `follow-up`, `tells`, `brief`, `words`, `asked`, `co
 the article, so a reader meets a picture beside the point it belongs to. It may be empty, in which case the backend infers a brief from the title and
 any visual cues.
 
+`content.larp.phrases` is up to ten `{line, when, invites}` objects: sentences the
+reader says out loud, the moment to use each, and optionally the follow-up it opens them
+up to. A `dont` verdict must have `phrases: []`, and the API rejects one that does not.
+
 `content.larp.follow_up` names the question that ends the LARP, explains why it works,
 and answers it. `counter` is `{move, holds}` or `null` when the entry honestly has no
 answer; `holds` must say where the counter stops working, because an oversold counter

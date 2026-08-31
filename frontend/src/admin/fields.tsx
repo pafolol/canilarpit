@@ -1,7 +1,7 @@
 /** Small form primitives shared by the guide editor. */
 
 import type { ReactNode } from "react";
-import type { CribSection } from "../api";
+import type { CribSection, Phrase } from "../api";
 
 export function Field({
   label,
@@ -272,5 +272,82 @@ export function CsvField({
         }
       />
     </Field>
+  );
+}
+
+
+export function PhraseEditor({
+  phrases,
+  onChange,
+  disabled = false,
+}: {
+  phrases: Phrase[];
+  onChange: (next: Phrase[]) => void;
+  disabled?: boolean;
+}) {
+  const replace = (index: number, phrase: Phrase) => {
+    const next = [...phrases];
+    next[index] = phrase;
+    onChange(next);
+  };
+
+  if (disabled) {
+    return (
+      <div className="af">
+        <span className="af__label">Things to say</span>
+        <span className="af__hint">A DON&rsquo;T entry hands out no lines.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="af">
+      <span className="af__label">Things to say</span>
+      <span className="af__hint">
+        Sentences, not facts. Each one has to survive being said out loud by somebody
+        who is bluffing.
+      </span>
+      {phrases.map((phrase, index) => (
+        <div className="af__crib" key={index}>
+          <div className="af__row">
+            <input
+              className="af__input"
+              value={phrase.line}
+              placeholder="The line, said verbatim"
+              onChange={(event) => replace(index, { ...phrase, line: event.target.value })}
+            />
+            <button
+              type="button"
+              className="af__drop"
+              aria-label={`Remove phrase ${index + 1}`}
+              onClick={() => onChange(phrases.filter((_, i) => i !== index))}
+            >
+              ×
+            </button>
+          </div>
+          <input
+            className="af__input"
+            value={phrase.when}
+            placeholder="When to use it"
+            onChange={(event) => replace(index, { ...phrase, when: event.target.value })}
+          />
+          <input
+            className="af__input"
+            value={phrase.invites ?? ""}
+            placeholder="Optional: the follow-up it invites"
+            onChange={(event) =>
+              replace(index, { ...phrase, invites: event.target.value || null })
+            }
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        className="af__add"
+        onClick={() => onChange([...phrases, { line: "", when: "", invites: null }])}
+      >
+        Add phrase
+      </button>
+    </div>
   );
 }

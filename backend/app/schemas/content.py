@@ -52,6 +52,24 @@ class CribSection(BaseModel):
         return cleaned
 
 
+class Phrase(BaseModel):
+    """One line the reader can actually say.
+
+    Not a fact and not an opinion: a sentence with a shape somebody who belongs
+    would use. "Who is Rem?" carries a whole fandom; "I can't talk about live
+    numbers" carries a whole job.
+    """
+
+    line: str = Field(min_length=2, max_length=200)
+    when: str = Field(min_length=1, max_length=400)
+    invites: str | None = Field(default=None, max_length=400)
+
+    @field_validator("line", "when")
+    @classmethod
+    def tidy(cls, value: str) -> str:
+        return " ".join(value.split())
+
+
 class Counter(BaseModel):
     """The move that survives the question.
 
@@ -89,6 +107,7 @@ class LarpProfile(BaseModel):
     flags: list[str] = Field(default_factory=list, max_length=6)
     dek: str = Field(min_length=10, max_length=400)
     crib: list[CribSection] = Field(default_factory=list, max_length=8)
+    phrases: list[Phrase] = Field(default_factory=list, max_length=10)
     surface: list[str] = Field(default_factory=list, max_length=10)
     follow_up: FollowUp
     tells: list[str] = Field(min_length=1, max_length=15)
@@ -122,6 +141,8 @@ class LarpProfile(BaseModel):
                 raise ValueError("exposure_seconds must be at least 30")
         if self.verdict == Verdict.DONT and self.follow_up.counter is not None:
             raise ValueError("a DON'T entry offers no counter; the answer is not to try")
+        if self.verdict == Verdict.DONT and self.phrases:
+            raise ValueError("a DON'T entry hands out no lines to say")
         return self
 
 
@@ -133,8 +154,8 @@ IMAGE_PROVIDERS = Literal[
 # Where a picture goes. "hero" is the top of the page, "gallery" is the strip at
 # the bottom, and the rest are section ids: the image lands under that section.
 IMAGE_ROLES = Literal[
-    "hero", "crib", "surface", "follow-up", "tells", "brief", "words", "asked",
-    "cost", "learn", "gallery",
+    "hero", "crib", "phrases", "surface", "follow-up", "tells", "brief", "words",
+    "asked", "cost", "learn", "gallery",
 ]
 
 

@@ -43,6 +43,21 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "It wears smaller than the spec.",
+          "when": "Any watch is mentioned. Case size versus how it sits is the collector's real conversation."
+        },
+        {
+          "line": "I'd rather have one I actually wear.",
+          "when": "Asked about a collection you do not have. The most respected position in the room."
+        },
+        {
+          "line": "What's the reference?",
+          "when": "Somebody names a model. Asking for the reference number is what owners do first.",
+          "invites": "They will tell you, at length. That is the point."
+        }
+      ],
       "surface": [
         "One family, one reference, and a preference. Three items hold a first conversation for about five minutes.",
         "The scene rewards precision and punishes enthusiasm about money. Talk about the object and the clock keeps running; talk about the price and it stops."

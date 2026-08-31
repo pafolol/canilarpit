@@ -311,6 +311,30 @@ function buildBlocks(entry: GuideDetail): Block[] {
     });
   }
 
+  if (larp.phrases.length > 0) {
+    blocks.push({
+      id: "phrases",
+      label: "phrases",
+      node: (
+        <Section id="phrases" heading="Things to say">
+          <ul className="phrases">
+            {larp.phrases.map((phrase) => (
+              <li className="phrase" key={phrase.line}>
+                <p className="phrase__line">&ldquo;{phrase.line}&rdquo;</p>
+                <p className="phrase__when">{phrase.when}</p>
+                {phrase.invites ? (
+                  <p className="phrase__invites">
+                    <span className="u-label">Invites</span> {phrase.invites}
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ),
+    });
+  }
+
   if (stop) {
     blocks.push(costBlock);
   } else if (larp.surface.length > 0) {

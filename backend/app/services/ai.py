@@ -172,6 +172,13 @@ content, for all kinds:
         "lines": ["<3-5 lines, stances that read as lived rather than researched>"]
       }
     ],
+    "phrases": [
+      {
+        "line": "<a sentence the reader says out loud, verbatim>",
+        "when": "<the moment to use it>",
+        "invites": "<optional: the follow-up it opens you up to>"
+      }
+    ],
     "surface": ["<1-3 paragraphs: what passes on first contact, and for how long>"],
     "follow_up": {
       "question": "<the exact question that ends it, in quotes>",
@@ -248,6 +255,20 @@ character's name, not a description of a mood. For anything physical - a drink, 
 loaf, a building, a piece of clothing - the query is a plain description of the
 photograph you want. Never send a fictional character to a stock photography
 provider: it has never heard of them and will return a stranger.
+
+`phrases` is 3 to 5 lines the reader can say, and it is not the crib sheet in
+another form. The crib is what to know; a phrase is a sentence with the shape
+somebody who belongs would use, and it has to survive being said out loud by
+somebody who is bluffing.
+
+The good ones are short, specific, and safe to be asked about - "It's a tyre race
+now", "What's the roast date?", "I can't talk about live numbers", "Who is Rem?".
+The bad ones are facts in disguise, anything that invites a question the reader
+cannot answer, and anything nobody would actually say. When a line does invite a
+dangerous follow-up but is worth it anyway, put the follow-up in `invites` and
+say how to survive it.
+
+A "dont" entry has `phrases: []`. It hands out no lines.
 
 Query one thing. "Breaking Bad" finds the show, "Walter White" finds the
 character; "Breaking Bad Walter White fsociety mood" finds neither. A subject

@@ -42,6 +42,22 @@
           ]
         }
       ],
+      "phrases": [
+        {
+          "line": "It's a bit reduced. Give it a minute.",
+          "when": "The first pour smells like a struck match and somebody pulls a face.",
+          "invites": "Nothing. Half the table will nod and swirl, because it is usually true."
+        },
+        {
+          "line": "I like the ones that still taste like grapes.",
+          "when": "Asked what you look for. It is a real position and it ends the question."
+        },
+        {
+          "line": "Anything by Overnoy, if the list has it.",
+          "when": "Asked to choose. Safe, because the list almost never has it.",
+          "invites": "\"Which cuvée?\" Say you have only had the Poulsard and mean it."
+        }
+      ],
       "surface": [
         "A producer, a region, and one flaw. Three items is the entire surface layer, and it holds for about six minutes.",
         "Order by the glass and ask what was opened today. Curiosity outranks knowledge in this room, which is why the bar is survivable and the table is not."
