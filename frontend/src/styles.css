@@ -12,6 +12,7 @@
   --rule:   #282D35;  /* hairlines, dividers, disabled */
   --edge:   #3A4149;  /* a deliberate border: full ink glares on a dark ground */
   --signal: #5C8DFF;  /* the ballpoint blue, lifted to survive here */
+  --signal-deep: #2F62E6;  /* the same blue, dark enough to carry white text */
   --stop:   #FF5C63;
 
   /* doability, as a severity ramp */
@@ -529,7 +530,14 @@ input {
   transition: background-color 150ms var(--ease-out), color 150ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
-  .box__btn:hover { background: var(--signal); border-color: var(--signal); }
+  /* The fill has to change with the text. Leaving colour alone put the near-black
+     resting text on the blue, which is what made this look broken. White on the
+     signal blue itself only reaches 3.1:1, so the hover fill is a step deeper. */
+  .box__btn:hover {
+    background: var(--signal-deep);
+    border-color: var(--signal-deep);
+    color: var(--ink);
+  }
 }
 .box__btn[disabled] { background: var(--rule); border-color: var(--rule); color: var(--card); cursor: not-allowed; }
 .box__msg { grid-column: 1 / -1; font-size: var(--t-15); }
