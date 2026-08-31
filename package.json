@@ -4,14 +4,14 @@
   "version": "0.1.0",
   "description": "Can I LARP It — FastAPI catalog and React reading interface, in one repo",
   "scripts": {
-    "setup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup.ps1",
-    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev.ps1",
-    "dev:api": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/api.ps1",
+    "setup": "python3 -m venv .venv && .venv/bin/pip install -q --upgrade pip && .venv/bin/pip install -e 'backend[dev]' && npm --prefix frontend install && { [ -f backend/.env ] || cp backend/.env.example backend/.env; } && { [ -f frontend/.env ] || cp frontend/.env.example frontend/.env; }",
+    "dev": "trap 'kill 0' EXIT; npm run dev:api & npm run dev:web",
+    "dev:api": "cd backend && ../.venv/bin/python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
     "dev:web": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "lint": "npm --prefix frontend run lint",
-    "check": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1",
-    "db:migrate": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/migrate.ps1",
-    "db:seed": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/seed.ps1"
+    "check": "cd backend && ../.venv/bin/python -m ruff check . && ../.venv/bin/python -m pytest && cd ../frontend && npm run lint && npm run build",
+    "db:migrate": "cd backend && ../.venv/bin/python -m alembic upgrade head",
+    "db:seed": "cd backend && ../.venv/bin/python -m app.cli seed"
   }
 }
