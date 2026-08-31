@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import {
   ApiError,
   api,
-  clockOf,
   type Counter,
   type GuideCard,
   type GuideContent,
@@ -13,16 +12,15 @@ import {
   type Media,
 } from "./api";
 import {
+  Breadcrumbs,
   CribBlock,
   ErrorState,
-  ExposureClock,
   FlagChips,
-  Loading,
+  Skeleton,
   ReadCount,
   TellsList,
   TypeGlyph,
   VerdictBadge,
-  clockLabel,
 } from "./components";
 import { Linked, LinkedParagraphs } from "./crosslink";
 import NotListed from "./NotListed";
@@ -73,7 +71,6 @@ export default function Entry() {
   }, [slug]);
 
   const larp = entry?.content.larp;
-  const stop = larp?.verdict === "dont";
   const blocks: Block[] = !entry || !larp ? [] : buildBlocks(entry);
 
   // The tags injected server-side describe the page that was loaded first. Once
@@ -112,7 +109,7 @@ export default function Entry() {
   if (busy) {
     return (
       <div className="u-shell">
-        <Loading what="the entry" />
+        <Skeleton variant="article" what="the entry" />
       </div>
     );
   }
@@ -126,7 +123,6 @@ export default function Entry() {
   }
   if (!entry || !larp) return <NotListed slug={slug} />;
 
-  const clock = clockOf(larp);
   const hero = entry.media.find((m) => m.role === "hero") ?? entry.media[0] ?? null;
   const { byBlock, leftover } = placeImages(
     blocks,
@@ -146,10 +142,17 @@ export default function Entry() {
 
   return (
     <div className="u-shell">
+      <Breadcrumbs
+        trail={[
+          { label: "Home", to: "/" },
+          { label: entry.category.title, to: `/category/${entry.category.slug}` },
+          { label: entry.title },
+        ]}
+      />
+
       {/* mobile only */}
       <div className="entrybar">
         <TypeGlyph type={larp.entry_type} label />
-        <ExposureClock seconds={clock} running={!stop} className="entrybar__clock" />
         <button className="entrybar__index" onClick={() => setSheet(true)} aria-expanded={sheet}>
           Index
         </button>
@@ -158,13 +161,6 @@ export default function Entry() {
       <div className="entry">
         <aside className="rail">
           <TypeGlyph type={larp.entry_type} label />
-
-          <div className="rail__clockwrap">
-            <ExposureClock seconds={clock} running={!stop} size="l" />
-            <p className="u-label rail__clocklabel">{clock === null ? "no clock" : "to exposure"}</p>
-            {/* Spoken once. The digits above stay aria-hidden. */}
-            <p className="u-sr">{clockLabel(clock)}</p>
-          </div>
 
           <FlagChips flags={larp.flags} stack />
 

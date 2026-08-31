@@ -21,8 +21,8 @@ copy of the content.
 | `src/auth.tsx` | Admin credentials — a Clerk token, or the local dev identity headers |
 | `src/admin/` | The editor panel: catalog, generation, guide editor, images |
 
-Routes: `/` (home), `/entry/{slug}`, `/category/{slug}`, `/admin/*`.
-`/spot-the-larper`, `/just-learn-it`, and `/stats` still render a placeholder.
+Routes: `/` (home), `/entry/{slug}`, `/category/{slug}`, `/submit`, `/thanks`, `/faq`,
+`/privacy`, `/just-learn-it`, `/admin/*`. Anything else is a real 404.
 
 ## Talking to the API
 

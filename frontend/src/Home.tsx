@@ -13,9 +13,9 @@ import {
   EntryCard,
   ErrorState,
   FilterBar,
-  Loading,
   NewsletterBox,
   SearchField,
+  Skeleton,
   SubmitBox,
   TickerRow,
   useFilters,
@@ -128,7 +128,7 @@ export default function Home({ category }: { category?: string }) {
         {error ? (
           <ErrorState error={error} retry={() => setReloads((n) => n + 1)} />
         ) : busy && !result ? (
-          <Loading />
+          <Skeleton variant="cards" count={8} />
         ) : items.length === 0 ? (
           <div className="empty">
             {f.q ? (

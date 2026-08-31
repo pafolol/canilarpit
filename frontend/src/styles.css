@@ -181,7 +181,6 @@ input {
 }
 .hdr__link[aria-current="page"] { border-bottom-color: var(--ink); }
 
-.hdr__spot { color: var(--signal); }
 
 .ftr {
   border-top: var(--hair);
@@ -228,33 +227,6 @@ input {
 .verdict--l  { font-size: var(--t-34); letter-spacing: -0.01em; }
 
 .verdict__mark { flex: none; width: 0.72em; height: 0.72em; }
-
-/* ============================================================
-   ExposureClock
-   ============================================================ */
-
-.clock {
-  font-family: var(--data);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-  letter-spacing: 0.02em;
-  color: var(--signal);
-}
-.clock--exposed { letter-spacing: 0.1em; }
-.clock--none { color: var(--rule); }
-
-.clock--l {
-  display: block;
-  font-size: var(--t-34);
-  letter-spacing: 0.01em;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--signal);
-  background: var(--card);
-  text-align: center;
-}
-.clock--l.clock--exposed { font-size: var(--t-24); letter-spacing: 0.08em; }
-.clock--l.clock--none { border-color: var(--rule); }
 
 /* ============================================================
    TypeGlyph
@@ -563,8 +535,6 @@ input {
 
 .rail { position: sticky; top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
 .rail__verdict { display: flex; flex-direction: column; gap: 0.5rem; }
-.rail__clockwrap { display: flex; flex-direction: column; gap: 0.375rem; }
-.rail__clocklabel { text-align: center; }
 .rail__jump { border-top: var(--hair); padding-top: 0.875rem; display: flex; flex-direction: column; }
 .rail__jumphead { margin-bottom: 0.5rem; }
 .rail__jumplink {
@@ -714,8 +684,8 @@ input {
     background: var(--paper);
     border-bottom: var(--hair);
   }
-  .entrybar__clock { margin-left: auto; font-size: var(--t-15); }
   .entrybar__index {
+    margin-left: auto;
     min-height: 44px;
     padding-left: 0.75rem;
     border-left: var(--hair);
@@ -779,9 +749,6 @@ input {
 .notlisted .box { border-top: 1px solid var(--edge); margin-top: 1.5rem; }
 
 /* ---------- inspection round fixes ---------- */
-
-/* ∞ sits small against tabular digits at these sizes. */
-.clock--inf { font-size: 1.2em; line-height: 1; }
 
 @media (min-width: 768px) {
   /* multi-column grid: equal card heights read as a card index */
@@ -1808,6 +1775,8 @@ select {
   .ticker,
   .filters,
   .entrybar,
+  .crumbs,
+  .ctabar,
   .sheet,
   .sheet__scrim,
   .search,
@@ -1849,9 +1818,6 @@ select {
 
   /* A URL nobody can click is worth its address; one in the crib is not. */
   a { color: #000; text-decoration: none; }
-
-  /* The clock is a countdown on a screen and a lie on paper. */
-  .clock { display: none; }
 }
 
 /* ============================================================
@@ -2020,4 +1986,183 @@ select {
 
 @media (prefers-reduced-motion: reduce) {
   .spoil__list { transition: none; }
+}
+
+
+/* ============================================================
+   Breadcrumbs, questions, privacy, and the mobile call to action
+   ============================================================ */
+
+.crumbs { padding-block: 1.25rem 0; }
+.crumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--data);
+  font-size: var(--t-11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.crumbs__item { display: flex; align-items: center; gap: 0.5rem; }
+.crumbs__link { color: var(--ink-2); text-decoration: none; }
+.crumbs__sep { color: var(--rule); }
+
+@media (hover: hover) and (pointer: fine) {
+  .crumbs__link:hover { color: var(--ink); text-decoration: underline; }
+}
+
+/* The last crumb is the page you are on: present, but not competing. */
+.crumbs__item:last-child span { color: var(--ink); }
+
+.faq { margin-top: 2rem; }
+.faq__item { border-top: var(--hair); padding-block: 1.25rem; }
+.faq__q {
+  font-family: var(--display);
+  font-size: var(--t-18);
+  font-weight: 700;
+  color: var(--ink);
+}
+.faq__a {
+  margin: 0.5rem 0 0;
+  font-size: var(--t-15);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+.faq__a a { color: var(--signal); }
+
+.privacy__h {
+  margin-top: 2.25rem;
+  font-family: var(--display);
+  font-size: var(--t-18);
+  font-weight: 700;
+  color: var(--ink);
+}
+.privacy__list {
+  margin-top: 0.75rem;
+  padding-left: 1.1rem;
+  font-size: var(--t-15);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+.privacy__list li { margin-top: 0.5rem; }
+.privacy__list strong { color: var(--ink); }
+
+/* Desktop already has this in the footer and in every empty state. */
+.ctabar { display: none; }
+
+@media (max-width: 767px) {
+  .ctabar {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 56px;
+    padding: 0.5rem var(--gutter);
+    background: var(--card);
+    border-top: var(--hair);
+  }
+  .ctabar__text {
+    font-family: var(--data);
+    font-size: var(--t-11);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .ctabar__btn {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    /* 44px is the smallest thing a thumb hits reliably. */
+    min-height: 44px;
+    padding-inline: 1rem;
+    background: var(--signal-deep);
+    border: 1px solid var(--signal-deep);
+    color: #fff;
+    font-family: var(--data);
+    font-size: var(--t-13);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+}
+
+/* ============================================================
+   Skeletons — the shape of what is coming, so nothing jumps
+   ============================================================ */
+
+.skel__card {
+  background: var(--card);
+  border: var(--hair);
+  display: flex;
+  flex-direction: column;
+}
+.skel__cardtop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: var(--hair);
+}
+.skel__cardbody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem 0.75rem 0.75rem;
+}
+
+.skel__rows { padding-block: 2rem; }
+.skel__row {
+  display: grid;
+  grid-template-columns: 10.5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 0.75rem;
+  border-bottom: var(--hair);
+}
+
+.skel__doc { padding-block: 2rem; display: flex; flex-direction: column; gap: 0.875rem; }
+.skel__block { height: 12rem; margin-top: 0.75rem; background: var(--card); border: var(--hair); }
+
+/* One bar, sized by modifier. The sweep is a moving highlight rather than a
+   fade, so a column of them reads as one surface loading. */
+.skel__bar {
+  display: block;
+  height: 0.75rem;
+  border-radius: 2px;
+  background: var(--rule);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(255 255 255 / 6%) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skel-sweep 1.4s var(--ease-out) infinite;
+}
+.skel__bar--xs { width: 4.5rem; height: 0.625rem; }
+.skel__bar--short { width: 60%; }
+.skel__bar--title { height: 1.5rem; width: 80%; }
+.skel__bar--head { width: 5.5rem; height: 0.625rem; }
+
+@keyframes skel-sweep {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* A pulsing page is a hostile page for anyone who asked motion to stop. */
+@media (prefers-reduced-motion: reduce) {
+  .skel__bar { animation: none; background-image: none; }
+}
+
+@media print {
+  .skel { display: none !important; }
 }

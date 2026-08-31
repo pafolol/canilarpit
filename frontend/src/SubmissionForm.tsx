@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   ApiError,
   api,
   type Category,
   type EntryType,
-  type GuideCard,
   type GuideType,
 } from "./api";
 
@@ -37,6 +36,7 @@ const NEW_CATEGORY = "__new__";
  * hidden `website` field and the form token are the parts nobody should notice.
  */
 export default function SubmissionForm({ topic = "" }: { topic?: string }) {
+  const navigate = useNavigate();
   const [token, setToken] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -51,7 +51,6 @@ export default function SubmissionForm({ topic = "" }: { topic?: string }) {
 
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ message: string; guide: GuideCard | null } | null>(null);
 
   useEffect(() => {
     api.submissionForm().then((form) => setToken(form.token)).catch(() => setToken(null));
@@ -84,7 +83,13 @@ export default function SubmissionForm({ topic = "" }: { topic?: string }) {
         token,
         website: website || null,
       });
-      setDone({ message: receipt.message, guide: receipt.matching_guide });
+      navigate("/thanks", {
+        state: {
+          message: receipt.message,
+          guideSlug: receipt.matching_guide?.slug,
+          guideTitle: receipt.matching_guide?.title,
+        },
+      });
     } catch (cause) {
       setError(
         cause instanceof ApiError ? cause.message : "That did not send. Try again in a moment.",
@@ -96,26 +101,14 @@ export default function SubmissionForm({ topic = "" }: { topic?: string }) {
     }
   };
 
-  if (done) {
-    return (
-      <section className="submit submit--done">
-        <p className="submit__done">{done.message}</p>
-        {done.guide ? (
-          <p>
-            <Link to={`/entry/${done.guide.slug}`}>Read {done.guide.title}</Link>
-          </p>
-        ) : null}
-      </section>
-    );
-  }
-
   return (
     <form className="submit" onSubmit={submit} noValidate>
       <div className="submit__head">
         <h2 className="submit__title">Write it with us</h2>
         <p className="submit__sub">
           Tell us what you know and an editor takes it from there. What you write is a
-          lead, not the guide: it gets checked before anything is published.
+          lead, not the guide: it gets checked before anything is published. Somebody
+          reads every submission within 48 hours.
         </p>
       </div>
 

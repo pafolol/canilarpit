@@ -104,3 +104,22 @@ def test_an_entry_page_still_loads_when_the_database_is_gone() -> None:
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/html")
     assert "<title>canilarpit" in response.text
+
+
+def test_a_url_with_nothing_behind_it_is_a_real_404() -> None:
+    """Rendering "not listed" under a 200 is a soft 404.
+
+    The app draws its own not-listed page either way; what the status line
+    changes is whether a crawler keeps the dead URL. The database is reachable
+    here, so "no such guide" is a fact rather than a guess.
+    """
+    if not frontend_mounted:
+        pytest.skip("no built frontend; run `npm run build`")
+    client = TestClient(app)
+
+    for path in ("/entry/no-such-guide-anywhere", "/category/no-such-category", "/invented"):
+        assert client.get(path).status_code == 404, path
+
+    # And the pages that do exist keep answering 200.
+    for path in ("/", "/faq", "/privacy", "/submit"):
+        assert client.get(path).status_code == 200, path
