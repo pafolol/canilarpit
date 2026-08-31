@@ -304,6 +304,15 @@ export default function GuideEditor() {
         </section>
       ) : (
         <div className="admin__cols">
+          <MediaPanel
+            guideId={guide.id}
+            media={media}
+            brief={brief}
+            guideType={document.guide_type}
+            categorySlug={document.category_slug}
+            onChanged={() => void load()}
+          />
+
           <section className="panel">
             <div className="panel__head">
               <h2 className="panel__h">The verdict</h2>
@@ -547,14 +556,6 @@ export default function GuideEditor() {
             />
           </section>
 
-          <MediaPanel
-            guideId={guide.id}
-            media={media}
-            brief={brief}
-            guideType={document.guide_type}
-            categorySlug={document.category_slug}
-            onChanged={() => void load()}
-          />
         </div>
       )}
     </div>

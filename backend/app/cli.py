@@ -3,7 +3,7 @@ import json
 import sys
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.db.models import (
     Category,
@@ -11,6 +11,7 @@ from app.db.models import (
     GuideMedia,
     GuideRevision,
     GuideStatus,
+    MediaAsset,
     ResearchJob,
     ResearchJobStatus,
     User,
@@ -195,19 +196,33 @@ def backfill_images(slug: str | None, limit: int, replace: bool) -> None:
                 print(f"{guide.slug}: already has {len(existing)} image(s), skipping")
                 continue
             if existing and replace:
+                assets = [link.media_asset_id for link in existing]
                 for link in existing:
                     db.delete(link)
+                db.flush()
+                # Placements are per-revision, so an asset can outlive the link
+                # that referenced it. Drop the ones nothing points at any more.
+                for asset_id in assets:
+                    used = db.scalar(
+                        select(func.count())
+                        .select_from(GuideMedia)
+                        .where(GuideMedia.media_asset_id == asset_id)
+                    )
+                    if not used:
+                        asset = db.get(MediaAsset, asset_id)
+                        if asset is not None:
+                            db.delete(asset)
                 db.flush()
                 existing = []
 
             document = revision_document(revision)
-            picked, warnings = fetch_planned_images(document, limit=5)
+            picked, warnings, queries = fetch_planned_images(document, limit=5)
             if not picked:
                 detail = warnings[0] if warnings else "no provider returned anything"
                 print(f"{guide.slug}: no images ({detail})")
                 continue
 
-            attach_images(db, revision, picked, author, approve=True)
+            attach_images(db, revision, picked, author, queries=queries, approve=True)
             db.commit()
             illustrated += 1
             sources = ", ".join(

@@ -22,7 +22,7 @@ from sqlalchemy import delete, select, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.db.models import Guide, GuideStatus, TopicRequest, User, UserRole
+from app.db.models import Guide, GuideMedia, GuideStatus, TopicRequest, User, UserRole
 from app.db.session import SessionLocal
 from app.main import app
 from app.schemas.content import GuideDocument
@@ -55,6 +55,33 @@ def database_ready() -> tuple[bool, str]:
 
 READY, SKIP_REASON = database_ready()
 pytestmark = pytest.mark.skipif(not READY, reason=SKIP_REASON or "database not ready")
+
+
+def discard_draft(guide_id: uuid.UUID) -> None:
+    """Undo a draft this suite created on somebody's real guide."""
+    from app.db.models import GuideRevision, MediaAsset, RevisionStatus
+
+    with SessionLocal() as db:
+        drafts = db.scalars(
+            select(GuideRevision).where(
+                GuideRevision.guide_id == guide_id,
+                GuideRevision.status == RevisionStatus.DRAFT,
+            )
+        ).all()
+        for draft in drafts:
+            db.delete(draft)
+        db.commit()
+
+        orphans = db.scalars(
+            select(MediaAsset.id).where(
+                ~select(GuideMedia.id)
+                .where(GuideMedia.media_asset_id == MediaAsset.id)
+                .correlate(MediaAsset)
+                .exists()
+            )
+        ).all()
+        db.execute(delete(MediaAsset).where(MediaAsset.id.in_(orphans)))
+        db.commit()
 
 
 @pytest.fixture(scope="module")
@@ -281,6 +308,63 @@ def test_a_rewrite_lands_on_the_same_guide_even_if_the_model_renames_it() -> Non
 
         db.execute(delete(Guide).where(Guide.id == guide_id))
         db.commit()
+
+
+def test_swapping_an_image_walks_down_the_same_search(client: TestClient) -> None:
+    """No model call: the asset remembers the query and what it has already shown."""
+    guides = client.get(
+        "/api/v1/admin/guides", params={"page_size": 100}, headers=DEV_HEADERS
+    ).json()["items"]
+    illustrated = next(
+        (
+            guide
+            for guide in guides
+            if (guide["draft_revision"] or guide["current_revision"] or {}).get("media")
+        ),
+        None,
+    )
+    if illustrated is None:
+        pytest.skip("no guide has images; run `canilarpit backfill-images`")
+
+    guide_id = illustrated["id"]
+    revision = illustrated["draft_revision"] or illustrated["current_revision"]
+    placement = next(m for m in revision["media"] if m["link_id"])
+    before = placement["url"]
+    had_draft = illustrated["draft_revision"] is not None
+
+    try:
+        response = client.post(
+            f"/api/v1/admin/guides/{guide_id}/draft/media/{placement['link_id']}/swap",
+            headers=DEV_HEADERS,
+        )
+        if response.status_code == 404:
+            pytest.skip(f"provider offered no alternative: {response.json()['detail']}")
+        assert response.status_code == 200, response.text
+
+        swapped = response.json()
+        assert swapped["url"] != before, "a swap must actually change the image"
+        assert swapped["role"] == placement["role"], "the slot is preserved"
+        assert swapped["approval_status"] == placement["approval_status"]
+
+        # Editing images never touches what is live.
+        after = client.get(f"/api/v1/admin/guides/{guide_id}", headers=DEV_HEADERS).json()
+        assert after["draft_revision"] is not None, "the edit landed on a draft"
+        if illustrated["status"] == "published":
+            assert after["current_revision_id"] == illustrated["current_revision_id"]
+    finally:
+        if not had_draft:
+            discard_draft(uuid.UUID(guide_id))
+
+
+def test_swapping_an_unknown_placement_is_a_404(client: TestClient) -> None:
+    guides = client.get(
+        "/api/v1/admin/guides", params={"page_size": 1}, headers=DEV_HEADERS
+    ).json()["items"]
+    response = client.post(
+        f"/api/v1/admin/guides/{guides[0]['id']}/draft/media/{uuid.uuid4()}/swap",
+        headers=DEV_HEADERS,
+    )
+    assert response.status_code == 404
 
 
 def test_admin_routes_refuse_anonymous_callers(client: TestClient) -> None:

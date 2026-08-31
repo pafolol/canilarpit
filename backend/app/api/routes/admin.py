@@ -17,6 +17,7 @@ from app.db.models import (
     GuideRevision,
     GuideStatus,
     MediaAsset,
+    MediaKind,
     ResearchJob,
     ResearchJobStatus,
     RevisionStatus,
@@ -451,6 +452,160 @@ def link_media_to_draft(
     )
     db.commit()
     return media_response(asset, link)
+
+
+def draft_link(db: Session, guide: Guide, link_id: uuid.UUID) -> tuple[GuideRevision, GuideMedia]:
+    """Find a placement on the editable draft, creating that draft if needed.
+
+    The panel shows the published revision's media when there is no draft yet, so
+    a link id can arrive pointing at published content. Editing it means making a
+    draft first, exactly as placing a new image does; the copied placement is
+    matched back by asset and role.
+    """
+    try:
+        revision = latest_editable_revision(db, guide)
+        link = db.scalar(
+            select(GuideMedia).where(
+                GuideMedia.id == link_id, GuideMedia.guide_revision_id == revision.id
+            )
+        )
+        if link is not None:
+            return revision, link
+    except HTTPException:
+        revision = None  # type: ignore[assignment]
+
+    published_link = db.get(GuideMedia, link_id)
+    if published_link is None:
+        raise HTTPException(status_code=404, detail="Draft media link not found")
+
+    if revision is None:
+        current = db.get(
+            GuideRevision, guide.current_revision_id or published_link.guide_revision_id
+        )
+        if current is None:
+            raise HTTPException(status_code=409, detail="Guide has no editable draft")
+        revision = save_draft(db, guide, revision_document(current), guide_author(db, guide))
+
+    copied = db.scalar(
+        select(GuideMedia).where(
+            GuideMedia.guide_revision_id == revision.id,
+            GuideMedia.media_asset_id == published_link.media_asset_id,
+            GuideMedia.role == published_link.role,
+        )
+    )
+    if copied is None:
+        raise HTTPException(status_code=404, detail="Draft media link not found")
+    return revision, copied
+
+
+def guide_author(db: Session, guide: Guide) -> User:
+    author = db.scalar(select(User).where(User.clerk_user_id == "system:seed"))
+    if author is None:
+        raise HTTPException(status_code=500, detail="No system author is available")
+    return author
+
+
+@router.post("/guides/{guide_id}/draft/media/{link_id}/swap", response_model=MediaResponse)
+def swap_draft_media(
+    guide_id: uuid.UUID,
+    link_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_editor),
+) -> MediaResponse:
+    """Put a different image in this slot, from the search that produced it.
+
+    No model call: the asset remembers what was searched for and which results
+    have already been shown, so this walks down the same list.
+    """
+    guide = lock_guide(db, guide_or_404(db, guide_id))
+    revision, link = draft_link(db, guide, link_id)
+
+    old_asset = db.get(MediaAsset, link.media_asset_id)
+    if old_asset is None:
+        raise HTTPException(status_code=404, detail="Media asset not found")
+
+    metadata = dict(old_asset.extra_metadata or {})
+    query = metadata.get("query") or metadata.get("subject") or old_asset.alt_text
+    if not query:
+        raise HTTPException(
+            status_code=409, detail="This image records no search to repeat"
+        )
+
+    # Everything already offered for this slot, plus everything on the draft, so
+    # a swap always moves forward instead of cycling back to the first result.
+    tried: list[str] = [str(url) for url in metadata.get("tried") or []]
+    tried.append(old_asset.remote_url or "")
+    on_draft = set(
+        db.scalars(
+            select(MediaAsset.remote_url)
+            .join(GuideMedia, GuideMedia.media_asset_id == MediaAsset.id)
+            .where(GuideMedia.guide_revision_id == revision.id)
+        ).all()
+    )
+    exclude = {url for url in [*tried, *on_draft] if url}
+
+    document = revision_document(revision)
+    results, problems = images.search_with_fallback(
+        str(query),
+        provider_id=old_asset.provider,
+        guide_type=document.guide_type.value,
+        category_slug=document.category_slug,
+        limit=24,
+    )
+    candidate = next((item for item in results if item.remote_url not in exclude), None)
+    if candidate is None:
+        detail = f"No other image for {query!r}"
+        if problems:
+            detail += f". {problems[0]}"
+        raise HTTPException(status_code=404, detail=detail)
+
+    replacement = MediaAsset(
+        kind=MediaKind.EXTERNAL if candidate.editorial_only else MediaKind.STOCK,
+        provider=candidate.provider,
+        remote_url=candidate.remote_url,
+        source_page_url=candidate.source_page_url,
+        attribution=candidate.attribution,
+        license_name=candidate.license_name,
+        license_url=candidate.license_url,
+        alt_text=candidate.alt_text[:500],
+        width=candidate.width,
+        height=candidate.height,
+        extra_metadata={
+            "preview_url": candidate.preview_url,
+            "subject": candidate.subject,
+            "editorial_only": candidate.editorial_only,
+            "query": query,
+            "tried": [*tried, candidate.remote_url],
+        },
+        approval_status=old_asset.approval_status,
+        created_by_user_id=user.id,
+    )
+    db.add(replacement)
+    db.flush()
+
+    link.media_asset_id = replacement.id
+    link.caption = candidate.subject
+    mark_draft_changed(guide, revision)
+
+    # The image it replaced is not used anywhere else, so it is not worth keeping.
+    still_used = db.scalar(
+        select(func.count()).select_from(GuideMedia).where(
+            GuideMedia.media_asset_id == old_asset.id
+        )
+    )
+    if not still_used:
+        db.delete(old_asset)
+
+    add_audit_log(
+        db,
+        user,
+        "guide.media_swapped",
+        "guide",
+        guide.id,
+        {"query": str(query), "provider": candidate.provider},
+    )
+    db.commit()
+    return media_response(replacement, link)
 
 
 @router.delete("/guides/{guide_id}/draft/media/{link_id}", status_code=204)

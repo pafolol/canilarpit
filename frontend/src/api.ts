@@ -521,6 +521,12 @@ export const api = {
         { method: "POST", body: JSON.stringify(payload) },
         true,
       ),
+    swapMedia: (guideId: string, linkId: string) =>
+      request<Media>(
+        `${V1}/admin/guides/${guideId}/draft/media/${linkId}/swap`,
+        { method: "POST" },
+        true,
+      ),
     unlinkMedia: (guideId: string, linkId: string) =>
       request<void>(
         `${V1}/admin/guides/${guideId}/draft/media/${linkId}`,

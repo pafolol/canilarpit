@@ -78,6 +78,7 @@ def attach_images(
     revision: GuideRevision,
     results: list[tuple[ImageCandidate, str]],
     author: User,
+    queries: dict[str, str] | None = None,
     *,
     start_order: int = 0,
     approve: bool = False,
@@ -105,6 +106,10 @@ def attach_images(
                 "preview_url": result.preview_url,
                 "subject": result.subject,
                 "editorial_only": result.editorial_only,
+                # What was searched for, so the panel can ask for a different
+                # answer to the same question without calling the model again.
+                "query": (queries or {}).get(result.remote_url),
+                "tried": [result.remote_url],
             },
             approval_status=ApprovalStatus.APPROVED if approve else ApprovalStatus.DRAFT,
             created_by_user_id=author.id,
@@ -126,11 +131,12 @@ def attach_images(
 
 def fetch_planned_images(
     document: GuideDocument, *, limit: int = 6
-) -> tuple[list[tuple[ImageCandidate, str]], list[str]]:
+) -> tuple[list[tuple[ImageCandidate, str]], list[str], dict[str, str]]:
     """Run the guide's own image brief through the provider registry."""
     picked: list[tuple[ImageCandidate, str]] = []
     warnings: list[str] = []
     seen: set[str] = set()
+    queries: dict[str, str] = {}
 
     for item in ai.image_plan(document, limit=limit):
         results, problems = images.search_with_fallback(
@@ -147,9 +153,10 @@ def fetch_planned_images(
             seen.add(candidate.remote_url)
             if item.subject and not candidate.subject:
                 candidate = candidate.model_copy(update={"subject": item.subject})
+            queries[candidate.remote_url] = item.query
             picked.append((candidate, item.role))
             break
-    return picked, warnings
+    return picked, warnings, queries
 
 
 def queue_generation_job(
@@ -266,9 +273,9 @@ def run_generation_job(
 
         attached: list[dict] = []
         if config.get("attach_images", True) and not existing_media:
-            picked, image_warnings = fetch_planned_images(document)
+            picked, image_warnings, queries = fetch_planned_images(document)
             warnings.extend(image_warnings)
-            for asset, link in attach_images(db, revision, picked, author):
+            for asset, link in attach_images(db, revision, picked, author, queries=queries):
                 attached.append(
                     {
                         "media_asset_id": str(asset.id),

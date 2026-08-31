@@ -676,6 +676,25 @@ Request:
 The combination of draft revision, asset, and role is idempotent. Repeating it updates caption and
 order. Success `200` includes a non-null `link_id`, which is required to remove that placement.
 
+### `POST /api/v1/admin/guides/{guide_id}/draft/media/{link_id}/swap`
+
+Access: Editor.
+
+Puts a different image in the same slot, taken from the search that produced the current
+one. There is no model call: the asset records the query it came from and every result
+already offered for that slot, so repeated swaps walk down the list instead of cycling
+back to the first.
+
+Request body: none. Success `200`: the new media response, keeping the placement's role,
+sort order and approval state.
+
+The placement is moved onto the editable draft, creating one from the published revision
+if there is not one yet, so a swap never edits what is live. The replaced asset is
+deleted when no other placement uses it.
+
+Failure `404`: the placement does not exist, or the provider had nothing else to offer,
+with the reason in `detail`. Failure `409`: the asset records no search to repeat.
+
 ### `DELETE /api/v1/admin/guides/{guide_id}/draft/media/{link_id}`
 
 Access: Editor.

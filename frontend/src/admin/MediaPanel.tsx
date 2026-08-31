@@ -117,6 +117,20 @@ export default function MediaPanel({
     }
   };
 
+  const swap = async (item: Media) => {
+    if (!item.link_id) return;
+    setBusyUrl(item.url);
+    setError(null);
+    try {
+      await api.admin.swapMedia(guideId, item.link_id);
+      onChanged();
+    } catch (cause) {
+      fail(cause, "Could not find another image for that slot.");
+    } finally {
+      setBusyUrl(null);
+    }
+  };
+
   const unlink = async (item: Media) => {
     if (!item.link_id) return;
     setError(null);
@@ -166,9 +180,19 @@ export default function MediaPanel({
                     {item.approval_status === "approved" ? "Unapprove" : "Approve"}
                   </button>
                   {item.link_id ? (
-                    <button className="chip" onClick={() => unlink(item)}>
-                      Remove
-                    </button>
+                    <>
+                      <button
+                        className="chip"
+                        disabled={busyUrl === item.url}
+                        title="Take the next result from the same search. No model call."
+                        onClick={() => swap(item)}
+                      >
+                        {busyUrl === item.url ? "swapping…" : "Swap"}
+                      </button>
+                      <button className="chip" onClick={() => unlink(item)}>
+                        Remove
+                      </button>
+                    </>
                   ) : null}
                 </div>
               </div>
