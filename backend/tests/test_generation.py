@@ -78,6 +78,15 @@ def test_giving_up_raises_rather_than_publishing_rubbish() -> None:
         )
 
 
+def test_the_contract_documents_every_template() -> None:
+    """A type the model cannot read about is a type it will never choose."""
+    for guide_type in GuideType:
+        assert f'"{guide_type.value}"' in ai.CONTRACT or f"{guide_type.value} -" in ai.CONTRACT
+
+    for field in ("proof_of_work", "red_lines", "where_it_dips", "day_to_day"):
+        assert field in ai.CONTRACT, f"{field} is undocumented"
+
+
 def test_the_prompt_names_the_available_categories() -> None:
     messages = ai.build_prompt(
         "Attack on Titan",

@@ -45,8 +45,17 @@ DEFAULT_CATEGORIES = [
     ("sport", "Sport", "Teams, athletes, rules, and the physical ones you cannot fake.", 90),
     ("design", "Design", "Architecture, objects, typefaces, and taste.", 100),
     ("style", "Style", "Clothes, watches, and the objects people wear as claims.", 105),
+    ("fashion", "Fashion", "Labels, silhouettes, and the people who decide.", 108),
     ("job", "Jobs", "Professions, titles, and the ones you must not claim.", 110),
     ("tech", "Tech", "Tools, platforms, and engineering culture.", 120),
+    ("internet", "Internet", "Platforms, subcultures, and things that only happened online.", 125),
+    ("cars", "Cars", "Marques, engineering, and the arguments between them.", 130),
+    ("art", "Art", "Painters, movements, galleries, and what hangs where.", 140),
+    ("history", "History", "Periods, figures, and the arguments historians are having.", 150),
+    ("science", "Science", "Fields, findings, and the people who are cited.", 160),
+    ("politics", "Politics", "Movements, thinkers, and positions people hold loudly.", 170),
+    ("business", "Business", "Companies, deals, and the vocabulary around money.", 180),
+    ("travel", "Travel", "Places, routes, and having supposedly been there.", 190),
     ("general", "General", "Topics that do not fit a specialized guide template.", 200),
 ]
 

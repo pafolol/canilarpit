@@ -37,8 +37,18 @@ class GuideStatus(enum.StrEnum):
 
 
 class GuideType(enum.StrEnum):
+    """Which content template a guide uses.
+
+    The template is chosen by what the subject *is*, because that decides what a
+    reader needs. A film needs an ending; a craft needs the tools and the ways it
+    goes wrong; a job needs the line where bluffing becomes fraud.
+    """
+
     ANIME = "anime"
+    SCREEN = "screen"
     LIFESTYLE = "lifestyle"
+    CRAFT = "craft"
+    PROFESSION = "profession"
     GENERAL = "general"
 
 

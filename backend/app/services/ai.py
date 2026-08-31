@@ -126,7 +126,7 @@ Return a JSON object with exactly these top-level keys:
   "slug": "<kebab-case, 2-160 chars, derived from the title>",
   "title": "<display name, 2-200 chars>",
   "summary": "<10-1000 chars, one or two sentences, what this entry covers>",
-  "guide_type": "<anime | lifestyle | general>",
+  "guide_type": "<anime | screen | lifestyle | craft | profession | general>",
   "category_slug": "<one of: %(categories)s>",
   "aliases": ["<other names people search for; may be empty>"],
   "content": { ... see below ... },
@@ -220,20 +220,42 @@ content, for all kinds:
   "spoiler_warning": <true when the guide reveals plot>
 }
 
-When kind is "anime", content also has:
+The template carries its own fields on top of those. Pick it by what the subject
+IS, because that decides what the reader needs:
+
+anime - anime and manga.
   "premise", "ending_summary", "characters" (at least one, with
-   {"name", "role", "fate", "relationships"}),
-  "major_events" ({"title", "description", "spoiler_level": "low"|"medium"|"major", "citations"}),
-  "fandom_debates" (list of strings).
+  {"name", "role", "fate", "relationships"}), "major_events" ({"title",
+  "description", "spoiler_level": "low"|"medium"|"major", "citations"}),
+  "fandom_debates" (strings).
 
-When kind is "lifestyle", content also has:
+screen - films and live-action series. Anything with an ending people argue about.
+  "premise", "ending_summary", "characters", "major_events" as above, and
+  "where_it_dips" (strings): the weak season, the bad sequel, the stretch
+  everybody skips. Knowing where something sags is proof of attendance.
+
+lifestyle - a scene with objects, places and a look.
   "aesthetic", "brands" ({"name", "significance", "typical_price", "citations"}),
-  "visual_cues", "locations" (lists of strings),
-  "media_scenarios" ({"title", "description", "search_terms": ["stock photo search terms"],
-   "generation_prompt": null}).
+  "visual_cues", "locations" (strings), "media_scenarios" ({"title",
+  "description", "search_terms", "generation_prompt": null}).
 
-When kind is "general", content also has:
-  "key_people" and "timeline" (lists of strings).
+craft - a practised skill somebody can hand you the equipment for: baking,
+  climbing, brewing, welding, picking locks.
+  "proof_of_work": what a practitioner can show that a reader cannot fake.
+  "tools" ({"name", "why", "typical_price"}), "techniques" (the words for what
+  the hands do), "failure_modes" (how it goes wrong, named the way somebody who
+  has done it would name them).
+
+profession - a job title.
+  "day_to_day": what the work actually consists of, which is duller than the
+  claim and that is the useful part. "red_lines" (at least one): where claiming
+  this stops being a social bluff and becomes fraud or danger - an interview,
+  taking money, somebody relying on it. Every profession guide states these
+  whatever its verdict. "hierarchy" (the titles people are touchy about),
+  "credentials" ({"name", "what_it_takes"}).
+
+general - everything with no better home.
+  "key_people" and "timeline" (strings).
 
 `image_brief` is 4 to 6 pictures, spread through the article rather than piled at
 the top. Exactly one carries `role: "hero"`. Give the others the section they
@@ -367,8 +389,11 @@ def build_prompt(
         request.append(f'Use guide_type "{guide_type.value}".')
     else:
         request.append(
-            'Choose guide_type yourself: "anime" for anime and manga, "lifestyle" for '
-            'scenes with brands, objects and a look, "general" for everything else.'
+            "Choose guide_type yourself, by what the subject is: anime for anime and "
+            "manga, screen for films and live-action series, lifestyle for a scene "
+            "with objects and a look, craft for a practised skill somebody could "
+            "hand you the equipment for, profession for a job title, general only "
+            "when none of those fit."
         )
     if entry_type:
         request.append(f'Use larp.entry_type "{entry_type.value}".')

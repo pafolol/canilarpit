@@ -89,7 +89,22 @@ document. Its three clock states are mutually exclusive:
 | Indefinite | `exposure_seconds` null, `unfalsifiable` true | Nothing about the claim is checkable |
 | Stopped | `exposure_seconds` null, `unfalsifiable` false | Only on `verdict: "dont"`; no clock runs |
 
-Guide types are `anime`, `lifestyle`, and `general`. Entry types are `scene`, `taste`,
+Guide types are `anime`, `screen`, `lifestyle`, `craft`, `profession` and `general`. The
+type selects the content template, chosen by what the subject is:
+
+| Type | For | Fields on top of the common ones |
+|---|---|---|
+| `anime` | Anime and manga | `premise`, `ending_summary`, `characters`, `major_events`, `fandom_debates` |
+| `screen` | Films and live-action series | `premise`, `ending_summary`, `characters`, `major_events`, `where_it_dips` |
+| `lifestyle` | A scene with objects and a look | `aesthetic`, `brands`, `visual_cues`, `locations`, `media_scenarios` |
+| `craft` | A practised skill | `proof_of_work`, `tools`, `techniques`, `failure_modes` |
+| `profession` | A job title | `day_to_day`, `red_lines`, `hierarchy`, `credentials` |
+| `general` | Everything with no better home | `key_people`, `timeline` |
+
+`profession.red_lines` has at least one entry and `craft.proof_of_work` is required;
+everything else on a template is optional. A red line is where claiming the thing stops
+being a social bluff and becomes fraud or danger, and every profession guide states them
+whatever its verdict. Entry types are `scene`, `taste`,
 and `role`.
 
 Verdicts are `yes`, `kinda`, `talk_only`, and `dont`. Three of the four are a yes:

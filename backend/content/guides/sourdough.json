@@ -3,14 +3,14 @@
   "slug": "sourdough",
   "title": "Sourdough",
   "summary": "A hydration number, a flour, and a complaint about your oven. That is the entire first conversation and it renews.",
-  "guide_type": "lifestyle",
+  "guide_type": "craft",
   "category_slug": "food",
   "aliases": [
     "Sourdough bread",
     "Naturally leavened bread"
   ],
   "content": {
-    "kind": "lifestyle",
+    "kind": "craft",
     "larp": {
       "entry_type": "taste",
       "verdict": "yes",
@@ -128,27 +128,30 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "aesthetic": "The knowledge is free, the practice is slow, and nobody is going to ask you to produce a loaf tonight.",
-    "brands": [],
-    "visual_cues": [
-      "open crumb sourdough loaf",
-      "banneton and dough scraper"
-    ],
-    "locations": [
-      "Home kitchens",
-      "Micro bakeries",
-      "Farmers markets"
-    ],
-    "media_scenarios": [
+    "proof_of_work": "A loaf, photographed, ideally a bad one. The schedule is the hobby and the failures are the conversation, so a dense crumb with a theory attached carries further than a perfect one without.",
+    "tools": [
       {
-        "title": "Sourdough reference shot",
-        "description": "A photograph an editor can place at the top of the guide.",
-        "search_terms": [
-          "open crumb sourdough loaf",
-          "banneton and dough scraper"
-        ],
-        "generation_prompt": null
+        "name": "Starter",
+        "why": "The one thing you cannot buy your way past, and it needs feeding on a schedule."
+      },
+      {
+        "name": "Banneton",
+        "why": "Shapes the final proof and leaves the rings everybody recognises."
+      },
+      {
+        "name": "Dutch oven",
+        "why": "Traps steam for the first half of the bake, which is where oven spring comes from."
       }
+    ],
+    "techniques": [
+      "Autolyse: flour and water rest before the salt and starter go in.",
+      "Stretch and fold during bulk, rather than kneading.",
+      "Cold retard overnight in the fridge for flavour and a workable dough."
+    ],
+    "failure_modes": [
+      "Over-proofed: the loaf spreads instead of rising and the crumb goes gummy.",
+      "Under-proofed: a tight crumb and a tear along the side.",
+      "A starter fed on a schedule that suits you rather than the room's temperature."
     ]
   },
   "sources": [],

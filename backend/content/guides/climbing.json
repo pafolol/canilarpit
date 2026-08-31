@@ -3,14 +3,14 @@
   "slug": "climbing",
   "title": "Climbing",
   "summary": "Vocabulary lasts about three minutes. Then somebody suggests you get on the wall, and the suggestion is friendly.",
-  "guide_type": "lifestyle",
+  "guide_type": "craft",
   "category_slug": "sport",
   "aliases": [
     "Bouldering",
     "Rock climbing"
   ],
   "content": {
-    "kind": "lifestyle",
+    "kind": "craft",
     "larp": {
       "entry_type": "scene",
       "verdict": "talk_only",
@@ -129,26 +129,30 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "aesthetic": "The scene is physical and the grade is public. Your body is the audit and it runs in front of everyone.",
-    "brands": [],
-    "visual_cues": [
-      "indoor bouldering wall",
-      "chalked hands on a climbing hold"
-    ],
-    "locations": [
-      "Bouldering gyms",
-      "Outdoor crags"
-    ],
-    "media_scenarios": [
+    "proof_of_work": "Your hands and your movement, both visible within seconds of arriving. This is the craft on the list where the equipment gets handed to you unprompted.",
+    "tools": [
       {
-        "title": "Climbing reference shot",
-        "description": "A photograph an editor can place at the top of the guide.",
-        "search_terms": [
-          "indoor bouldering wall",
-          "chalked hands on a climbing hold"
-        ],
-        "generation_prompt": null
+        "name": "Shoes",
+        "why": "Fit and downturn are the first thing anybody asks about, and everyone has a complaint."
+      },
+      {
+        "name": "Chalk",
+        "why": "Liquid or loose is a real preference and a cheap thing to hold."
+      },
+      {
+        "name": "Brush",
+        "why": "Cleaning holds is etiquette, and not doing it marks you immediately."
       }
+    ],
+    "techniques": [
+      "Flagging, heel hooks and drop knees are the words for what the body is doing.",
+      "Beta is the sequence; asking for it is normal and offering it uninvited is not.",
+      "Reading a problem from the ground before touching it is the visible part of the skill."
+    ],
+    "failure_modes": [
+      "Pulling with the arms because the feet are not being used.",
+      "Chasing grades rather than movement, which the room can see.",
+      "Finger injuries from volume too early: the A2 pulley is the one everybody names."
     ]
   },
   "sources": [],

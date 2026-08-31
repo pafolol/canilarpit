@@ -3,14 +3,14 @@
   "slug": "crypto-vc",
   "title": "Crypto VC",
   "summary": "Thesis, stage, check size, then decline to be specific. Declining is not evasion in this room, it is the register.",
-  "guide_type": "general",
+  "guide_type": "profession",
   "category_slug": "job",
   "aliases": [
     "Web3 VC",
     "Crypto venture capital"
   ],
   "content": {
-    "kind": "general",
+    "kind": "profession",
     "larp": {
       "entry_type": "role",
       "verdict": "yes",
@@ -128,8 +128,22 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "key_people": [],
-    "timeline": []
+    "day_to_day": "Meetings, a group chat, and a spreadsheet nobody outside the firm sees. Most of the job is passing on things, and most of the conversation is about what other people are doing.",
+    "red_lines": [
+      "Taking anybody's money on the strength of the claim.",
+      "Offering an allocation, an introduction, or anything a founder might act on.",
+      "Anything that would put you in front of a regulator rather than a room."
+    ],
+    "hierarchy": [
+      "Analyst, associate, principal, partner. Only partners write cheques, and everybody knows who does.",
+      "The fund's size sets the conversation, and vagueness about it is normal rather than suspicious."
+    ],
+    "credentials": [
+      {
+        "name": "None, formally",
+        "what_it_takes": "Which is exactly why this one holds. The job has no register and no exam."
+      }
+    ]
   },
   "sources": [],
   "last_verified_at": null

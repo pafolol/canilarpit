@@ -3,14 +3,14 @@
   "slug": "quant",
   "title": "Quant",
   "summary": "Vocabulary, one strategy family, and a complaint about data quality. Three items hold an ordinary conversation for about two minutes.",
-  "guide_type": "general",
+  "guide_type": "profession",
   "category_slug": "job",
   "aliases": [
     "Quantitative analyst",
     "Quant finance"
   ],
   "content": {
-    "kind": "general",
+    "kind": "profession",
     "larp": {
       "entry_type": "role",
       "verdict": "talk_only",
@@ -126,8 +126,27 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "key_people": [],
-    "timeline": []
+    "day_to_day": "Cleaning data, arguing about costs, and watching something that worked stop working. The research is mostly plumbing, the trading is mostly automated, and the interesting part is a small fraction of the week.",
+    "red_lines": [
+      "A job interview. Claiming the role to get hired is fraud, and this entry does not apply there.",
+      "Anywhere somebody might give you money to manage on the strength of it.",
+      "Offering anything a listener could act on as advice."
+    ],
+    "hierarchy": [
+      "Quant researcher, quant developer and quant trader are three different jobs and people are touchy about which they hold.",
+      "Desk quant at a bank is not the same animal as a researcher at a fund.",
+      "Pod shops, prop shops and banks pay and behave differently."
+    ],
+    "credentials": [
+      {
+        "name": "A doctorate in something quantitative",
+        "what_it_takes": "The common route, and physics and maths outnumber finance."
+      },
+      {
+        "name": "Competitive programming or olympiad history",
+        "what_it_takes": "The other common route, and it comes up in conversation."
+      }
+    ]
   },
   "sources": [],
   "last_verified_at": null

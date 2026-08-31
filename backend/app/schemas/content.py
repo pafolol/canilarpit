@@ -245,8 +245,65 @@ class GeneralGuideContent(CommonGuideContent):
     timeline: list[str] = Field(default_factory=list, max_length=100)
 
 
+class ScreenGuideContent(CommonGuideContent):
+    """Films and live-action series. Like anime, minus the fandom apparatus."""
+
+    kind: Literal["screen"] = "screen"
+    premise: str = Field(min_length=1, max_length=3000)
+    ending_summary: str | None = Field(default=None, max_length=5000)
+    characters: list[CharacterItem] = Field(default_factory=list, max_length=100)
+    major_events: list[MajorEvent] = Field(default_factory=list, max_length=100)
+    where_it_dips: list[str] = Field(default_factory=list, max_length=20)
+
+
+class ToolItem(BaseModel):
+    name: str = Field(min_length=1, max_length=160)
+    why: str = Field(min_length=1, max_length=1000)
+    typical_price: str | None = Field(default=None, max_length=120)
+
+
+class CraftGuideContent(CommonGuideContent):
+    """A practised skill: baking, climbing, brewing, breaking into things.
+
+    The distinguishing feature is that somebody can hand you the equipment, so
+    the guide is about the tools, the vocabulary of technique, and the failures
+    a practitioner has actually had.
+    """
+
+    kind: Literal["craft"] = "craft"
+    proof_of_work: str = Field(min_length=1, max_length=2000)
+    tools: list[ToolItem] = Field(default_factory=list, max_length=30)
+    techniques: list[str] = Field(default_factory=list, max_length=30)
+    failure_modes: list[str] = Field(default_factory=list, max_length=30)
+
+
+class CredentialItem(BaseModel):
+    name: str = Field(min_length=1, max_length=160)
+    what_it_takes: str = Field(min_length=1, max_length=800)
+
+
+class ProfessionGuideContent(CommonGuideContent):
+    """A job title.
+
+    `red_lines` is the field that matters: the point where claiming this stops
+    being a social bluff and becomes fraud or danger. Every profession guide
+    states it, whatever its verdict.
+    """
+
+    kind: Literal["profession"] = "profession"
+    day_to_day: str = Field(min_length=1, max_length=3000)
+    red_lines: list[str] = Field(min_length=1, max_length=20)
+    hierarchy: list[str] = Field(default_factory=list, max_length=20)
+    credentials: list[CredentialItem] = Field(default_factory=list, max_length=20)
+
+
 GuideContent = Annotated[
-    AnimeGuideContent | LifestyleGuideContent | GeneralGuideContent,
+    AnimeGuideContent
+    | ScreenGuideContent
+    | LifestyleGuideContent
+    | CraftGuideContent
+    | ProfessionGuideContent
+    | GeneralGuideContent,
     Field(discriminator="kind"),
 ]
 

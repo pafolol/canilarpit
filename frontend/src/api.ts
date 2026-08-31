@@ -12,7 +12,13 @@ const V1 = `${BASE}/api/v1`;
 
 export type Verdict = "yes" | "kinda" | "talk_only" | "dont";
 export type EntryType = "scene" | "taste" | "role";
-export type GuideType = "anime" | "lifestyle" | "general";
+export type GuideType =
+  | "anime"
+  | "screen"
+  | "lifestyle"
+  | "craft"
+  | "profession"
+  | "general";
 export type GuideStatus = "draft" | "in_review" | "published" | "archived";
 export type RevisionStatus = "draft" | "in_review" | "published" | "superseded";
 export type ApprovalStatus = "draft" | "approved" | "rejected" | "broken";
@@ -112,12 +118,23 @@ export type GuideContent = {
   questions: QuestionAnswer[];
   extra_sections: { key: string; title: string; body: string }[];
   spoiler_warning: boolean;
-  // anime
+  // anime and screen
   premise?: string;
   ending_summary?: string | null;
   characters?: { name: string; role: string; fate: string | null; relationships: string[] }[];
   major_events?: { title: string; description: string; spoiler_level: string; citations: string[] }[];
   fandom_debates?: string[];
+  where_it_dips?: string[];
+  // craft
+  proof_of_work?: string;
+  tools?: { name: string; why: string; typical_price: string | null }[];
+  techniques?: string[];
+  failure_modes?: string[];
+  // profession
+  day_to_day?: string;
+  red_lines?: string[];
+  hierarchy?: string[];
+  credentials?: { name: string; what_it_takes: string }[];
   // lifestyle
   aesthetic?: string;
   brands?: { name: string; significance: string; typical_price: string | null; citations: string[] }[];

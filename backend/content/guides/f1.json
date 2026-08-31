@@ -128,8 +128,18 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "key_people": [],
-    "timeline": []
+    "key_people": [
+      "Max Verstappen. The reference point for the current era, and the driver everyone's opinion is relative to.",
+      "Lewis Hamilton. Seven titles, and the axis most arguments about the sport still turn on.",
+      "Adrian Newey. The designer, and proof that the interesting people are not always driving.",
+      "Christian Horner and Toto Wolff. The team principals, because half the coverage is about them."
+    ],
+    "timeline": [
+      "2014: the hybrid era begins and Mercedes wins almost everything for seven years.",
+      "2019: Drive to Survive arrives and the audience roughly doubles.",
+      "2021: Abu Dhabi. Say the word and the room divides; that is the point of it.",
+      "2022: new ground-effect regulations, and porpoising becomes a word everybody suddenly knows."
+    ]
   },
   "sources": [],
   "last_verified_at": null

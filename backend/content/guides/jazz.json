@@ -130,8 +130,18 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "key_people": [],
-    "timeline": []
+    "key_people": [
+      "Miles Davis. Reinvented the music roughly four times, which is why he is the safe reference.",
+      "John Coltrane. A Love Supreme is the record people mean when they say spiritual jazz.",
+      "Thelonious Monk. The one whose compositions everybody plays and nobody plays like.",
+      "Elvin Jones and Tony Williams. Drummers, and naming a drummer is the tell of a listener."
+    ],
+    "timeline": [
+      "1940s: bebop. Parker and Gillespie make it music for listening rather than dancing.",
+      "1959: Kind of Blue and modal playing; the year everybody cites.",
+      "1960s: free jazz, and the argument about whether it is still jazz has never stopped.",
+      "1970s: fusion, electric instruments, and the split that older listeners still resent."
+    ]
   },
   "sources": [],
   "last_verified_at": null

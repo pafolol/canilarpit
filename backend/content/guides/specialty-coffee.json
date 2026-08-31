@@ -3,14 +3,14 @@
   "slug": "specialty-coffee",
   "title": "Specialty coffee",
   "summary": "Order a filter, ask what is on, ask about the process. Three moves and you are inside the conversation.",
-  "guide_type": "lifestyle",
+  "guide_type": "craft",
   "category_slug": "drink",
   "aliases": [
     "Third wave coffee",
     "Speciality coffee"
   ],
   "content": {
-    "kind": "lifestyle",
+    "kind": "craft",
     "larp": {
       "entry_type": "taste",
       "verdict": "yes",
@@ -128,26 +128,31 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "aesthetic": "Fifteen minutes of vocabulary buys you a year. The scene is evangelical and wants you inside it.",
-    "brands": [],
-    "visual_cues": [
-      "espresso machine portafilter",
-      "pour over brew bar"
-    ],
-    "locations": [
-      "Specialty cafes",
-      "Roastery cupping tables"
-    ],
-    "media_scenarios": [
+    "proof_of_work": "A grinder you have an opinion about, and a shot you can describe going wrong. Nobody is coming to your kitchen, but everybody asks what you grind on, and there is no reading your way to an answer.",
+    "tools": [
       {
-        "title": "Specialty coffee reference shot",
-        "description": "A photograph an editor can place at the top of the guide.",
-        "search_terms": [
-          "espresso machine portafilter",
-          "pour over brew bar"
-        ],
-        "generation_prompt": null
+        "name": "Grinder",
+        "why": "The single biggest variable, and the thing people actually argue about.",
+        "typical_price": "More than the machine, which is the joke."
+      },
+      {
+        "name": "Scales with a timer",
+        "why": "Ratio and time are the whole method; without them you are guessing."
+      },
+      {
+        "name": "Water",
+        "why": "Mineral content changes extraction more than the bean does, and it is the respectable thing to blame."
       }
+    ],
+    "techniques": [
+      "Dose, yield, time: 18g in, 36g out, 28 seconds, then argue about all three.",
+      "Distribution before tamping matters more than tamping pressure.",
+      "Pour-over is about agitation and drawdown, not the shape of the kettle."
+    ],
+    "failure_modes": [
+      "Channelling: the water finds one route through the puck and the shot is sour and fast.",
+      "Grinding for the clock rather than the taste.",
+      "Buying the machine before the grinder."
     ]
   },
   "sources": [],

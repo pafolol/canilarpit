@@ -1478,3 +1478,31 @@ select {
   grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
   display: grid;
 }
+
+/* ---------- the material: whatever the guide's template carries ---------- */
+
+.material__group { margin-bottom: 1.5rem; }
+.material__h { display: block; margin-bottom: 0.5rem; }
+.material__list { display: grid; gap: 0.5rem; }
+.material__list li { padding-left: 1.25rem; position: relative; line-height: 1.5; }
+.material__list li::before { content: "—"; position: absolute; left: 0; color: var(--rule); }
+.material__pairs { display: grid; gap: 0.75rem; }
+.material__pairs > div {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  gap: 0.25rem 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: var(--hair);
+}
+.material__pairs dt { font-family: var(--data); font-size: var(--t-13); font-weight: 500; }
+.material__pairs dd { margin: 0; }
+.material__aside { color: var(--ink-2); font-style: italic; }
+
+.facts { display: grid; gap: 0.5rem; margin-top: 1.25rem; }
+.facts li { padding-left: 1.25rem; position: relative; }
+.facts li::before { content: "·"; position: absolute; left: 0.35rem; color: var(--rule); }
+.facts__cite { font-family: var(--data); font-size: var(--t-11); color: var(--ink-2); }
+
+@media (max-width: 767px) {
+  .material__pairs > div { grid-template-columns: minmax(0, 1fr); }
+}

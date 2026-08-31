@@ -3,14 +3,14 @@
   "slug": "anaesthetist",
   "title": "Anaesthetist",
   "summary": "This is the entry that changes category. Claiming a clinical role is not a social bluff, and in most places it stops being only a social matter the moment anyone acts on it.",
-  "guide_type": "general",
+  "guide_type": "profession",
   "category_slug": "job",
   "aliases": [
     "Anesthesiologist",
     "Anaesthesiologist"
   ],
   "content": {
-    "kind": "general",
+    "kind": "profession",
     "larp": {
       "entry_type": "role",
       "verdict": "dont",
@@ -88,8 +88,22 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "key_people": [],
-    "timeline": []
+    "day_to_day": "The twenty minutes before an operation and the twenty minutes after, repeated. Assessment, induction, maintenance, emergence, and long stretches of watching numbers that must not move.",
+    "red_lines": [
+      "All of them. This is the entry that changes category: presenting as a clinician is not a social bluff.",
+      "Anywhere somebody might rely on it in an emergency, which is anywhere at all.",
+      "In most jurisdictions the claim itself is an offence, before anybody is harmed."
+    ],
+    "hierarchy": [
+      "Anaesthetist in British usage is the doctor; anesthesiologist is the American term for the same role.",
+      "An anaesthetic associate or nurse anaesthetist is a different, regulated role, and conflating them marks you instantly."
+    ],
+    "credentials": [
+      {
+        "name": "Primary medical qualification, then specialty training",
+        "what_it_takes": "Well over a decade, and it is verifiable in a public register."
+      }
+    ]
   },
   "sources": [],
   "last_verified_at": null

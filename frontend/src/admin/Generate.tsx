@@ -13,9 +13,12 @@ import { SelectField, TextArea, TextField } from "./fields";
 
 const GUIDE_TYPES: { value: GuideType | ""; label: string }[] = [
   { value: "", label: "Let the model choose" },
-  { value: "anime", label: "Anime — plot, characters, endings" },
-  { value: "lifestyle", label: "Lifestyle — brands, objects, a look" },
-  { value: "general", label: "General — everything else" },
+  { value: "anime", label: "Anime — plot, characters, endings, fandom" },
+  { value: "screen", label: "Screen — films and series, and how they end" },
+  { value: "lifestyle", label: "Lifestyle — brands, objects, places, a look" },
+  { value: "craft", label: "Craft — a skill somebody can hand you the kit for" },
+  { value: "profession", label: "Profession — a job title, and where it becomes fraud" },
+  { value: "general", label: "General — everything with no better home" },
 ];
 
 const ENTRY_TYPES: { value: EntryType | ""; label: string }[] = [

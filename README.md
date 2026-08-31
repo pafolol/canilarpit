@@ -158,7 +158,7 @@ themselves when no seeded database is reachable, so the suite is useful either w
 
 | Concern | File |
 |---|---|
-| The verdict layer (verdict, clock, tells, crib) | `backend/app/schemas/content.py` |
+| The verdict layer, and the six content templates | `backend/app/schemas/content.py` |
 | Search, filters, topic demand | `backend/app/api/routes/public.py` |
 | Editorial CMS and lifecycle | `backend/app/api/routes/admin.py` |
 | Guide generation | `backend/app/services/ai.py`, `services/generation.py` |

@@ -3,14 +3,14 @@
   "slug": "prestige-tv",
   "title": "Prestige TV",
   "summary": "A show, a season, and a supporting character. Nobody checks the first two.",
-  "guide_type": "general",
+  "guide_type": "screen",
   "category_slug": "series",
   "aliases": [
     "Prestige television",
     "Peak TV"
   ],
   "content": {
-    "kind": "general",
+    "kind": "screen",
     "larp": {
       "entry_type": "taste",
       "verdict": "kinda",
@@ -129,8 +129,43 @@
     ],
     "extra_sections": [],
     "spoiler_warning": false,
-    "key_people": [],
-    "timeline": []
+    "premise": "A run of hour-long American dramas, roughly 1999 onwards, made for cable and then for streaming, which asked to be taken as seriously as film. The Sopranos, The Wire, Mad Men, Breaking Bad and their descendants.",
+    "ending_summary": "The endings are the argument. The Sopranos cuts to black mid-scene; Mad Men ends on an advertisement; Breaking Bad gives everyone what they asked for. Whether an ending earned itself is the conversation, not what happened in it.",
+    "characters": [
+      {
+        "name": "Tony Soprano",
+        "role": "The template for the difficult man at the centre of the genre.",
+        "fate": "Ambiguous, deliberately, and arguing about it is a rite of passage.",
+        "relationships": [
+          "Carmela",
+          "Dr Melfi",
+          "Christopher"
+        ]
+      },
+      {
+        "name": "Don Draper",
+        "role": "The other template: a man who is somebody else and knows it.",
+        "fate": "Ends on a hilltop, then on an advert.",
+        "relationships": [
+          "Peggy",
+          "Betty",
+          "Roger"
+        ]
+      }
+    ],
+    "major_events": [
+      {
+        "title": "The cut to black",
+        "description": "The Sopranos finale ends mid-sentence. The reaction to it did as much for the genre's reputation as the show.",
+        "spoiler_level": "major",
+        "citations": []
+      }
+    ],
+    "where_it_dips": [
+      "Almost every one of these shows has a weak middle season, and saying which is proof you watched it.",
+      "The final season of a show renewed past its plan is the usual culprit.",
+      "Anything written around a contract dispute shows it."
+    ]
   },
   "sources": [],
   "last_verified_at": null

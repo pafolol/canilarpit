@@ -163,3 +163,49 @@ def test_every_larpable_guide_hands_over_something_to_say() -> None:
             assert phrase.line and phrase.when
             # A phrase is spoken, so it stays short enough to actually say.
             assert len(phrase.line) <= 200
+
+
+def test_every_guide_type_has_a_template_that_fits_it() -> None:
+    """`general` was holding half the catalogue and handing it two fields."""
+    from app.db.models import GuideType
+
+    kinds = {
+        GuideDocument.model_validate_json(p.read_text(encoding="utf-8")).guide_type
+        for p in CONTENT.glob("*.json")
+    }
+    assert kinds >= {
+        GuideType.ANIME,
+        GuideType.SCREEN,
+        GuideType.LIFESTYLE,
+        GuideType.CRAFT,
+        GuideType.PROFESSION,
+    }, "the seed content should exercise every template"
+
+    generals = [
+        p.stem
+        for p in CONTENT.glob("*.json")
+        if GuideDocument.model_validate_json(p.read_text(encoding="utf-8")).guide_type
+        is GuideType.GENERAL
+    ]
+    assert len(generals) <= 4, f"general is a fallback, not a home: {generals}"
+
+
+def test_a_profession_guide_always_names_its_red_lines() -> None:
+    """Where the claim stops being a bluff is the field that had to be required."""
+    from app.schemas.content import ProfessionGuideContent
+
+    for path in CONTENT.glob("*.json"):
+        document = GuideDocument.model_validate_json(path.read_text(encoding="utf-8"))
+        if isinstance(document.content, ProfessionGuideContent):
+            assert document.content.red_lines, f"{document.slug} names none"
+            assert document.content.day_to_day
+
+
+def test_a_craft_guide_says_what_a_practitioner_can_show() -> None:
+    from app.schemas.content import CraftGuideContent
+
+    for path in CONTENT.glob("*.json"):
+        document = GuideDocument.model_validate_json(path.read_text(encoding="utf-8"))
+        if isinstance(document.content, CraftGuideContent):
+            assert document.content.proof_of_work
+            assert document.content.tools or document.content.techniques

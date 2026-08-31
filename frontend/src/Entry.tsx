@@ -6,6 +6,8 @@ import {
   clockOf,
   type Counter,
   type GuideCard,
+  type GuideContent,
+  type GuideType,
   type GuideDetail,
   type Media,
 } from "./api";
@@ -391,6 +393,53 @@ function buildBlocks(entry: GuideDetail): Block[] {
             items={content.overview.split("\n\n").filter(Boolean)}
             exclude={entry.slug}
           />
+          {content.essential_facts.length > 0 && (
+            <ul className="facts">
+              {content.essential_facts.map((fact) => (
+                <li key={fact.fact}>
+                  <Linked text={fact.fact} exclude={entry.slug} />
+                  {fact.citations.length > 0 ? (
+                    <span className="facts__cite"> [{fact.citations.join(", ")}]</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      ),
+    });
+  }
+
+  const material = materialFor(content, entry.slug);
+  if (material) {
+    blocks.push({
+      id: "material",
+      label: "material",
+      node: (
+        <Section id="material" heading={MATERIAL_HEADING[content.kind]}>
+          {material}
+        </Section>
+      ),
+    });
+  }
+
+  if (content.talking_points.length > 0) {
+    blocks.push({
+      id: "openers",
+      label: "openers",
+      node: (
+        <Section id="openers" heading="Openers, and where they go">
+          <dl className="qa">
+            {content.talking_points.map((point) => (
+              <div className="qa__row" key={point.opener}>
+                <dt>{point.opener}</dt>
+                <dd>
+                  {point.follow_up}
+                  {point.context ? <span className="vocab__eg"> {point.context}</span> : null}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </Section>
       ),
     });
@@ -441,6 +490,21 @@ function buildBlocks(entry: GuideDetail): Block[] {
 
   if (!stop) blocks.push(costBlock);
 
+  for (const extra of content.extra_sections) {
+    blocks.push({
+      id: extra.key,
+      label: extra.title.toLowerCase(),
+      node: (
+        <Section id={extra.key} heading={extra.title}>
+          <LinkedParagraphs
+            items={extra.body.split("\n\n").filter(Boolean)}
+            exclude={entry.slug}
+          />
+        </Section>
+      ),
+    });
+  }
+
   blocks.push({
     id: "learn",
     label: "just learn it",
@@ -472,6 +536,189 @@ function buildBlocks(entry: GuideDetail): Block[] {
  * matters as much as the move: an oversold counter gets somebody caught worse
  * than none at all.
  */
+const MATERIAL_HEADING: Record<GuideType, string> = {
+  anime: "The story",
+  screen: "The story",
+  lifestyle: "The look",
+  craft: "The craft",
+  profession: "The job",
+  general: "The background",
+};
+
+function Facts({ title, items }: { title: string; items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="material__group">
+      <h3 className="u-label material__h">{title}</h3>
+      <ul className="material__list">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Pairs({
+  title,
+  items,
+}: {
+  title: string;
+  items: { term: string; detail: string; aside?: string | null }[];
+}) {
+  if (!items.length) return null;
+  return (
+    <div className="material__group">
+      <h3 className="u-label material__h">{title}</h3>
+      <dl className="material__pairs">
+        {items.map((item) => (
+          <div key={item.term}>
+            <dt>{item.term}</dt>
+            <dd>
+              {item.detail}
+              {item.aside ? <span className="material__aside"> {item.aside}</span> : null}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+/**
+ * The half of the document that depends on what the subject is.
+ *
+ * A film needs an ending, a craft needs the tools and the ways it goes wrong,
+ * and a job needs the line where the claim stops being a bluff. All of this was
+ * being written and stored and never shown to anybody.
+ */
+function materialFor(content: GuideContent, slug: string): ReactNode {
+  const parts: ReactNode[] = [];
+
+  if (content.premise) {
+    parts.push(
+      <div className="material__group" key="premise">
+        <h3 className="u-label material__h">Premise</h3>
+        <LinkedParagraphs items={content.premise.split("\n\n").filter(Boolean)} exclude={slug} />
+      </div>,
+    );
+  }
+  if (content.day_to_day) {
+    parts.push(
+      <div className="material__group" key="day">
+        <h3 className="u-label material__h">Day to day</h3>
+        <LinkedParagraphs
+          items={content.day_to_day.split("\n\n").filter(Boolean)}
+          exclude={slug}
+        />
+      </div>,
+    );
+  }
+  if (content.aesthetic) {
+    parts.push(
+      <div className="material__group" key="aesthetic">
+        <h3 className="u-label material__h">The look</h3>
+        <LinkedParagraphs items={content.aesthetic.split("\n\n").filter(Boolean)} exclude={slug} />
+      </div>,
+    );
+  }
+  if (content.proof_of_work) {
+    parts.push(
+      <div className="material__group" key="proof">
+        <h3 className="u-label material__h">What a practitioner can show</h3>
+        <LinkedParagraphs
+          items={content.proof_of_work.split("\n\n").filter(Boolean)}
+          exclude={slug}
+        />
+      </div>,
+    );
+  }
+
+  // red_lines carries the most weight on the page, so it is marked, not listed.
+  if (content.red_lines?.length) {
+    parts.push(
+      <aside className="counter counter--none" key="red">
+        <p className="u-label counter__label">Where this stops being a bluff</p>
+        <ul className="material__list">
+          {content.red_lines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </aside>,
+    );
+  }
+
+  if (content.ending_summary) {
+    parts.push(
+      <div className="material__group" key="ending">
+        <h3 className="u-label material__h">How it ends</h3>
+        <LinkedParagraphs
+          items={content.ending_summary.split("\n\n").filter(Boolean)}
+          exclude={slug}
+        />
+      </div>,
+    );
+  }
+
+  parts.push(
+    <Pairs
+      key="characters"
+      title="Who is in it"
+      items={(content.characters ?? []).map((c) => ({
+        term: c.name,
+        detail: c.role,
+        aside: c.fate,
+      }))}
+    />,
+    <Pairs
+      key="tools"
+      title="The kit"
+      items={(content.tools ?? []).map((t) => ({
+        term: t.name,
+        detail: t.why,
+        aside: t.typical_price,
+      }))}
+    />,
+    <Pairs
+      key="brands"
+      title="The names"
+      items={(content.brands ?? []).map((b) => ({
+        term: b.name,
+        detail: b.significance,
+        aside: b.typical_price,
+      }))}
+    />,
+    <Pairs
+      key="credentials"
+      title="What it actually takes"
+      items={(content.credentials ?? []).map((c) => ({
+        term: c.name,
+        detail: c.what_it_takes,
+      }))}
+    />,
+    <Pairs
+      key="events"
+      title="What happens"
+      items={(content.major_events ?? []).map((e) => ({
+        term: e.title,
+        detail: e.description,
+      }))}
+    />,
+    <Facts key="techniques" title="Technique" items={content.techniques ?? []} />,
+    <Facts key="failures" title="How it goes wrong" items={content.failure_modes ?? []} />,
+    <Facts key="dips" title="Where it dips" items={content.where_it_dips ?? []} />,
+    <Facts key="debates" title="What the fandom argues about" items={content.fandom_debates ?? []} />,
+    <Facts key="hierarchy" title="Titles people are touchy about" items={content.hierarchy ?? []} />,
+    <Facts key="cues" title="Visual cues" items={content.visual_cues ?? []} />,
+    <Facts key="locations" title="Where it happens" items={content.locations ?? []} />,
+    <Facts key="people" title="Who matters" items={content.key_people ?? []} />,
+    <Facts key="timeline" title="How it got here" items={content.timeline ?? []} />,
+  );
+
+  const rendered = parts.filter(Boolean);
+  return rendered.some((part) => part !== null) ? <>{rendered}</> : null;
+}
+
 function CounterBlock({ counter, slug }: { counter: Counter | null; slug?: string }) {
   if (!counter) {
     return (

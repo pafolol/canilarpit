@@ -12,6 +12,11 @@ cost, and the honest hours it would take to just learn the thing. See `app/schem
 question plus an honest note on how far it carries, or `null` when the entry has no
 answer — which a `dont` entry never does, and validation enforces.
 
+A guide's `guide_type` picks one of six content templates - `anime`, `screen`,
+`lifestyle`, `craft`, `profession`, `general` - by what the subject is, because that
+decides what a reader needs: a film needs an ending, a craft needs the tools and the ways
+it goes wrong, a job needs the line where the claim becomes fraud.
+
 Verdicts are `yes`, `kinda`, `talk_only` and `dont`. Only the last is a refusal, and it
 is for claims that endanger or defraud someone. `talk_only` means the conversation holds
 and the doing does not; it still gets a full crib sheet.
