@@ -4,6 +4,7 @@ import AdminApp from "./admin/AdminApp";
 import Entry from "./Entry";
 import Home from "./Home";
 import NotListed from "./NotListed";
+import Submit from "./Submit";
 
 function CategoryRoute() {
   const { slug = "" } = useParams();
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/entry/:slug" element={<Entry />} />
           <Route path="/category/:slug" element={<CategoryRoute />} />
+          <Route path="/submit" element={<Submit />} />
           <Route path="/admin/*" element={<AdminApp />} />
           <Route
             path="/spot-the-larper"
@@ -73,7 +75,7 @@ export default function App() {
           <span className="ftr__sep" aria-hidden="true">·</span>
           <Link to="/spot-the-larper">Spot the larper</Link>
           <span className="ftr__sep" aria-hidden="true">·</span>
-          <Link to="/">Submit</Link>
+          <Link to="/submit">Submit</Link>
           <span className="ftr__sep" aria-hidden="true">·</span>
           <Link to="/stats">Stats</Link>
           <span className="ftr__sep" aria-hidden="true">·</span>

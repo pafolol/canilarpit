@@ -146,13 +146,25 @@ def test_categories_count_only_published_guides(client: TestClient) -> None:
 
 
 def test_search_finds_a_seeded_guide_and_carries_its_verdict(client: TestClient) -> None:
+    """The card carries the verdict layer.
+
+    Which verdict is an editorial judgement somebody may change in the panel, so
+    this asserts the shape and the rules, not the answer.
+    """
     body = client.get("/api/v1/guides", params={"q": "letterboxd"}).json()
     assert body["pagination"]["total"] >= 1
     card = body["items"][0]
     assert card["slug"] == "letterboxd"
-    assert card["larp"]["verdict"] == "yes"
-    assert card["larp"]["unfalsifiable"] is True
-    assert card["larp"]["dek"]
+
+    larp = card["larp"]
+    assert larp["verdict"] in {"yes", "kinda", "talk_only", "dont"}
+    assert larp["entry_type"] in {"scene", "taste", "role"}
+    assert larp["dek"]
+    # The three clock states are mutually exclusive, whatever the verdict is.
+    if larp["verdict"] == "dont" or larp["unfalsifiable"]:
+        assert larp["exposure_seconds"] is None
+    else:
+        assert larp["exposure_seconds"] >= 30
 
 
 def test_search_for_nothing_returns_an_empty_page(client: TestClient) -> None:

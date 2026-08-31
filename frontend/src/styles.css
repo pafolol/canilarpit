@@ -1574,3 +1574,10 @@ select {
 .sub__actions .chip { text-decoration: none; }
 .sub__block { color: var(--ink-2); }
 .sub__block:hover { color: var(--stop); border-color: var(--stop); }
+
+/* The request button is the default; the long form is an offer beside it. */
+.empty__offer {
+  margin-top: 1rem;
+  font-size: var(--t-13);
+  color: var(--ink-2);
+}

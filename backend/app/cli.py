@@ -73,7 +73,8 @@ def system_user(db) -> User:
     return user
 
 
-def seed() -> None:
+def seed(force: bool = False) -> None:
+    skipped = 0
     with SessionLocal() as db:
         for slug, title, description, sort_order in DEFAULT_CATEGORIES:
             category = db.scalar(select(Category).where(Category.slug == slug))
@@ -108,10 +109,18 @@ def seed() -> None:
                 )
                 if current and current.content_hash == document_hash(document):
                     continue
+                # Somebody edited this in the panel. Seeding is for getting the
+                # repository's content into a database, not for undoing an
+                # editor's judgement, so it stops rather than reverting them.
+                if current and current.author_user_id != author.id and not force:
+                    print(f"{guide.slug}: edited since seeding, left alone (--force to overwrite)")
+                    skipped += 1
+                    continue
                 revision = save_draft(db, guide, document, author)
             publish_revision(db, guide, revision.id)
         db.commit()
-    print("Seeded categories and published content guides.")
+    note = f" {skipped} left alone." if skipped else ""
+    print(f"Seeded categories and published content guides.{note}")
 
 
 def set_role(clerk_user_id: str, role: UserRole) -> None:
@@ -274,7 +283,12 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Can I LARP It backend utilities")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("seed", help="Seed categories and content/guides JSON files")
+    seed_parser = subparsers.add_parser(
+        "seed", help="Seed categories and content/guides JSON files"
+    )
+    seed_parser.add_argument(
+        "--force", action="store_true", help="Overwrite guides edited in the panel"
+    )
 
     role_parser = subparsers.add_parser("set-role", help="Assign an application role")
     role_parser.add_argument("clerk_user_id")
@@ -302,7 +316,7 @@ def main() -> None:
 
     args = parser.parse_args()
     if args.command == "seed":
-        seed()
+        seed(args.force)
     elif args.command == "set-role":
         set_role(args.clerk_user_id, UserRole(args.role))
     elif args.command == "import-guide":

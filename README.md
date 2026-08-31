@@ -146,10 +146,14 @@ canilarpit work --limit 5
 
 ## Reader submissions
 
-When a search finds nothing, the reader is offered a form rather than a request button:
-what the thing is, what somebody would need to know, which category it belongs in or one
-they would like added, and a name to be credited under. An editor reviews it, a model
-screens and drafts it, and a human publishes it. The credit appears on the entry.
+When a search finds nothing, the reader gets the one-line request button first, because
+most people only want to say "write this one". Beside it is an offer: **Submit it
+yourself**, which opens `/submit` with the topic filled in.
+
+That page asks for what the thing is, what somebody would need to know, which category it
+belongs in or one they would like added, and a name to be credited under. An editor
+reviews it, a model screens and drafts it, and a human publishes it. The credit appears
+on the entry as "Suggested by".
 
 It is the only unauthenticated endpoint that stores prose, so it has five independent
 obstacles in front of it, and none of them shares a weakness with the others:

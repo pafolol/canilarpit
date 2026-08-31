@@ -118,6 +118,10 @@ canilarpit import-guide content/guides/naruto.json --publish
 canilarpit export-guide naruto content/guides/naruto.json
 ```
 
+`seed` will not overwrite a guide that has been edited in the panel: it compares the
+published revision's author against the seed account and leaves anybody else's work
+alone, reporting what it skipped. `--force` overrides that.
+
 The seed ships fifteen guides across films, drink, sport, jobs, design, and anime,
 including two `DON'T` entries that exist to say the claim is not worth making.
 

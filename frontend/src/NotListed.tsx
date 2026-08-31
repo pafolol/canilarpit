@@ -1,4 +1,5 @@
-import SubmissionForm from "./SubmissionForm";
+import { Link } from "react-router-dom";
+import { SubmitBox } from "./components";
 
 const asTopic = (slug?: string) =>
   (slug ?? "").replace(/^\/+/, "").replace(/[-_/]+/g, " ").trim();
@@ -16,7 +17,18 @@ export default function NotListed({ slug, note }: { slug?: string; note?: string
             </>
           )}
         </p>
-        {!note && <SubmissionForm topic={asTopic(slug)} />}
+        {!note && (
+          <>
+            <SubmitBox topic={asTopic(slug)} />
+            <p className="empty__offer">
+              Know this one?{" "}
+              <Link to={`/submit?topic=${encodeURIComponent(asTopic(slug))}`}>
+                Submit it yourself
+              </Link>{" "}
+              and we will write it up.
+            </p>
+          </>
+        )}
       </section>
     </div>
   );

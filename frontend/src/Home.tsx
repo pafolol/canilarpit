@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api, type Category, type EntryType, type GuideCard, type Page, type Verdict } from "./api";
 import {
   EntryCard,
@@ -11,7 +12,6 @@ import {
   TickerRow,
   useFilters,
 } from "./components";
-import SubmissionForm from "./SubmissionForm";
 import { caught } from "./data";
 
 const PAGE_SIZE = 48;
@@ -104,7 +104,14 @@ export default function Home({ category }: { category?: string }) {
                 <p>
                   Nothing written for <span className="u-data">{f.q}</span> yet.
                 </p>
-                <SubmissionForm topic={f.q} />
+                <SubmitBox topic={f.q} />
+                <p className="empty__offer">
+                  Know this one?{" "}
+                  <Link to={`/submit?topic=${encodeURIComponent(f.q)}`}>
+                    Submit it yourself
+                  </Link>{" "}
+                  and we will write it up.
+                </p>
               </>
             ) : (
               <>
