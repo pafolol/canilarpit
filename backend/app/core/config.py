@@ -73,12 +73,33 @@ class Settings(BaseSettings):
     submission_min_notes: int = 80
     submission_max_links: int = 2
 
+    # ------------------------------------------------------------ the public site
+    # Absolute URLs in the sitemap and in the Open Graph tags, which have to be
+    # absolute for a preview to resolve them.
+    site_base_url: str = "http://localhost:8000"
+    # Where `npm run build` puts the app. When it is absent — the normal dev case,
+    # where Vite serves the frontend — the API serves no HTML at all.
+    frontend_dist: str = "frontend/dist"
+
+    # One counted view per client per guide per window. Shorter and the number is
+    # a refresh count; longer and a genuine second reading never registers.
+    view_dedupe_seconds: int = 1800
+    # How long a heartbeat keeps somebody on the site, and the window the strip
+    # counts. Sweeping at the longer one leaves a little slack for a missed beat.
+    presence_window_seconds: int = 120
+    presence_ttl_seconds: int = 300
+
     default_page_size: int = 20
     max_page_size: int = 100
 
     @property
     def is_production(self) -> bool:
         return self.app_env.lower() == "production"
+
+    @property
+    def site_origin(self) -> str:
+        """The base URL without a trailing slash, so joins never double one."""
+        return self.site_base_url.rstrip("/")
 
     @property
     def ai_configured(self) -> bool:

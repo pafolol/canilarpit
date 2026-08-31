@@ -40,21 +40,3 @@ export const VERDICT_TONE: Record<Verdict, string> = {
   talk_only: "talk",
   dont: "dont",
 };
-
-export const caught = [
-  {
-    where: "A dinner in Lisbon, March",
-    question: "So which vintage did you have?",
-    after: "He had said Overnoy twice. The table waited. Four seconds is a long time.",
-  },
-  {
-    where: "A gym in Leipzig, November",
-    question: "Want to jump on this one?",
-    after: "It was the warm-up. She got two moves in and came down laughing, which helped.",
-  },
-  {
-    where: "A rooftop in Brooklyn, July",
-    question: "What's your Sharpe?",
-    after: "It was small talk. He answered with a range. Ranges are not answers.",
-  },
-];

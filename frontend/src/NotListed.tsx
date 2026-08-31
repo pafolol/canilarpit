@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { SubmitBox } from "./components";
+import { useDocumentTitle } from "./useDocumentTitle";
 
 const asTopic = (slug?: string) =>
   (slug ?? "").replace(/^\/+/, "").replace(/[-_/]+/g, " ").trim();
 
 export default function NotListed({ slug, note }: { slug?: string; note?: string }) {
+  useDocumentTitle(note ? "Not built yet" : "Not listed yet");
   return (
     <div className="u-shell">
       <section className="notlisted">

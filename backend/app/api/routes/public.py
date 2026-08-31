@@ -1,7 +1,8 @@
+from datetime import timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
-from sqlalchemy import case, exists, func, or_, select
+from sqlalchemy import case, delete, exists, func, or_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -13,8 +14,11 @@ from app.db.models import (
     EntryType,
     Guide,
     GuideAlias,
+    GuideRevision,
     GuideStatus,
     GuideType,
+    GuideView,
+    Presence,
     TopicRequest,
     Verdict,
 )
@@ -24,15 +28,20 @@ from app.schemas.api import (
     GuideDetail,
     GuideListItem,
     GuidePage,
+    LearnPage,
+    LearnRow,
+    PresenceResponse,
     SiteConfigResponse,
     SubmissionCreate,
     SubmissionFormToken,
     SubmissionReceipt,
     TopicRequestCreate,
     TopicRequestResponse,
+    ViewReceipt,
 )
 from app.services import submissions as submission_service
 from app.services.guides import (
+    category_summary,
     guide_detail,
     guide_list_item,
     pagination,
@@ -85,7 +94,7 @@ def list_guides(
     guide_type: GuideType | None = None,
     entry_type: list[EntryType] | None = Query(default=None),
     verdict: list[Verdict] | None = Query(default=None),
-    sort: Literal["relevance", "newest", "title"] = "relevance",
+    sort: Literal["relevance", "newest", "title", "popular"] = "relevance",
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=settings.default_page_size, ge=1, le=settings.max_page_size),
     db: Session = Depends(get_db),
@@ -134,6 +143,8 @@ def list_guides(
     total = db.scalar(select(func.count()).select_from(query.order_by(None).subquery())) or 0
     if sort == "title":
         query = query.order_by(Guide.title)
+    elif sort == "popular":
+        query = query.order_by(Guide.view_count.desc(), Guide.published_at.desc(), Guide.title)
     elif sort == "newest" or not q:
         query = query.order_by(Guide.published_at.desc(), Guide.title)
     elif relevance_order:
@@ -170,6 +181,129 @@ def related_guides(
         .limit(limit)
     ).all()
     return [guide_list_item(db, item, category) for item, category in rows]
+
+
+@router.get("/learn", response_model=LearnPage)
+def just_learn_it(
+    sort: Literal["hours", "title"] = "hours",
+    db: Session = Depends(get_db),
+) -> LearnPage:
+    """The other answer to every entry on the site: don't larp it, learn it.
+
+    Every guide already carries the hours, the one book and the one thing to
+    make. `learn_hours` is denormalised onto the row so this sorts in SQL rather
+    than by opening every revision; book and make come out of the live document,
+    which is the only place they live.
+    """
+    learn = GuideRevision.content["content"]["larp"]["learn"]
+    rows = db.execute(
+        select(
+            Guide,
+            Category,
+            learn["book"].astext,
+            learn["make"].astext,
+        )
+        .join(Category, Category.id == Guide.category_id)
+        .join(GuideRevision, GuideRevision.id == Guide.current_revision_id)
+        .where(Guide.status == GuideStatus.PUBLISHED, Guide.learn_hours.is_not(None))
+        # A–Z means A–Z to a reader, so the alphabetical sort ignores case; the
+        # hours sort keeps the title as its tiebreaker.
+        .order_by(
+            func.lower(Guide.title) if sort == "title" else Guide.learn_hours,
+            func.lower(Guide.title),
+        )
+    ).all()
+    items = [
+        LearnRow(
+            slug=guide.slug,
+            title=guide.title,
+            category=category_summary(category),
+            entry_type=guide.entry_type,
+            verdict=guide.verdict,
+            hours=guide.learn_hours or 0,
+            book=book or "Not named yet",
+            make=make or "Not named yet",
+        )
+        for guide, category, book, make in rows
+    ]
+    return LearnPage(items=items, total_hours=sum(item.hours for item in items))
+
+
+@router.post("/guides/{slug}/view", response_model=ViewReceipt)
+# Keyed on the fingerprint rather than the address, like the submission routes:
+# behind a proxy everybody shares one address, and an address-keyed limit would
+# let a single reader stop the counter for the whole site.
+@limiter.limit("120/hour", key_func=antiabuse.client_hash)
+def record_view(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+) -> ViewReceipt:
+    """Count one read.
+
+    Deduped to one per client per guide per window, because without that the
+    number is a refresh count rather than a readership, and this site does not
+    print numbers it does not mean. The stored handle is the same anonymous HMAC
+    the submission form uses; no raw address is kept.
+    """
+    guide = published_guide_by_slug(db, slug)
+    client = antiabuse.client_hash(request)
+    window = func.now() - timedelta(seconds=settings.view_dedupe_seconds)
+
+    already = db.scalar(
+        select(GuideView.id)
+        .where(
+            GuideView.guide_id == guide.id,
+            GuideView.client_hash == client,
+            GuideView.viewed_at >= window,
+        )
+        .limit(1)
+    )
+    if already:
+        return ViewReceipt(slug=guide.slug, view_count=guide.view_count or 0, counted=False)
+
+    db.add(GuideView(guide_id=guide.id, client_hash=client))
+    # Incremented in SQL rather than in Python so two readers at once both land.
+    guide.view_count = Guide.view_count + 1
+    db.commit()
+    db.refresh(guide)
+    return ViewReceipt(slug=guide.slug, view_count=guide.view_count, counted=True)
+
+
+@router.post("/presence", response_model=PresenceResponse)
+@limiter.limit("120/hour", key_func=antiabuse.client_hash)
+def heartbeat(request: Request, db: Session = Depends(get_db)) -> PresenceResponse:
+    """Who is on the site right now.
+
+    One row per anonymous client, in the database rather than in memory so the
+    number survives a restart and stays right if the API runs more than one
+    worker. Always the real count, including when the real count is 1.
+    """
+    client = antiabuse.client_hash(request)
+    db.execute(
+        pg_insert(Presence)
+        .values(client_hash=client, last_seen=func.now())
+        .on_conflict_do_update(
+            index_elements=[Presence.client_hash], set_={"last_seen": func.now()}
+        )
+    )
+    # Swept on the longer window so a single missed heartbeat does not evict
+    # somebody who is still reading.
+    db.execute(
+        delete(Presence).where(
+            Presence.last_seen < func.now() - timedelta(seconds=settings.presence_ttl_seconds)
+        )
+    )
+    current = db.scalar(
+        select(func.count())
+        .select_from(Presence)
+        .where(
+            Presence.last_seen
+            >= func.now() - timedelta(seconds=settings.presence_window_seconds)
+        )
+    )
+    db.commit()
+    return PresenceResponse(current=current or 0)
 
 
 @router.post("/topic-requests", response_model=TopicRequestResponse)

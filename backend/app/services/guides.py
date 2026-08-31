@@ -85,6 +85,7 @@ def apply_larp_columns(guide: Guide, document: GuideDocument) -> None:
     guide.unfalsifiable = profile.unfalsifiable
     guide.flags = list(profile.flags)
     guide.dek = profile.dek
+    guide.learn_hours = profile.learn.hours
 
 
 def larp_card(guide: Guide) -> LarpCard:
@@ -119,6 +120,7 @@ def guide_list_item(db: Session, guide: Guide, category: Category | None = None)
         guide_type=guide.guide_type,
         category=category_summary(category),
         larp=larp_card(guide),
+        view_count=guide.view_count or 0,
         published_at=guide.published_at,
     )
 
@@ -453,6 +455,7 @@ def guide_detail(db: Session, guide: Guide) -> GuideDetail:
         ],
         media=[media_response(asset, link) for link, asset in media_rows],
         credit_name=guide.credit_name,
+        view_count=guide.view_count or 0,
         published_at=guide.published_at,
         last_verified_at=document.last_verified_at,
     )

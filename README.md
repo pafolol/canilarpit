@@ -175,6 +175,31 @@ without one.
 **Reviewing costs money, so only an editor can trigger it.** Nothing an anonymous
 request does reaches a model.
 
+## Sharing, and who is reading
+
+`npm run build` puts the app in `frontend/dist`, and from then on the API serves it. That is
+what makes a shared link work: Slack, Discord, WhatsApp and search crawlers read the HTML the
+server returns and never run JavaScript, so `/entry/{slug}` gets the guide's own title,
+description and hero image injected into the head before the page leaves. Set `SITE_BASE_URL`
+to the origin readers actually use — those tags and `/sitemap.xml` are absolute URLs.
+
+With no build on disk nothing is mounted and `npm run dev` is untouched: Vite serves the
+frontend on 5173 and proxies the API.
+
+Three counters, all anonymous and all keyed on the same HMAC the submission form uses, so no
+raw address is stored anywhere:
+
+- **Views.** One per client per entry per half hour. Without the window the number would be a
+  refresh count, and the site does not print numbers it does not mean.
+- **Presence.** One row per client, swept every heartbeat. Always the real number, including
+  when it is 1.
+- **Hours.** Denormalized onto each guide row when a revision is published, so
+  `/just-learn-it` sorts in SQL rather than by opening every revision.
+
+An entry also prints. `@media print` drops the chrome, the rail, the images and the clock, and
+leaves the crib sheet, the lines to say and the tells, in ink on white — the laminated pocket
+card the design has always claimed to be.
+
 ## Checks
 
 ```powershell
@@ -190,12 +215,14 @@ themselves when no seeded database is reachable, so the suite is useful either w
 | Concern | File |
 |---|---|
 | The verdict layer, and the six content templates | `backend/app/schemas/content.py` |
-| Search, filters, topic demand | `backend/app/api/routes/public.py` |
+| Search, filters, topic demand, counting | `backend/app/api/routes/public.py` |
+| Serving the built app, sharing tags, sitemap | `backend/app/api/routes/site.py` |
 | Editorial CMS and lifecycle | `backend/app/api/routes/admin.py` |
 | Guide generation | `backend/app/services/ai.py`, `services/generation.py` |
 | Image providers | `backend/app/services/images.py` |
 | Frontend API client and types | `frontend/src/api.ts` |
 | Admin panel | `frontend/src/admin/` |
 | Seed content | `backend/content/guides/*.json` |
+| Print stylesheet, the pocket crib card | `frontend/src/styles.css` |
 
 The complete HTTP contract is in [`backend/docs/API.md`](backend/docs/API.md).

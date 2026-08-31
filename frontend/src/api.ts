@@ -54,6 +54,8 @@ export type GuideCard = {
   guide_type: GuideType;
   category: CategorySummary;
   larp: LarpCard;
+  /** Deduped readers, not requests: one per client per entry per half hour. */
+  view_count: number;
   published_at: string | null;
 };
 
@@ -106,6 +108,14 @@ export type TalkingPoint = { opener: string; follow_up: string; context: string 
 export type VocabularyItem = { term: string; meaning: string; example: string | null };
 export type QuestionAnswer = { question: string; answer: string };
 
+/**
+ * The reveal you produce when somebody is about to catch you.
+ *
+ * Not trivia: the one fact that cannot be got from a summary. Rendered blurred,
+ * because using it ruins the thing for whoever hears it.
+ */
+export type HardSpoiler = { reveal: string; lands_because: string; where: string | null };
+
 export type GuideContent = {
   kind: GuideType;
   larp: LarpProfile;
@@ -117,6 +127,7 @@ export type GuideContent = {
   vocabulary: VocabularyItem[];
   common_mistakes: string[];
   questions: QuestionAnswer[];
+  hard_spoilers: HardSpoiler[];
   extra_sections: { key: string; title: string; body: string }[];
   spoiler_warning: boolean;
   // anime and screen
@@ -199,6 +210,23 @@ export type GuideDetail = GuideCard & {
   credit_name: string | null;
   last_verified_at: string | null;
 };
+
+/** One line of /just-learn-it: what it costs to actually know the thing. */
+export type LearnRow = {
+  slug: string;
+  title: string;
+  category: CategorySummary;
+  entry_type: EntryType;
+  verdict: Verdict;
+  hours: number;
+  book: string;
+  make: string;
+};
+
+export type LearnPage = { items: LearnRow[]; total_hours: number };
+
+/** `counted` is false inside the dedupe window: the read did not move the number. */
+export type ViewReceipt = { slug: string; view_count: number; counted: boolean };
 
 export type SubmissionStatus =
   | "pending"
@@ -472,7 +500,7 @@ export type GuideQuery = {
   guide_type?: GuideType;
   entry_type?: EntryType[];
   verdict?: Verdict[];
-  sort?: "relevance" | "newest" | "title";
+  sort?: "relevance" | "newest" | "title" | "popular";
   page?: number;
   page_size?: number;
 };
@@ -484,6 +512,13 @@ export const api = {
   guide: (slug: string) => request<GuideDetail>(`${V1}/guides/${encodeURIComponent(slug)}`),
   related: (slug: string, limit = 6) =>
     request<GuideCard[]>(`${V1}/guides/${encodeURIComponent(slug)}/related${query({ limit })}`),
+  learn: (sort: "hours" | "title" = "hours") =>
+    request<LearnPage>(`${V1}/learn${query({ sort })}`),
+  /** Counts one read. Deduped server-side, so calling it twice is harmless. */
+  recordView: (slug: string) =>
+    request<ViewReceipt>(`${V1}/guides/${encodeURIComponent(slug)}/view`, { method: "POST" }),
+  /** Says "I am still here" and returns how many others are. */
+  presence: () => request<{ current: number }>(`${V1}/presence`, { method: "POST" }),
   submissionForm: () => request<SubmissionFormToken>(`${V1}/submissions/form`),
   submit: (draft: SubmissionDraft) =>
     request<SubmissionReceipt>(`${V1}/submissions`, {

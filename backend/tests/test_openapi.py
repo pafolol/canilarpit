@@ -1,8 +1,9 @@
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import OperationalError
 
 from app.db.session import get_db
-from app.main import app
+from app.main import app, frontend_mounted
 
 
 def test_liveness_does_not_require_database() -> None:
@@ -18,6 +19,9 @@ def test_openapi_contains_frontend_routes() -> None:
         "/api/v1/categories",
         "/api/v1/guides",
         "/api/v1/guides/{slug}",
+        "/api/v1/guides/{slug}/view",
+        "/api/v1/learn",
+        "/api/v1/presence",
         "/api/v1/topic-requests",
         "/api/v1/me",
         "/api/v1/me/history",
@@ -48,6 +52,17 @@ def test_guide_cards_expose_the_verdict_layer() -> None:
     }
     assert "larp" in schemas["GuideListItem"]["properties"]
     assert "larp" in schemas["GuideDetail"]["properties"]
+    # The count travels with the card, so a grid never needs a second round trip.
+    assert "view_count" in schemas["GuideListItem"]["properties"]
+    assert "view_count" in schemas["GuideDetail"]["properties"]
+
+
+def test_counting_and_presence_are_open_to_anybody() -> None:
+    """No sign-in: a reader cannot sign in, and the numbers are about readers."""
+    paths = app.openapi()["paths"]
+    assert "security" not in paths["/api/v1/guides/{slug}/view"]["post"]
+    assert "security" not in paths["/api/v1/presence"]["post"]
+    assert "security" not in paths["/api/v1/learn"]["get"]
 
 
 class UnreachableSession:
@@ -70,3 +85,22 @@ def test_an_unreachable_database_is_a_readable_503() -> None:
 
     assert response.status_code == 503
     assert "DATABASE_URL" in response.json()["detail"]
+
+
+def test_an_entry_page_still_loads_when_the_database_is_gone() -> None:
+    """The app's own error state cannot show if the shell will not load.
+
+    The sharing tags need a guide; the page does not. With no database the head
+    falls back to the site's own title and the app renders and says what is wrong.
+    """
+    if not frontend_mounted:
+        pytest.skip("no built frontend; run `npm run build`")
+    app.dependency_overrides[get_db] = lambda: UnreachableSession()
+    try:
+        response = TestClient(app).get("/entry/naruto")
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert "<title>canilarpit" in response.text

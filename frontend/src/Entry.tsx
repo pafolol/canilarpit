@@ -9,6 +9,7 @@ import {
   type GuideContent,
   type GuideType,
   type GuideDetail,
+  type HardSpoiler,
   type Media,
 } from "./api";
 import {
@@ -17,6 +18,7 @@ import {
   ExposureClock,
   FlagChips,
   Loading,
+  ReadCount,
   TellsList,
   TypeGlyph,
   VerdictBadge,
@@ -24,12 +26,14 @@ import {
 } from "./components";
 import { Linked, LinkedParagraphs } from "./crosslink";
 import NotListed from "./NotListed";
+import { useDocumentTitle } from "./useDocumentTitle";
 
 type Block = { id: string; label: string; node: ReactNode };
 
 export default function Entry() {
   const { slug = "" } = useParams();
   const [entry, setEntry] = useState<GuideDetail | null>(null);
+  const [reads, setReads] = useState<number | null>(null);
   const [related, setRelated] = useState<GuideCard[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(true);
@@ -41,13 +45,21 @@ export default function Entry() {
     let cancelled = false;
     setBusy(true);
     setEntry(null);
+    setReads(null);
     setError(null);
     api
       .guide(slug)
       .then((detail) => {
         if (cancelled) return;
         setEntry(detail);
-        // Recording the view is a member feature; failing it must not break the page.
+        setReads(detail.view_count);
+        // Counting the read and finding the neighbours are both decoration:
+        // neither is allowed to take the entry down with it. The count is
+        // deduped server-side, so a reload inside the window changes nothing.
+        api
+          .recordView(slug)
+          .then((receipt) => !cancelled && setReads(receipt.view_count))
+          .catch(() => undefined);
         api
           .related(slug)
           .then((rows) => !cancelled && setRelated(rows))
@@ -63,6 +75,10 @@ export default function Entry() {
   const larp = entry?.content.larp;
   const stop = larp?.verdict === "dont";
   const blocks: Block[] = !entry || !larp ? [] : buildBlocks(entry);
+
+  // The tags injected server-side describe the page that was loaded first. Once
+  // the reader navigates, this is what keeps the tab and the bookmark honest.
+  useDocumentTitle(entry?.title ?? null, larp?.dek ?? entry?.summary ?? null);
 
   useEffect(() => {
     const el = head.current;
@@ -174,9 +190,12 @@ export default function Entry() {
               <VerdictBadge verdict={larp.verdict} size="m" />
             </div>
             <p className="doc__dek">{larp.dek}</p>
-            {entry.credit_name ? (
-              <p className="doc__credit">Suggested by {entry.credit_name}</p>
-            ) : null}
+            <p className="doc__reads">
+              <ReadCount count={reads} />
+              {entry.credit_name ? (
+                <span className="doc__credit"> · Suggested by {entry.credit_name}</span>
+              ) : null}
+            </p>
             {entry.content.spoiler_warning && (
               <p className="doc__spoiler">Spoilers below. That is the point.</p>
             )}
@@ -184,8 +203,10 @@ export default function Entry() {
 
           {hero && <Figure media={hero} />}
 
+          {/* data-block is what the print stylesheet reads to keep the pocket card
+              down to the crib sheet, the phrases and the tells. */}
           {blocks.map((b) => (
-            <div key={b.id}>
+            <div className="doc__block" data-block={b.id} key={b.id}>
               {b.node}
               {(byBlock.get(b.id) ?? []).map((media) => (
                 <Figure key={media.id} media={media} inline />
@@ -275,7 +296,11 @@ function placeImages(blocks: Block[], images: Media[]) {
   }
 
   const leftover: Media[] = [];
-  const open = blocks.slice(1).filter((block) => !byBlock.has(block.id));
+  const open = blocks
+    .slice(1)
+    // Never the spoiler block: a picture beside it is unblurred, and half the
+    // reveals are visual.
+    .filter((block) => block.id !== "spoilers" && !byBlock.has(block.id));
   if (loose.length && open.length) {
     const step = Math.max(1, Math.floor(open.length / loose.length));
     loose.forEach((media, index) => {
@@ -368,6 +393,16 @@ function buildBlocks(entry: GuideDetail): Block[] {
       </Section>
     ),
   });
+
+  // Directly after the question that kills you, because that is the moment this
+  // is for: the counter above failed and there is one card left to play.
+  if (content.hard_spoilers?.length) {
+    blocks.push({
+      id: "spoilers",
+      label: "hard spoilers",
+      node: <SpoilerBlock items={content.hard_spoilers} />,
+    });
+  }
 
   blocks.push({
     id: "tells",
@@ -778,6 +813,55 @@ function CounterBlock({ counter, slug }: { counter: Counter | null; slug?: strin
         <span className="u-label">Holds</span> {counter.holds}
       </p>
     </aside>
+  );
+}
+
+/**
+ * The nuclear option, kept behind frosted glass.
+ *
+ * Blurred rather than absent, so the reader knows it is there and chooses to
+ * look. `aria-hidden` travels with the blur: a screen reader should no more
+ * announce the ending unasked than the page should print it.
+ */
+function SpoilerBlock({ items }: { items: HardSpoiler[] }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="sec spoil" id="spoilers" aria-labelledby="spoilers-h">
+      <h2 className="sec__h" id="spoilers-h">Hard spoilers</h2>
+      <p className="spoil__lede">
+        For the moment the counter fails and somebody is still pushing. Nobody who read a
+        summary has these. Neither will they, once you have said it &mdash; that is the price.
+      </p>
+      <button
+        className="spoil__toggle"
+        type="button"
+        aria-expanded={open}
+        aria-controls="spoilers-body"
+        onClick={() => setOpen((was) => !was)}
+      >
+        {open ? "Cover them again" : "Show me"}
+      </button>
+      <ul
+        className={`spoil__list${open ? " is-open" : ""}`}
+        id="spoilers-body"
+        aria-hidden={!open}
+      >
+        {items.map((item) => (
+          <li className="spoil__item" key={item.reveal}>
+            <p className="spoil__reveal">{item.reveal}</p>
+            <p className="spoil__why">
+              <span className="u-label">Why it lands</span> {item.lands_because}
+            </p>
+            {item.where ? (
+              <p className="spoil__where">
+                <span className="u-label">Where</span> {item.where}
+              </p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

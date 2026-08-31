@@ -23,6 +23,7 @@ import {
   ListField,
   NumberField,
   SelectField,
+  SpoilerEditor,
   TextArea,
   TextField,
 } from "./fields";
@@ -557,6 +558,10 @@ export default function GuideEditor() {
               values={document.content.common_mistakes}
               rows={1}
               onChange={(common_mistakes) => patchContent({ common_mistakes })}
+            />
+            <SpoilerEditor
+              spoilers={document.content.hard_spoilers ?? []}
+              onChange={(hard_spoilers) => patchContent({ hard_spoilers })}
             />
           </section>
 
