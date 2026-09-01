@@ -28,7 +28,7 @@ and the doing does not; it still gets a full crib sheet.
 - FastAPI
 - PostgreSQL 15+ (with `pg_trgm`, created by the first migration)
 - SQLAlchemy 2 and Alembic
-- Clerk authentication
+- Email and password sign-in, with sessions kept as rows
 - OpenAI-compatible endpoint for guide generation (optional)
 - Pexels for stock imagery (optional)
 - S3-compatible storage for uploaded and generated images (optional)
@@ -78,34 +78,33 @@ An unreachable database answers `503` with a message naming the fix, rather than
 
 ## Authentication
 
-Clerk issues the tokens. Set:
-
-```dotenv
-CLERK_ISSUER=https://your-instance.clerk.accounts.dev
-CLERK_JWKS_URL=https://your-instance.clerk.accounts.dev/.well-known/jwks.json
-CLERK_WEBHOOK_SECRET=whsec_...
-CLERK_AUDIENCE=
-CLERK_AUTHORIZED_PARTIES=["http://localhost:5173","https://canilarpit.com"]
-```
-
-Point the `user.created`, `user.updated`, and `user.deleted` webhooks at
-`/api/v1/webhooks/clerk`.
-
-After an account signs in once and calls `GET /api/v1/me`, give it a role:
+Email and password, kept here. There is no third-party identity provider and no
+registration endpoint: accounts are made by an administrator, from the panel's
+**Editors** tab or the command line.
 
 ```bash
-canilarpit set-role user_clerk_id admin
+canilarpit create-user you@example.com --role admin
+canilarpit users
+canilarpit set-role you@example.com admin
 ```
 
+Passwords are hashed with Argon2id. The session is a row rather than a signature: the
+cookie carries an opaque random string, the database stores only its SHA-256, and a
+revoked row is refused on the very next request. `SESSION_LIFETIME_SECONDS` sets how
+long a browser stays signed in, and `canilarpit prune-sessions` clears the expired
+rows. A second, deliberately readable `canilarpit_csrf` cookie rides beside it, which
+the panel echoes back as `X-CSRF-Token` on every write.
+
 For local frontend work, `DEV_AUTH_BYPASS=true` accepts identity headers instead of a
-token, which is what the admin panel's "Local development" sign-in sends:
+password, which is what the admin panel's "Local development" sign-in sends:
 
 ```text
-X-Dev-Clerk-User-Id: local-admin
+X-Dev-User: local-admin
 X-Dev-Email: developer@example.com
 ```
 
-The settings validator refuses to let the bypass be enabled when `APP_ENV=production`.
+The settings validator refuses to let the bypass be enabled when `APP_ENV=production`,
+and the request path ignores the headers regardless of what the settings say.
 
 `GET /api/v1/config` reports which sign-in paths are available. It returns no secrets.
 

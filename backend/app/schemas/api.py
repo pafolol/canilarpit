@@ -2,7 +2,15 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 from app.db.models import (
     ApprovalStatus,
@@ -17,6 +25,7 @@ from app.db.models import (
     Verdict,
 )
 from app.schemas.content import GuideDocument
+from app.services import passwords
 from app.services.text import normalize_text
 
 
@@ -185,12 +194,70 @@ class PresenceResponse(BaseModel):
 
 class UserResponse(ORMModel):
     id: uuid.UUID
-    clerk_user_id: str
     email: str | None
     display_name: str | None
     avatar_url: str | None
     role: UserRole
+    is_active: bool
     created_at: datetime
+
+
+class LoginRequest(BaseModel):
+    """No length rules on the password here.
+
+    A minimum belongs where a password is *chosen*, not where one is checked:
+    enforcing it at sign-in would reject a short legacy password with a
+    different message from a wrong one, which is a way of confirming an account.
+    """
+
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=passwords.MAX_PASSWORD_LENGTH)
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=passwords.MAX_PASSWORD_LENGTH)
+    new_password: str = Field(
+        min_length=passwords.MIN_PASSWORD_LENGTH, max_length=passwords.MAX_PASSWORD_LENGTH
+    )
+
+
+class SessionItem(BaseModel):
+    """One live session, as shown to the person it belongs to."""
+
+    id: uuid.UUID
+    created_at: datetime
+    last_seen_at: datetime
+    expires_at: datetime
+    user_agent: str | None
+    current: bool
+
+
+class EditorCreate(BaseModel):
+    """An administrator making somebody an account. There is no self-service."""
+
+    email: EmailStr
+    display_name: str | None = Field(default=None, max_length=120)
+    role: UserRole = UserRole.EDITOR
+    password: str = Field(
+        min_length=passwords.MIN_PASSWORD_LENGTH, max_length=passwords.MAX_PASSWORD_LENGTH
+    )
+
+
+class EditorUpdate(BaseModel):
+    role: UserRole | None = None
+    is_active: bool | None = None
+
+
+class EditorPasswordReset(BaseModel):
+    """An administrator setting somebody else's password, for a lockout.
+
+    Every session that account has is ended by it, because the person who could
+    not sign in is not necessarily the only one who could.
+    """
+
+    password: str = Field(
+        min_length=passwords.MIN_PASSWORD_LENGTH, max_length=passwords.MAX_PASSWORD_LENGTH
+    )
 
 
 class HistoryItem(BaseModel):
@@ -482,7 +549,10 @@ class SiteConfigResponse(BaseModel):
 
     app_env: str
     dev_auth_bypass: bool
-    clerk_configured: bool
+    # Whether any account can actually sign in yet. False on a fresh database,
+    # which is the panel's cue to say "run create-user" rather than show a form
+    # that nothing can satisfy.
+    sign_in_ready: bool = False
 
 
 class SubmissionFormToken(BaseModel):

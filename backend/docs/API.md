@@ -5,34 +5,41 @@
 The development base URL is `http://127.0.0.1:8000`. Versioned endpoints begin with `/api/v1`.
 Request and response bodies use JSON. Dates use ISO 8601 UTC strings and IDs use UUID strings.
 
-Authenticated requests send the Clerk session token as:
+Authenticated requests carry the session cookie the API set at sign-in. It is `HttpOnly`,
+so no script reads it and nothing has to attach it — the panel just sends credentials:
+
+```js
+fetch("/api/v1/admin/guides", { credentials: "include" })
+```
+
+Every write additionally echoes the readable `canilarpit_csrf` cookie back as a header:
 
 ```http
-Authorization: Bearer <clerk-session-jwt>
+X-CSRF-Token: <value of the canilarpit_csrf cookie>
 ```
+
+Safe methods do not need it. A write without it is `403`.
 
 Access levels used below:
 
 | Access | Meaning |
 |---|---|
 | Public | No account required; a valid token may still be sent where noted |
-| Member | Any active Clerk-backed account |
+| Member | Any active signed-in account |
 | Editor | Account with application role `editor` or `admin` |
 | Admin | Account with application role `admin` |
-| Clerk | Signed Clerk webhook request, not called by the frontend |
 
 Successful `DELETE` endpoints usually return `204 No Content`. Common failures are:
 
 | Status | Meaning |
 |---|---|
-| `400` | Malformed webhook or signature |
-| `401` | Missing, expired, or invalid Clerk token |
-| `403` | Account is inactive or lacks the required role |
+| `401` | No session, an expired or revoked one, or a refused sign-in |
+| `403` | Account is inactive, lacks the required role, or the write is missing its CSRF header |
 | `404` | Resource does not exist or is not publicly available |
 | `409` | Valid request conflicts with the resource's current lifecycle state |
-| `429` | Anonymous topic-request rate limit exceeded |
+| `429` | Topic-request, sign-in, or admin-surface rate limit exceeded |
 | `422` | Request body, query parameter, citation, or guide schema is invalid |
-| `503` | Database, Clerk configuration, model provider, stock provider, or object storage is unavailable |
+| `503` | Database, model provider, stock provider, or object storage is unavailable |
 
 FastAPI validation errors use `{"detail": [{"loc": [...], "msg": "...", "type": "..."}]}`.
 Application errors use `{"detail": "Readable explanation"}`.
@@ -147,6 +154,51 @@ Success `200`: `{"status": "ready"}`.
 
 Failure `503`: PostgreSQL cannot be reached.
 
+## Authentication
+
+Sign-in is email and password, kept here. There is **no registration endpoint**: accounts are
+made by an administrator, from the panel's Editors tab or `canilarpit create-user`.
+
+### `POST /api/v1/auth/login`
+
+Access: Public. Body `{"email": "you@example.com", "password": "..."}`.
+
+Success `200` returns the account and sets two cookies: the `HttpOnly` session cookie, and the
+readable `canilarpit_csrf` cookie whose value every later write must echo as `X-CSRF-Token`.
+
+`401` for every way it can fail — wrong address, wrong password, disabled account — with one
+message, `"That email and password do not match an account."`. Which half was wrong is a hint
+worth something to somebody working through a list of addresses.
+
+`429` when either throttle trips: one on the caller, one on the account. Both are consulted
+before the account is looked up, so being rate-limited does not confirm an address exists.
+
+### `POST /api/v1/auth/logout`
+
+Access: Public. Ends this browser's session and clears both cookies. `204`, and safe to call
+when already signed out.
+
+### `POST /api/v1/auth/logout-everywhere`
+
+Access: Member. Revokes every session this account has, this one included. `204`. The thing to
+reach for when a laptop goes missing — a session is a row, so revoking it is refused on the very
+next request rather than at expiry.
+
+### `GET /api/v1/auth/sessions`
+
+Access: Member. This account's live sessions, so a stranger's is visible as one. Each item has
+`id`, `created_at`, `last_seen_at`, `expires_at`, `user_agent` and `current`.
+
+### `POST /api/v1/auth/password`
+
+Access: Member. Body `{"current_password": "...", "new_password": "..."}`. `204`.
+
+Requires the current password — which is why an administrator cannot do this for somebody from
+the Editors tab, and what stops a borrowed unlocked laptop becoming permanent. Every *other*
+session the account has is revoked; the calling one is kept.
+
+`403` when the current password is wrong, `422` when the new one is too weak.
+
 ## Public Catalog
 
 ### `GET /api/v1/config`
@@ -159,7 +211,7 @@ right form. It returns no secrets.
 Success `200`:
 
 ```json
-{"app_env": "development", "dev_auth_bypass": true, "clerk_configured": false}
+{"app_env": "development", "dev_auth_bypass": true, "sign_in_ready": true}
 ```
 
 ### `GET /api/v1/categories`
@@ -381,10 +433,10 @@ confirmation.
 
 Access: Member.
 
-Returns the application user corresponding to the Clerk token. On the first authenticated call, the
-backend creates a local `member` record if the Clerk webhook has not already done so.
+Returns the account the session belongs to. Under `DEV_AUTH_BYPASS`, a first call with identity
+headers creates the local `member` record they name.
 
-Success `200` includes `id`, `clerk_user_id`, `email`, `display_name`, `avatar_url`, `role`, and
+Success `200` includes `id`, `email`, `display_name`, `avatar_url`, `role`, `is_active`, and
 `created_at`.
 
 ### `GET /api/v1/me/history`
@@ -1202,19 +1254,32 @@ duplicated. Success `201`: the category.
 
 Access: Admin. Accepts `title`, `description`, `sort_order` and `is_active`.
 
-## Clerk Webhook
+## Editor Accounts
 
-### `POST /api/v1/webhooks/clerk`
+### `GET /api/v1/admin/editors`
 
-Access: Clerk-signed webhook only.
+Access: Admin. Every account, newest first.
 
-Synchronizes user creation, profile updates, and soft deletion. The backend verifies Svix headers
-using `CLERK_WEBHOOK_SECRET` and records event IDs so retries are idempotent.
+### `POST /api/v1/admin/editors`
 
-Success `200` returns `{"processed": true}` for a new event and `{"processed": false}` for a
-previously processed retry.
+Access: Admin. Body `{"email": ..., "password": ..., "role": "editor", "display_name": null}`.
 
-The frontend must never call this endpoint directly.
+Success `201`: the account. `409` when the address is already used, `422` when the password is
+too weak.
+
+### `PATCH /api/v1/admin/editors/{user_id}`
+
+Access: Admin. Accepts `role` and `is_active`. Disabling an account also revokes its sessions,
+because a disabled account holding a live one is still signed in.
+
+`409` on demoting or disabling yourself — that is how a deployment ends up with no administrator
+and no way to make one without the CLI.
+
+### `POST /api/v1/admin/editors/{user_id}/password`
+
+Access: Admin. Body `{"password": "..."}`. `204`. For a locked-out editor: it ends every session
+that account has, since the person who could not sign in is not necessarily the only one who
+could. An administrator can set a password and cannot read one.
 
 ## Served Pages
 
@@ -1252,6 +1317,7 @@ placements separately, validate, submit for review, and let an admin publish the
 Generation flow: `POST /admin/ai/generate`, poll the job, open `created_guide_id` in the
 editor, review and correct the draft, approve the images you want, then publish.
 
-Authentication flow: use Clerk frontend components and SDKs. Obtain a session token with Clerk's
-token method and attach it as a Bearer token to member/editor/admin requests. Do not send passwords to
-FastAPI.
+Authentication flow: `POST /auth/login` with the email and password, then send every later request
+with `credentials: "include"` and every write with `X-CSRF-Token`. Read the CSRF value from the
+`canilarpit_csrf` cookie; the session cookie is `HttpOnly` and cannot be read. A `401` means the
+session is gone — show the sign-in form again rather than retrying.

@@ -138,19 +138,68 @@ class TimestampMixin:
 
 
 class User(TimestampMixin, Base):
+    """An account that can sign in to the panel.
+
+    Two ways in, and a row may have either. `email` plus `password_hash` is the
+    real one. `external_id` is what the local development bypass and the seeder
+    identify themselves by; those rows have no password and cannot be signed in
+    to with one, which is the point.
+    """
+
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    clerk_user_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-    email: Mapped[str | None] = mapped_column(String(320), index=True)
+    # Non-password identities: the dev bypass, the seeder, the test fixtures.
+    external_id: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
+    # The login handle, so it is unique and stored already lowered. Postgres
+    # compares it byte for byte, and nobody thinks of their address as
+    # case-sensitive.
+    email: Mapped[str | None] = mapped_column(String(320), unique=True, index=True)
+    # Argon2id, which carries its own salt and parameters in the string.
+    password_hash: Mapped[str | None] = mapped_column(Text)
+    password_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     display_name: Mapped[str | None] = mapped_column(String(120))
     avatar_url: Mapped[str | None] = mapped_column(Text)
-    clerk_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     role: Mapped[UserRole] = mapped_column(
         enum_type(UserRole, "user_role"), default=UserRole.MEMBER, server_default="member"
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @property
+    def can_sign_in_with_password(self) -> bool:
+        live = self.is_active and self.deleted_at is None
+        return bool(self.email and self.password_hash) and live
+
+
+class Session(TimestampMixin, Base):
+    """One signed-in browser.
+
+    The cookie carries a random string this row never stores. What is kept is
+    its SHA-256, so a copy of this table is not a set of working sessions - the
+    same reason a password column holds a hash. Lookup is by hash, which is
+    exact, so there is no need for anything slower here.
+
+    Rows are kept after revocation rather than deleted: "signed out at 14:02
+    from that browser" is the kind of thing you want to be able to answer.
+    """
+
+    __tablename__ = "sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    last_seen_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # For "which of these is this laptop?" on the sessions list. Truncated, and
+    # the address is the same anonymous HMAC the counters use - never a raw one.
+    user_agent: Mapped[str | None] = mapped_column(String(400))
+    client_hash: Mapped[str | None] = mapped_column(String(64), index=True)
 
 
 class Category(TimestampMixin, Base):
@@ -552,15 +601,3 @@ class AuditLog(Base):
     )
 
 
-class WebhookEvent(Base):
-    __tablename__ = "webhook_events"
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    provider: Mapped[str] = mapped_column(String(50))
-    external_event_id: Mapped[str] = mapped_column(String(255))
-    event_type: Mapped[str] = mapped_column(String(120))
-    processed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-
-    __table_args__ = (UniqueConstraint("provider", "external_event_id"),)

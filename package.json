@@ -12,6 +12,7 @@
     "lint": "npm --prefix frontend run lint",
     "check": "cd backend && ../.venv/bin/python -m ruff check . && ../.venv/bin/python -m pytest && cd ../frontend && npm run lint && npm run build",
     "db:migrate": "cd backend && ../.venv/bin/python -m alembic upgrade head",
-    "db:seed": "cd backend && ../.venv/bin/python -m app.cli seed"
+    "db:seed": "cd backend && ../.venv/bin/python -m app.cli seed",
+    "db:upload": "cd backend && ../.venv/bin/python ../scripts/upload.py"
   }
 }

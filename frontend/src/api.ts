@@ -293,7 +293,27 @@ export type TopicRequestResult = {
 export type SiteConfig = {
   app_env: string;
   dev_auth_bypass: boolean;
-  clerk_configured: boolean;
+  /** False on a fresh database: no account has a password yet. */
+  sign_in_ready: boolean;
+};
+
+export type Account = {
+  id: string;
+  email: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: "member" | "editor" | "admin";
+  is_active: boolean;
+  created_at: string;
+};
+
+export type SessionItem = {
+  id: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+  user_agent: string | null;
+  current: boolean;
 };
 
 export type GuideDocument = {
@@ -420,11 +440,33 @@ export class ApiError extends Error {
   }
 }
 
-/** Set by the auth context so admin calls carry credentials. */
-let authHeaderProvider: () => Record<string, string> = () => ({});
+export type AuthHeaders = Record<string, string>;
 
-export function setAuthHeaderProvider(provider: () => Record<string, string>) {
+/**
+ * The session is a cookie the browser attaches by itself, so nothing here holds
+ * a credential. This exists only for the local development identity headers,
+ * which the API accepts when DEV_AUTH_BYPASS is on and ignores otherwise.
+ */
+let authHeaderProvider: () => AuthHeaders = () => ({});
+
+export function setAuthHeaderProvider(provider: () => AuthHeaders) {
   authHeaderProvider = provider;
+}
+
+const CSRF_COOKIE = "canilarpit_csrf";
+const CSRF_HEADER = "X-CSRF-Token";
+const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+/**
+ * The readable half of the session cookie pair, echoed back as a header.
+ *
+ * A form on another site can make the browser send our cookies, but it cannot
+ * read them, so it cannot produce this header. Both halves have to agree, and
+ * only our own origin can see both.
+ */
+function csrfToken(): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${CSRF_COOKIE}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
 function readableDetail(detail: unknown, status: number): string {
@@ -442,16 +484,20 @@ function readableDetail(detail: unknown, status: number): string {
 }
 
 async function request<T>(path: string, init: RequestInit = {}, authed = false): Promise<T> {
+  const method = (init.method ?? "GET").toUpperCase();
+  const csrf = UNSAFE_METHODS.has(method) ? csrfToken() : null;
   const headers: Record<string, string> = {
     Accept: "application/json",
     ...(init.body ? { "Content-Type": "application/json" } : {}),
+    ...(csrf ? { [CSRF_HEADER]: csrf } : {}),
     ...(authed ? authHeaderProvider() : {}),
     ...((init.headers as Record<string, string>) ?? {}),
   };
 
   let response: Response;
   try {
-    response = await fetch(path, { ...init, headers });
+    // The session cookie has to travel even when the API is on another origin.
+    response = await fetch(path, { ...init, headers, credentials: "include" });
   } catch {
     throw new ApiError(0, null, "The API did not respond. Is the backend running?");
   }
@@ -504,6 +550,51 @@ export type GuideQuery = {
 
 export const api = {
   config: () => request<SiteConfig>(`${V1}/config`),
+
+  auth: {
+    login: (email: string, password: string) =>
+      request<Account>(`${V1}/auth/login`, {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      }),
+    logout: () => request<void>(`${V1}/auth/logout`, { method: "POST" }),
+    logoutEverywhere: () =>
+      request<void>(`${V1}/auth/logout-everywhere`, { method: "POST" }, true),
+    sessions: () => request<SessionItem[]>(`${V1}/auth/sessions`, {}, true),
+    changePassword: (current_password: string, new_password: string) =>
+      request<void>(
+        `${V1}/auth/password`,
+        { method: "POST", body: JSON.stringify({ current_password, new_password }) },
+        true,
+      ),
+  },
+
+  editors: {
+    list: () => request<Account[]>(`${V1}/admin/editors`, {}, true),
+    create: (payload: {
+      email: string;
+      password: string;
+      display_name?: string | null;
+      role?: "member" | "editor" | "admin";
+    }) =>
+      request<Account>(
+        `${V1}/admin/editors`,
+        { method: "POST", body: JSON.stringify(payload) },
+        true,
+      ),
+    update: (id: string, payload: { role?: string; is_active?: boolean }) =>
+      request<Account>(
+        `${V1}/admin/editors/${id}`,
+        { method: "PATCH", body: JSON.stringify(payload) },
+        true,
+      ),
+    resetPassword: (id: string, password: string) =>
+      request<void>(
+        `${V1}/admin/editors/${id}/password`,
+        { method: "POST", body: JSON.stringify({ password }) },
+        true,
+      ),
+  },
   categories: () => request<Category[]>(`${V1}/categories`),
   guides: (params: GuideQuery = {}) => request<Page<GuideCard>>(`${V1}/guides${query(params)}`),
   guide: (slug: string) => request<GuideDetail>(`${V1}/guides/${encodeURIComponent(slug)}`),

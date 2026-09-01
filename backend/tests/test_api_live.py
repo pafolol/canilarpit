@@ -49,7 +49,7 @@ TOPIC_PREFIX = "test topic "
 CONTENT = Path(__file__).resolve().parent.parent / "content" / "guides"
 SUBMISSION_PREFIX = "Test submission "
 DEV_HEADERS = {
-    "X-Dev-Clerk-User-Id": EDITOR_ID,
+    "X-Dev-User": EDITOR_ID,
     "X-Dev-Email": "editor@example.test",
     "X-Dev-Display-Name": "Test editor",
 }
@@ -102,15 +102,15 @@ def discard_draft(guide_id: uuid.UUID) -> None:
 
 @pytest.fixture(scope="module")
 def client() -> Iterator[TestClient]:
-    # The dev bypass is what lets these tests authenticate without Clerk. It is
-    # refused outright when APP_ENV is production, so this cannot leak.
+    # The dev bypass is what lets these tests authenticate without a password.
+    # It is refused outright when APP_ENV is production, so this cannot leak.
     if settings.is_production:
         pytest.skip("refusing to run write tests against a production configuration")
     settings.dev_auth_bypass = True
     with SessionLocal() as db:
-        user = db.scalar(select(User).where(User.clerk_user_id == EDITOR_ID))
+        user = db.scalar(select(User).where(User.external_id == EDITOR_ID))
         if user is None:
-            user = User(clerk_user_id=EDITOR_ID, email="editor@example.test")
+            user = User(external_id=EDITOR_ID, email="editor@example.test")
             db.add(user)
         user.role = UserRole.ADMIN
         user.is_active = True
@@ -129,7 +129,7 @@ def client() -> Iterator[TestClient]:
             delete(Submission).where(Submission.topic.startswith(SUBMISSION_PREFIX))
         )
         db.execute(delete(BlockedClient))
-        db.execute(delete(User).where(User.clerk_user_id == EDITOR_ID))
+        db.execute(delete(User).where(User.external_id == EDITOR_ID))
         db.commit()
 
     # guide_views and presence are deliberately absent here. This database is
@@ -145,7 +145,7 @@ def test_readiness_reaches_postgres(client: TestClient) -> None:
 def test_config_reports_the_available_sign_in_paths(client: TestClient) -> None:
     body = client.get("/api/v1/config").json()
     assert body["dev_auth_bypass"] is True
-    assert "clerk_configured" in body
+    assert "sign_in_ready" in body
 
 
 def test_categories_count_only_published_guides(client: TestClient) -> None:
@@ -307,7 +307,7 @@ def test_a_rewrite_lands_on_the_same_guide_even_if_the_model_renames_it() -> Non
     slug = f"{GUIDE_PREFIX}{uuid.uuid4().hex[:8]}"
 
     with SessionLocal() as db:
-        author = db.scalar(select(User).where(User.clerk_user_id == EDITOR_ID))
+        author = db.scalar(select(User).where(User.external_id == EDITOR_ID))
         document = GuideDocument.model_validate({**source, "slug": slug, "title": "Rewrite me"})
         guide = create_guide(db, document, author)
         db.commit()

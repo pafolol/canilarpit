@@ -7,6 +7,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.auth_guard import admin_throttle
 from app.core.config import settings
 from app.core.security import require_admin, require_editor
 from app.db.models import (
@@ -36,6 +37,9 @@ from app.schemas.api import (
     CategoryCreate,
     CategoryResponse,
     CategoryUpdate,
+    EditorCreate,
+    EditorPasswordReset,
+    EditorUpdate,
     GuideGenerateRequest,
     GuideMediaLinkCreate,
     GuidePublishRequest,
@@ -57,6 +61,7 @@ from app.schemas.api import (
     TopicRequestAdminPage,
     UploadPresignRequest,
     UploadPresignResponse,
+    UserResponse,
 )
 from app.schemas.content import GuideDocument
 from app.services import images
@@ -78,12 +83,23 @@ from app.services.guides import (
     save_draft,
     submit_for_review,
 )
+from app.services.passwords import WeakPassword, check_strength, hash_password
+from app.services.sessions import revoke_all_for_user
 from app.services.storage import create_upload_presign
 from app.services.text import normalize_text
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin", tags=["editor administration"])
+# Editor-or-better, and throttled, for the whole prefix rather than route by
+# route. The per-route dependencies below stay — several of them narrow to
+# admin — but nothing under /admin can be reached without a role even if a new
+# endpoint is added and its author forgets. Deny is the default; each route
+# opts into being *more* restricted, never less.
+router = APIRouter(
+    prefix="/admin",
+    tags=["editor administration"],
+    dependencies=[Depends(admin_throttle), Depends(require_editor)],
+)
 
 
 def run_generation_in_background(job_id: uuid.UUID) -> None:
@@ -510,7 +526,7 @@ def draft_link(db: Session, guide: Guide, link_id: uuid.UUID) -> tuple[GuideRevi
 
 
 def guide_author(db: Session, guide: Guide) -> User:
-    author = db.scalar(select(User).where(User.clerk_user_id == "system:seed"))
+    author = db.scalar(select(User).where(User.external_id == "system:seed"))
     if author is None:
         raise HTTPException(status_code=500, detail="No system author is available")
     return author
@@ -1206,3 +1222,120 @@ def update_category(
         sort_order=category.sort_order,
         published_guide_count=published or 0,
     )
+
+
+# ------------------------------------------------------------------- editors
+#
+# Accounts are made here or from the CLI, and nowhere else. There is no
+# registration endpoint, so the only way to get an account is for somebody who
+# already has an admin one to make it.
+
+
+def editor_or_404(db: Session, user_id: uuid.UUID) -> User:
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+    return user
+
+
+@router.get("/editors", response_model=list[UserResponse])
+def list_editors(
+    db: Session = Depends(get_db), _: User = Depends(require_admin)
+) -> list[User]:
+    return list(db.scalars(select(User).order_by(User.created_at.desc())).all())
+
+
+@router.post("/editors", response_model=UserResponse, status_code=201)
+def create_editor(
+    payload: EditorCreate,
+    db: Session = Depends(get_db),
+    actor: User = Depends(require_admin),
+) -> User:
+    email = payload.email.strip().lower()
+    try:
+        check_strength(payload.password, email=email)
+    except WeakPassword as weak:
+        raise HTTPException(status_code=422, detail=str(weak)) from weak
+
+    if db.scalar(select(User).where(User.email == email)) is not None:
+        raise HTTPException(status_code=409, detail="An account already uses that address")
+
+    user = User(
+        email=email,
+        display_name=payload.display_name,
+        role=payload.role,
+        password_hash=hash_password(payload.password),
+        password_updated_at=datetime.now(UTC),
+    )
+    db.add(user)
+    db.flush()
+    add_audit_log(db, actor, "editor.created", "user", user.id, {"role": payload.role.value})
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.patch("/editors/{user_id}", response_model=UserResponse)
+def update_editor(
+    user_id: uuid.UUID,
+    payload: EditorUpdate,
+    db: Session = Depends(get_db),
+    actor: User = Depends(require_admin),
+) -> User:
+    user = editor_or_404(db, user_id)
+
+    # Demoting or disabling yourself is how a deployment ends up with no
+    # administrator and no way to make one without the CLI.
+    demoting = payload.role not in (None, UserRole.ADMIN)
+    if user.id == actor.id and (demoting or payload.is_active is False):
+        raise HTTPException(
+            status_code=409,
+            detail="You cannot remove your own administrator access. Ask another admin.",
+        )
+
+    if payload.role is not None:
+        user.role = payload.role
+    if payload.is_active is not None:
+        user.is_active = payload.is_active
+        if not payload.is_active:
+            # A disabled account with a live session is still signed in.
+            revoke_all_for_user(db, user)
+
+    add_audit_log(
+        db,
+        actor,
+        "editor.updated",
+        "user",
+        user.id,
+        {"role": user.role.value, "is_active": user.is_active},
+    )
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post("/editors/{user_id}/password", status_code=204)
+def reset_editor_password(
+    user_id: uuid.UUID,
+    payload: EditorPasswordReset,
+    db: Session = Depends(get_db),
+    actor: User = Depends(require_admin),
+) -> Response:
+    """For a locked-out editor. Ends every session that account has.
+
+    An admin can set a password but cannot read one, and this is deliberately
+    not the route for changing your own - that one asks for the current
+    password, which is what stops a borrowed unlocked laptop being permanent.
+    """
+    user = editor_or_404(db, user_id)
+    try:
+        check_strength(payload.password, email=user.email)
+    except WeakPassword as weak:
+        raise HTTPException(status_code=422, detail=str(weak)) from weak
+
+    user.password_hash = hash_password(payload.password)
+    user.password_updated_at = datetime.now(UTC)
+    ended = revoke_all_for_user(db, user)
+    add_audit_log(db, actor, "editor.password_reset", "user", user.id, {"sessions_ended": ended})
+    db.commit()
+    return Response(status_code=204)

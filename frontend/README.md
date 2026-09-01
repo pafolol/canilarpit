@@ -18,7 +18,7 @@ copy of the content.
 | `src/components.tsx` | The shared interface: verdict badge, exposure clock, search, filters, cards |
 | `src/Home.tsx` | Search, filters, and the grid |
 | `src/Entry.tsx` | One guide: crib sheet, follow-up, tells, cost, and the clock that runs while you read |
-| `src/auth.tsx` | Admin credentials — a Clerk token, or the local dev identity headers |
+| `src/auth.tsx` | Admin credentials — the session cookie from password sign-in, or the local dev identity headers |
 | `src/admin/` | The editor panel: catalog, generation, guide editor, images |
 
 Routes: `/` (home), `/entry/{slug}`, `/category/{slug}`, `/submit`, `/thanks`, `/faq`,
@@ -39,10 +39,11 @@ cp .env.example .env
 
 `/admin` needs an account with the `editor` or `admin` role.
 
-While the API runs with `DEV_AUTH_BYPASS=true`, the sign-in screen offers a "Local
-development" option that sends identity headers instead of a token. The first sign-in
-creates a `member`; promote it once from the backend with
-`canilarpit set-role <clerk-user-id> admin`.
+Sign-in is email and password. Accounts are made by an administrator — from the
+panel's **Editors** tab, or with `canilarpit create-user you@example.com --role admin`
+on the backend. There is no registration screen to add one from here.
 
-For a real deployment, drop a Clerk frontend SDK in and hand its session token to
-`signIn({ mode: "token", token })` in `src/auth.tsx`. Nothing else has to change.
+While the API runs with `DEV_AUTH_BYPASS=true`, the sign-in screen additionally offers
+a "Local development" option that sends identity headers instead of a password. The
+first sign-in creates a `member`; promote it once from the backend with
+`canilarpit set-role <email> admin`.

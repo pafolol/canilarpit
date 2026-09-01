@@ -30,7 +30,12 @@ from app.schemas.api import (
 from app.services.guides import guide_list_item, pagination
 from app.services.text import normalize_text
 
-router = APIRouter(prefix="/me", tags=["account"])
+# Signed in for the whole prefix. Every route below asks for the user anyway,
+# and FastAPI resolves the dependency once, so this costs nothing and closes
+# the gap where a new route forgets to ask.
+router = APIRouter(
+    prefix="/me", tags=["account"], dependencies=[Depends(get_current_user)]
+)
 
 
 def published_guide_or_404(db: Session, guide_id: uuid.UUID) -> Guide:
