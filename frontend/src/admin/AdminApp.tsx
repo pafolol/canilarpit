@@ -41,7 +41,7 @@ function AdminPanel() {
         </p>
         <p className="admin__note">
           Promote the account from the backend:{" "}
-          <code>canilarpit set-role &lt;clerk-user-id&gt; admin</code>.
+          <code>canilarpit set-role &lt;email&gt; admin</code>.
         </p>
         <button className="chip" onClick={signOut}>
           Sign out

@@ -12,10 +12,9 @@ import Submit from "./Submit";
 import Thanks from "./Thanks";
 import { startAnalytics } from "./analytics";
 
-// Split off the public bundle on purpose. The panel pulls in Clerk's sign-in
-// SDK, and a reader who never opens /admin should never download it — one less
-// thing shipped to everybody, and one less thing running on the pages a
-// stranger actually visits.
+// Split off the public bundle on purpose. A reader who never opens /admin
+// should never download the panel — one less thing shipped to everybody, and
+// one less thing running on the pages a stranger actually visits.
 const AdminApp = lazy(() => import("./admin/AdminApp"));
 
 function CategoryRoute() {
