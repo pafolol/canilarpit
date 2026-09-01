@@ -195,12 +195,12 @@ def create_user(email: str, role: UserRole, display_name: str | None) -> None:
 
 
 def list_users() -> None:
-    """Who has signed in, so the first Clerk account can be found and promoted.
+    """Who has an account, and which of them can actually sign in.
 
-    A Clerk session token carries a subject and not much else - by default no
-    email at all, that arrives later via the user webhook - so after a first
-    sign-in the only way to name yourself to `set-role` is to look. Newest
-    first, because the account you just created is the one you are looking for.
+    `set-role` is named by email, and a row seeded or created from a
+    development identity has no email to name - so the only way to find its
+    handle is to look. Newest first, because the account you just created is
+    the one you are looking for.
     """
     with SessionLocal() as db:
         users = db.scalars(select(User).order_by(User.created_at.desc()).limit(50)).all()

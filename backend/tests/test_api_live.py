@@ -102,8 +102,8 @@ def discard_draft(guide_id: uuid.UUID) -> None:
 
 @pytest.fixture(scope="module")
 def client() -> Iterator[TestClient]:
-    # The dev bypass is what lets these tests authenticate without Clerk. It is
-    # refused outright when APP_ENV is production, so this cannot leak.
+    # The dev bypass is what lets these tests authenticate without a password.
+    # It is refused outright when APP_ENV is production, so this cannot leak.
     if settings.is_production:
         pytest.skip("refusing to run write tests against a production configuration")
     settings.dev_auth_bypass = True
