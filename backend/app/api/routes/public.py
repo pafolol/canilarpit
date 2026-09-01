@@ -20,6 +20,7 @@ from app.db.models import (
     GuideView,
     Presence,
     TopicRequest,
+    User,
     Verdict,
 )
 from app.db.session import get_db
@@ -52,13 +53,34 @@ from app.services.text import normalize_text
 router = APIRouter(tags=["public catalog"])
 
 
+def sign_in_is_possible(db: Session) -> bool:
+    """Whether any account has a password set.
+
+    False on a fresh database, which lets the panel say "no accounts yet, run
+    create-user" instead of showing a form that nothing can satisfy. It is a
+    count, never a list: that a deployment has accounts is not worth hiding,
+    but which addresses they use certainly is.
+    """
+    return bool(
+        db.scalar(
+            select(func.count())
+            .select_from(User)
+            .where(
+                User.password_hash.is_not(None),
+                User.is_active.is_(True),
+                User.deleted_at.is_(None),
+            )
+        )
+    )
+
+
 @router.get("/config", response_model=SiteConfigResponse)
-def site_config() -> SiteConfigResponse:
-    """Which sign-in paths the admin panel should offer. No secrets are returned."""
+def site_config(db: Session = Depends(get_db)) -> SiteConfigResponse:
+    """What the admin panel needs to render a sign-in. No secrets are returned."""
     return SiteConfigResponse(
         app_env=settings.app_env,
         dev_auth_bypass=settings.dev_auth_bypass,
-        clerk_configured=bool(settings.clerk_issuer and settings.clerk_jwks_url),
+        sign_in_ready=sign_in_is_possible(db),
     )
 
 

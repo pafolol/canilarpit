@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation, useParams } from "react-router-dom";
-import AdminApp from "./admin/AdminApp";
 import Entry from "./Entry";
 import Faq from "./Faq";
+import { Loading } from "./components";
 import Home from "./Home";
 import JustLearnIt from "./JustLearnIt";
 import NotListed from "./NotListed";
@@ -11,6 +11,12 @@ import Privacy from "./Privacy";
 import Submit from "./Submit";
 import Thanks from "./Thanks";
 import { startAnalytics } from "./analytics";
+
+// Split off the public bundle on purpose. The panel pulls in Clerk's sign-in
+// SDK, and a reader who never opens /admin should never download it — one less
+// thing shipped to everybody, and one less thing running on the pages a
+// stranger actually visits.
+const AdminApp = lazy(() => import("./admin/AdminApp"));
 
 function CategoryRoute() {
   const { slug = "" } = useParams();
@@ -94,7 +100,14 @@ export default function App() {
           <Route path="/thanks" element={<Thanks />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/admin/*" element={<AdminApp />} />
+          <Route
+            path="/admin/*"
+            element={
+              <Suspense fallback={<div className="admin u-shell"><Loading what="the panel" /></div>}>
+                <AdminApp />
+              </Suspense>
+            }
+          />
           <Route path="/just-learn-it" element={<JustLearnIt />} />
           <Route path="*" element={<NotListed slug={pathname} />} />
         </Routes>

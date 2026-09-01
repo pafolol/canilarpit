@@ -79,18 +79,33 @@ paths and never needs CORS in development.
 
 ### Making yourself an editor
 
-`DEV_AUTH_BYPASS=true` is set in `backend/.env`, so the admin panel offers a "Local
-development" sign-in that sends an identity header instead of a Clerk token. The API
-refuses that bypass outright when `APP_ENV=production`.
+Sign-in is email and password, kept here. There is no third-party identity
+provider and no registration endpoint: **accounts are made by an administrator**,
+because an admin panel that lets a stranger create an account is an admin panel
+with a stranger in it.
 
-The first sign-in creates a `member`. Promote it once:
+The first one comes from the command line, which is the only place that has the
+machine before anybody has an account:
 
 ```bash
-.venv/bin/python -m app.cli set-role local-admin admin
+.venv/bin/python -m app.cli create-user you@example.com --role admin
 ```
 
-(from the repo root, or `canilarpit set-role local-admin admin` with the venv active).
-Reload `/admin` and the catalog appears.
+(from the repo root, or `canilarpit create-user ...` with the venv active.)
+
+It asks for the password twice and never echoes it. After that, an administrator
+adds editors from the panel's **Editors** tab. `canilarpit users` lists accounts
+and says which of them can actually sign in.
+
+Passwords are hashed with Argon2id, salted per row, and are not readable by
+anybody — an administrator can set a new one for somebody locked out, and that
+ends every session that account had. Changing your *own* password asks for the
+current one, which is what stops a borrowed unlocked laptop becoming permanent.
+
+`DEV_AUTH_BYPASS=true` additionally offers a one-click local sign-in that sends
+an identity header instead of a password. The API refuses it twice over: the
+settings validator will not build a production configuration with it on, and the
+request path ignores the header regardless of what the settings say.
 
 ## Generating a guide
 
@@ -220,6 +235,84 @@ An entry also prints. `@media print` drops the chrome, the rail, the images and 
 leaves the crib sheet, the lines to say and the tells, in ink on white — the laminated pocket
 card the design has always claimed to be.
 
+## The admin surface
+
+The catalog is public and everything that writes to it is not. What a request is
+allowed to do is read out of the database at the moment it asks — never from the
+cookie, never from a cache. An editor demoted a second ago is demoted on their
+next call.
+
+**The session is a row, not a signature.** The cookie carries an opaque random
+string that decodes into nothing, and the database stores only its SHA-256, so a
+copy of the table is not a set of working sessions. That is the whole reason for
+the design: a signed token is valid until it expires and there is nowhere to go
+to say otherwise, whereas a row can be marked revoked and refused on the very
+next request. Signing out actually signs out, and so does *sign out everywhere*.
+
+The cookie is `HttpOnly`, so no script can read it and an XSS cannot steal it.
+Beside it rides a deliberately readable CSRF cookie the panel echoes back as a
+header on every write: another origin can make a browser send our cookies, but
+it cannot read them, so it cannot produce the matching header, and both have to
+agree.
+
+**Signing in assumes somebody is attacking it.** Two throttles — one on the
+caller, one on the account, because moving address beats the first and nothing
+beats the second. A wrong address and a wrong password give the same message
+and, because a missing account still pays for a full Argon2 verification, about
+the same amount of time. Both throttles run before the account is looked up, so
+being rate-limited does not confirm an address either.
+
+**Deny is the default.** Editor-or-better and a request ceiling sit on the whole
+`/admin` prefix rather than route by route, so an endpoint added next month is
+authenticated the day it is written. Individual routes opt into being *more*
+restricted — publishing, archiving, accepting a submission and everything under
+Editors are admin-only — never less.
+
+**On the way out.** Every response carries `nosniff`, `DENY`, a referrer policy,
+an empty permissions policy, and in production HSTS. Admin JSON leaves with
+`no-store`, so an unpublished draft cannot come to rest in a proxy. The content
+policy is `script-src 'self'` on every page, panel included, because sign-in is
+a form this application serves and nothing is loaded from anywhere else.
+
+**In production the app refuses to start** without a `SUBMISSION_SECRET`, an
+https `SITE_BASE_URL`, and `FRONTEND_ORIGINS` that are https and contain no `*`
+— a wildcard origin with credentials is how an admin session reaches everybody.
+Swagger, ReDoc and `/openapi.json` are not served at all: authentication does
+not stop anybody reading a route-by-route map of the admin surface.
+
+`TRUSTED_HOSTS` is the one control left off by default. An incomplete list
+answers 400 to every request including health checks, so it is installed only
+once a deployment has said which hosts it answers to.
+
+## Publishing to a deployed site
+
+The local database is the authoring copy. `scripts/upload.py` replays it into a
+deployed API through the same admin endpoints the panel uses, so the server
+needs no database access of its own:
+
+```bash
+npm run db:upload -- --dry-run
+npm run db:upload -- --email you@example.com
+```
+
+It defaults to <https://api.mcocvault.com/larp>; `--api-url` points it somewhere
+else. Each guide goes up as a document, gets its images placed on the draft, and
+is published only if it is published here — so a half-illustrated entry never
+appears. Guides the target already serves are compared by content hash and
+skipped, which makes a re-run cost nothing and a second run after a failure
+finish the job.
+
+The script signs in once with an editor account and holds the session for the
+whole run, so a long upload does not race a credential's expiry. Put the password
+in `CANILARPIT_PASSWORD` or let it prompt. A large catalog can reach the admin
+request ceiling; the script waits out a 429 and carries on rather than stopping
+half way. Importing needs the editor role and publishing needs admin; with an
+editor token everything arrives as a draft.
+
+Readers, view counts, presence, submissions and topic requests are deliberately
+left behind. They belong to the deployment they happened on, and the counter on
+the live site counts real people.
+
 ## Checks
 
 ```bash
@@ -243,11 +336,20 @@ any non-empty `OPENAI_API_KEY` satisfies it.
 | Search, filters, topic demand, counting | `backend/app/api/routes/public.py` |
 | Serving the built app, sharing tags, sitemap | `backend/app/api/routes/site.py` |
 | Editorial CMS and lifecycle | `backend/app/api/routes/admin.py` |
+| Who is asking, verified per request | `backend/app/core/security.py` |
+| Signing in, sessions, password change | `backend/app/api/routes/auth.py` |
+| Password hashing | `backend/app/services/passwords.py` |
+| Sessions and the cookie pair | `backend/app/services/sessions.py` |
+| Response headers and the per-surface CSP | `backend/app/core/headers.py` |
+| Throttles on the authenticated surface | `backend/app/core/auth_guard.py` |
+| Admin sign-in in the panel | `frontend/src/auth.tsx` |
+| Account management | `frontend/src/admin/Editors.tsx` |
 | Guide generation | `backend/app/services/ai.py`, `services/generation.py` |
 | Image providers | `backend/app/services/images.py` |
 | Frontend API client and types | `frontend/src/api.ts` |
 | Admin panel | `frontend/src/admin/` |
 | Seed content | `backend/content/guides/*.json` |
+| Pushing the catalog to a deployment | `scripts/upload.py` |
 | Print stylesheet, the pocket crib card | `frontend/src/styles.css` |
 
 The complete HTTP contract is in [`backend/docs/API.md`](backend/docs/API.md).

@@ -37,7 +37,9 @@ def test_openapi_contains_frontend_routes() -> None:
     assert expected.issubset(paths)
     assert "security" not in paths["/api/v1/topic-requests"]["post"]
     assert "security" not in paths["/api/v1/config"]["get"]
-    assert paths["/api/v1/me"]["get"]["security"] == [{"HTTPBearer": []}]
+    assert paths["/api/v1/me"]["get"]["security"] == [{"SessionCookie": []}]
+    # Signing in is the one authenticated-surface route that cannot need a session.
+    assert "security" not in paths["/api/v1/auth/login"]["post"]
 
 
 def test_guide_cards_expose_the_verdict_layer() -> None:

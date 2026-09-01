@@ -1,6 +1,8 @@
 import argparse
 import json
 import sys
+from datetime import UTC, datetime
+from getpass import getpass
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -27,6 +29,8 @@ from app.services.guides import (
     revision_document,
     save_draft,
 )
+from app.services.passwords import WeakPassword, check_strength, hash_password
+from app.services.sessions import prune_expired, revoke_all_for_user
 
 # The backend can be invoked from anywhere in the monorepo, so content is resolved
 # against the package rather than the working directory.
@@ -61,10 +65,10 @@ DEFAULT_CATEGORIES = [
 
 
 def system_user(db) -> User:
-    user = db.scalar(select(User).where(User.clerk_user_id == "system:seed"))
+    user = db.scalar(select(User).where(User.external_id == "system:seed"))
     if user is None:
         user = User(
-            clerk_user_id="system:seed",
+            external_id="system:seed",
             display_name="Content Seed",
             role=UserRole.ADMIN,
         )
@@ -123,14 +127,120 @@ def seed(force: bool = False) -> None:
     print(f"Seeded categories and published content guides.{note}")
 
 
-def set_role(clerk_user_id: str, role: UserRole) -> None:
+def read_new_password() -> str:
+    """A password from the terminal, or from a pipe when there is no terminal.
+
+    `getpass` reads the console directly on Windows and ignores a redirected
+    stdin, which means it blocks forever rather than failing when this runs
+    from a script or a CI step. So: ask twice when somebody is watching, and
+    take a single line otherwise.
+    """
+    if not sys.stdin.isatty():
+        piped = sys.stdin.readline().strip()
+        if not piped:
+            raise SystemExit("No password on stdin. Pipe one, or run this in a terminal.")
+        return piped
+
+    password = getpass("Password: ")
+    if password != getpass("Repeat password: "):
+        raise SystemExit("Those did not match.")
+    return password
+
+
+def create_user(email: str, role: UserRole, display_name: str | None) -> None:
+    """Make an account from the command line.
+
+    This is the bootstrap: there is no registration endpoint, so the first
+    administrator has to come from somewhere with access to the machine. After
+    that, admins make accounts from the panel's Editors tab.
+
+    The password is read from a prompt rather than an argument, because an
+    argument ends up in shell history and in the process list.
+    """
+    address = email.strip().lower()
+    password = read_new_password()
+    try:
+        check_strength(password, email=address)
+    except WeakPassword as weak:
+        raise SystemExit(str(weak)) from weak
+
     with SessionLocal() as db:
-        user = db.scalar(select(User).where(User.clerk_user_id == clerk_user_id))
+        existing = db.scalar(select(User).where(User.email == address))
+        if existing is not None:
+            # Setting a password on an account that has none is how an old
+            # identity row becomes a real login, so this is an update, not a
+            # refusal - but it says which it did.
+            existing.password_hash = hash_password(password)
+            existing.password_updated_at = datetime.now(UTC)
+            existing.role = role
+            existing.is_active = True
+            existing.deleted_at = None
+            if display_name:
+                existing.display_name = display_name
+            revoked = revoke_all_for_user(db, existing)
+            db.commit()
+            print(f"Updated {address} ({role.value}). {revoked} existing session(s) ended.")
+            return
+
+        user = User(
+            email=address,
+            display_name=display_name,
+            role=role,
+            password_hash=hash_password(password),
+            password_updated_at=datetime.now(UTC),
+        )
+        db.add(user)
+        db.commit()
+    print(f"Created {address} as {role.value}. Sign in at /admin.")
+
+
+def list_users() -> None:
+    """Who has signed in, so the first Clerk account can be found and promoted.
+
+    A Clerk session token carries a subject and not much else - by default no
+    email at all, that arrives later via the user webhook - so after a first
+    sign-in the only way to name yourself to `set-role` is to look. Newest
+    first, because the account you just created is the one you are looking for.
+    """
+    with SessionLocal() as db:
+        users = db.scalars(select(User).order_by(User.created_at.desc()).limit(50)).all()
+
+    if not users:
+        print("No accounts yet. Make one with `canilarpit create-user <email> --role admin`.")
+        return
+
+    print(f"{'EMAIL':<34} {'ROLE':<8} {'SIGN-IN':<10} CREATED")
+    for user in users:
+        # An account with no password is the seeder or a development identity;
+        # it exists, and nothing can sign in to it from the form.
+        if not user.is_active or user.deleted_at is not None:
+            how = "disabled"
+        elif user.password_hash:
+            how = "password"
+        else:
+            how = "no login"
+        handle = user.email or user.external_id or str(user.id)
+        created = user.created_at.strftime("%Y-%m-%d %H:%M")
+        print(f"{handle:<34} {user.role.value:<8} {how:<10} {created}")
+
+    if not any(u.role == UserRole.ADMIN and u.password_hash for u in users):
+        print()
+        print("No administrator can sign in yet. Make one:")
+        print("  canilarpit create-user you@example.com --role admin")
+
+
+def set_role(handle: str, role: UserRole) -> None:
+    """Assign a role by email address, or by the external id of a non-password row."""
+    needle = handle.strip().lower()
+    with SessionLocal() as db:
+        user = db.scalar(
+            select(User).where((User.email == needle) | (User.external_id == handle.strip()))
+        )
         if user is None:
-            raise SystemExit("User not found. Sign in once before assigning a role.")
+            raise SystemExit(f"No account for {handle!r}. Run `canilarpit users` to see them.")
         user.role = role
         db.commit()
-    print(f"Assigned {role.value} to {clerk_user_id}.")
+    print(f"Assigned {role.value} to {handle}.")
 
 
 def import_guide(path: Path, should_publish: bool) -> None:
@@ -290,8 +400,21 @@ def main() -> None:
         "--force", action="store_true", help="Overwrite guides edited in the panel"
     )
 
+    subparsers.add_parser("users", help="List accounts, newest first, with their roles")
+
+    create_parser = subparsers.add_parser(
+        "create-user", help="Create an account and set its password (prompted)"
+    )
+    create_parser.add_argument("email")
+    create_parser.add_argument(
+        "--role", choices=[role.value for role in UserRole], default=UserRole.ADMIN.value
+    )
+    create_parser.add_argument("--name", default=None, help="Display name")
+
+    subparsers.add_parser("prune-sessions", help="Delete long-expired session rows")
+
     role_parser = subparsers.add_parser("set-role", help="Assign an application role")
-    role_parser.add_argument("clerk_user_id")
+    role_parser.add_argument("handle", help="Email address, or an external id")
     role_parser.add_argument("role", choices=[role.value for role in UserRole])
 
     import_parser = subparsers.add_parser("import-guide", help="Import a guide JSON document")
@@ -317,8 +440,17 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "seed":
         seed(args.force)
+    elif args.command == "users":
+        list_users()
+    elif args.command == "create-user":
+        create_user(args.email, UserRole(args.role), args.name)
+    elif args.command == "prune-sessions":
+        with SessionLocal() as db:
+            removed = prune_expired(db)
+            db.commit()
+        print(f"Removed {removed} expired session row(s).")
     elif args.command == "set-role":
-        set_role(args.clerk_user_id, UserRole(args.role))
+        set_role(args.handle, UserRole(args.role))
     elif args.command == "import-guide":
         import_guide(args.path, args.publish)
     elif args.command == "export-guide":
