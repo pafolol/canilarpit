@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { AdSlot } from "./ads";
 import {
   api,
   type Category,
@@ -159,6 +160,8 @@ export default function Home({ category }: { category?: string }) {
             ))}
           </div>
         )}
+
+        <AdSlot />
 
         {popular.length > 0 && (
           <section className="band ranked" aria-labelledby="ranked-h">

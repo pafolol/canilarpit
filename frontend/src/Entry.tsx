@@ -22,6 +22,7 @@ import {
   TypeGlyph,
   VerdictBadge,
 } from "./components";
+import { AdSlot } from "./ads";
 import { Linked, LinkedParagraphs } from "./crosslink";
 import NotListed from "./NotListed";
 import { useDocumentTitle } from "./useDocumentTitle";
@@ -250,6 +251,8 @@ export default function Entry() {
               </ul>
             </section>
           )}
+
+          <AdSlot />
         </article>
       </div>
 

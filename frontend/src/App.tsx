@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation, useParams } from "react-router-dom";
+import Advertise from "./Advertise";
 import Entry from "./Entry";
 import Faq from "./Faq";
 import { Loading } from "./components";
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="/thanks" element={<Thanks />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/advertise" element={<Advertise />} />
           <Route
             path="/admin/*"
             element={
@@ -123,6 +125,8 @@ export default function App() {
           <Link to="/faq">Questions</Link>
           <span className="ftr__sep" aria-hidden="true">·</span>
           <Link to="/privacy">Privacy</Link>
+          <span className="ftr__sep" aria-hidden="true">·</span>
+          <Link to="/advertise">Advertise</Link>
           <span className="ftr__sep" aria-hidden="true">·</span>
           <Link to="/admin">Editors</Link>
           <span className="ftr__note">{offline ? "Offline. The page still works." : "Read it before you need it."}</span>

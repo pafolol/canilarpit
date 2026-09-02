@@ -48,7 +48,7 @@ API_PREFIXES = ("api/", "health/", "health", "docs", "redoc", "openapi.json")
 # to say so in the status line: answering 200 with "not listed" is a soft 404,
 # which tells a crawler the page is fine and keeps a dead URL in the index.
 STATIC_PATHS = frozenset(
-    {"", "just-learn-it", "submit", "faq", "privacy", "thanks"}
+    {"", "just-learn-it", "submit", "faq", "privacy", "thanks", "advertise"}
 )
 
 TITLE_PATTERN = re.compile(r"<title>.*?</title>", re.IGNORECASE | re.DOTALL)
@@ -275,6 +275,7 @@ def sitemap(db: Session = Depends(get_db)) -> Response:
         url_entry("/just-learn-it", newest, "0.7"),
         url_entry("/submit", None, "0.5"),
         url_entry("/faq", None, "0.4"),
+        url_entry("/advertise", None, "0.3"),
         url_entry("/privacy", None, "0.2"),
         *[url_entry(f"/category/{slug}", None, "0.6") for slug in categories],
         *[url_entry(f"/entry/{slug}", updated_at, "0.8") for slug, updated_at in guides],

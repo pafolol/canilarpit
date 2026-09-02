@@ -520,6 +520,41 @@ input {
 .band__sub { font-size: var(--t-13); color: var(--ink-2); margin-top: 0.125rem; }
 
 /* ============================================================
+   Ad slot
+   Raised like any other panel, labelled in the same type as
+   everything else, and never dressed as an entry.
+   ============================================================ */
+
+.ad {
+  margin-top: 2.5rem;
+  border: var(--hair);
+  background: var(--card);
+  padding: 1.25rem 1.5rem;
+}
+.ad__label { display: block; margin-bottom: 0.5rem; }
+.ad__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.375rem 1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.ad__line { font-size: var(--t-18); }
+.ad__who {
+  margin-left: auto;
+  font-family: var(--data);
+  font-size: var(--t-13);
+  color: var(--signal);
+  white-space: nowrap;
+}
+.ad__body:hover .ad__who,
+.ad__body:focus-visible .ad__who {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ============================================================
    Entry page
    ============================================================ */
 

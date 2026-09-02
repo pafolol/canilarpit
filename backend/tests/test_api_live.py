@@ -999,3 +999,19 @@ def test_the_app_never_shadows_the_api(client: TestClient) -> None:
     owned = client.get("/just-learn-it")
     assert owned.status_code == 200
     assert owned.headers["content-type"].startswith("text/html")
+
+
+def test_every_page_the_app_renders_is_a_page_the_server_admits_to(
+    client: TestClient,
+) -> None:
+    """STATIC_PATHS and the router's routes drift apart in silence.
+
+    A page the app draws but the server has never heard of answers 404 with the
+    app underneath it: it looks right to a reader and tells every crawler to
+    drop it. Adding a route means adding it in both halves.
+    """
+    if not frontend_mounted:
+        pytest.skip(NO_BUILD)
+    for path in ("/", "/just-learn-it", "/submit", "/thanks", "/faq", "/privacy", "/advertise"):
+        assert client.get(path).status_code == 200, path
+    assert client.get("/not-a-page").status_code == 404
