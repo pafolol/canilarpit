@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ADS_EMAIL, ADS_MAILTO } from "./ads";
+import { ADS_EMAIL, ADS_MAILTO, SLOT_COUNT } from "./ads";
 import { useDocumentTitle } from "./useDocumentTitle";
 
 /**
@@ -13,7 +13,7 @@ import { useDocumentTitle } from "./useDocumentTitle";
 export default function Advertise() {
   useDocumentTitle(
     "Advertise",
-    "One ad slot, sold direct. A line of text and a link, no network and no tracking.",
+    "Ad slots sold direct. A line of text and a link, no network and no tracking.",
   );
 
   return (
@@ -21,15 +21,16 @@ export default function Advertise() {
       <section className="notlisted">
         <h1 className="hero__q">Advertise here.</h1>
         <p className="notlisted__p">
-          There is one slot, it is sold direct, and it is a line of text with a link on
-          it. If that sounds small, that is the offer.
+          The slots are sold direct, and a slot is a line of text with a link on it.
+          If that sounds small, that is the offer.
         </p>
 
         <h2 className="privacy__h">What you get</h2>
         <ul className="privacy__list">
           <li>
-            <strong>One line and your name</strong>, at the foot of the search results
-            and at the foot of every entry. Nothing else on the page competes with it,
+            <strong>One line and your name</strong>, in the column beside the search
+            results and beside every entry, where it stays in view as the page scrolls.{" "}
+            {SLOT_COUNT} slots, no more, and nothing on the page competes with them
             because nothing else on the page is an ad.
           </li>
           <li>

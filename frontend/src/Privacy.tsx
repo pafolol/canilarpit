@@ -20,8 +20,8 @@ export default function Privacy() {
       <section className="notlisted">
         <h1 className="hero__q">Privacy.</h1>
         <p className="notlisted__p">
-          There is no reader account, and the one ad slot is a line of text written into
-          the page here. What follows is the whole of it.
+          There is no reader account, and an ad is a line of text written into the page
+          here. What follows is the whole of it.
         </p>
 
         <h2 className="privacy__h">No address is stored</h2>
