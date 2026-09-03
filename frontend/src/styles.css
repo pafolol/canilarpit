@@ -567,16 +567,17 @@ input {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 200px;
     gap: 2rem;
-    align-items: start;
   }
   .withrail .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .withrail .adrail { padding-top: 2rem; }
 
 
-  /* Not sticky, on purpose. A pinned rail is only as tall as the window, so
-     the slots past the fold are reachable by scrolling inside the rail — a
-     scrollbar nobody looks for and nobody uses. Scrolling with the page costs
-     the top slot its permanent seat and gets every slot actually seen. */
+  /* The rail is as tall as what it sits beside, and the slots are spread down
+     it rather than stacked at the top. That is what keeps an ad next to the
+     reader all the way down a long entry, instead of the column running out a
+     screen and a half in. One page scroll moves both — no pinning, and no
+     scrollbar of its own, which is a scrollbar nobody looks for. */
+  .adrail { align-self: stretch; align-content: space-between; }
   /* Narrower column, so the slot stops being a banner and starts being a line. */
   .adrail .ad { padding: 0.875rem 1rem; }
   .adrail .ad__body { display: block; }
