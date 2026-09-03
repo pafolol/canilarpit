@@ -573,15 +573,10 @@ input {
   .withrail .adrail { padding-top: 2rem; }
 
 
-  /* Sticky, but never taller than the window: a sold-out rail is longer
-     than the viewport, and a sticky column that overflows it puts its
-     last slots somewhere nobody can scroll to. */
-  .adrail {
-    position: sticky;
-    top: 1.5rem;
-    max-height: calc(100vh - 3rem);
-    overflow-y: auto;
-  }
+  /* Not sticky, on purpose. A pinned rail is only as tall as the window, so
+     the slots past the fold are reachable by scrolling inside the rail — a
+     scrollbar nobody looks for and nobody uses. Scrolling with the page costs
+     the top slot its permanent seat and gets every slot actually seen. */
   /* Narrower column, so the slot stops being a banner and starts being a line. */
   .adrail .ad { padding: 0.875rem 1rem; }
   .adrail .ad__body { display: block; }

@@ -29,7 +29,8 @@ export default function Advertise() {
         <ul className="privacy__list">
           <li>
             <strong>One line and your name</strong>, in the column beside the search
-            results and beside every entry, where it stays in view as the page scrolls.{" "}
+            results and beside every entry, at the height a reader is reading at rather
+            than at the bottom of the page.{" "}
             {SLOT_COUNT} slots, no more, and nothing on the page competes with them
             because nothing else on the page is an ad.
           </li>
