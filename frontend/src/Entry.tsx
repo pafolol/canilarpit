@@ -22,6 +22,7 @@ import {
   TypeGlyph,
   VerdictBadge,
 } from "./components";
+import { AdRail } from "./ads";
 import { Linked, LinkedParagraphs } from "./crosslink";
 import NotListed from "./NotListed";
 import { useDocumentTitle } from "./useDocumentTitle";
@@ -250,7 +251,10 @@ export default function Entry() {
               </ul>
             </section>
           )}
+
         </article>
+
+        <AdRail />
       </div>
 
       {sheet && (

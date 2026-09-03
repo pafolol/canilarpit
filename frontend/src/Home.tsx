@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { AdRail } from "./ads";
 import {
   api,
   type Category,
@@ -125,40 +126,44 @@ export default function Home({ category }: { category?: string }) {
       <FilterBar f={f} count={items.length} categories={categories} lockCategory={category} />
 
       <div className="u-shell">
-        {error ? (
-          <ErrorState error={error} retry={() => setReloads((n) => n + 1)} />
-        ) : busy && !result ? (
-          <Skeleton variant="cards" count={8} />
-        ) : items.length === 0 ? (
-          <div className="empty">
-            {f.q ? (
-              <>
-                <p>
-                  Nothing written for <span className="u-data">{f.q}</span> yet.
-                </p>
-                <SubmitBox topic={f.q} />
-                <p className="empty__offer">
-                  Know this one?{" "}
-                  <Link to={`/submit?topic=${encodeURIComponent(f.q)}`}>
-                    Submit it yourself
-                  </Link>{" "}
-                  and we will write it up.
-                </p>
-              </>
-            ) : (
-              <>
-                <p>No entries match. Loosen a filter.</p>
-                <button onClick={f.clear}>Clear all filters</button>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="grid">
-            {items.map((entry) => (
-              <EntryCard key={entry.slug} entry={entry} />
-            ))}
-          </div>
-        )}
+        <div className="withrail">
+          {error ? (
+            <ErrorState error={error} retry={() => setReloads((n) => n + 1)} />
+          ) : busy && !result ? (
+            <Skeleton variant="cards" count={8} />
+          ) : items.length === 0 ? (
+            <div className="empty">
+              {f.q ? (
+                <>
+                  <p>
+                    Nothing written for <span className="u-data">{f.q}</span> yet.
+                  </p>
+                  <SubmitBox topic={f.q} />
+                  <p className="empty__offer">
+                    Know this one?{" "}
+                    <Link to={`/submit?topic=${encodeURIComponent(f.q)}`}>
+                      Submit it yourself
+                    </Link>{" "}
+                    and we will write it up.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>No entries match. Loosen a filter.</p>
+                  <button onClick={f.clear}>Clear all filters</button>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="grid">
+              {items.map((entry) => (
+                <EntryCard key={entry.slug} entry={entry} />
+              ))}
+            </div>
+          )}
+
+          <AdRail />
+        </div>
 
         {popular.length > 0 && (
           <section className="band ranked" aria-labelledby="ranked-h">

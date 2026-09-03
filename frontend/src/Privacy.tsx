@@ -12,7 +12,7 @@ import { useDocumentTitle } from "./useDocumentTitle";
 export default function Privacy() {
   useDocumentTitle(
     "Privacy",
-    "No accounts, no advertising, and no raw IP address stored anywhere. What the site keeps, and for how long.",
+    "No accounts, no ad network, and no raw IP address stored anywhere. What the site keeps, and for how long.",
   );
 
   return (
@@ -20,7 +20,8 @@ export default function Privacy() {
       <section className="notlisted">
         <h1 className="hero__q">Privacy.</h1>
         <p className="notlisted__p">
-          There is no reader account and no advertising. What follows is the whole of it.
+          There is no reader account, and an ad is a line of text written into the page
+          here. What follows is the whole of it.
         </p>
 
         <h2 className="privacy__h">No address is stored</h2>
@@ -64,6 +65,13 @@ export default function Privacy() {
           credit under each image. Those hosts see your address the way any site you
           visit does. The site cannot avoid that without hosting copies it has no right
           to host.
+        </p>
+        <p className="notlisted__p">
+          The ad slot loads nothing. It is a line of text and a link, served from this
+          origin like the rest of the page — no ad network, no script belonging to an
+          advertiser, no pixel. Following the link takes you to whoever bought it, who
+          then sees your address the way any site you visit does; the link is marked{" "}
+          <code>noreferrer</code>, so it does not carry which entry you were reading.
         </p>
 
         <h2 className="privacy__h">Storage on your device</h2>

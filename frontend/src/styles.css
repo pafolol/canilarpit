@@ -520,6 +520,72 @@ input {
 .band__sub { font-size: var(--t-13); color: var(--ink-2); margin-top: 0.125rem; }
 
 /* ============================================================
+   Ad slot
+   Raised like any other panel, labelled in the same type as
+   everything else, and never dressed as an entry.
+   ============================================================ */
+
+.ad {
+  margin-top: 2.5rem;
+  border: var(--hair);
+  background: var(--card);
+  padding: 1.25rem 1.5rem;
+}
+.ad__label { display: block; margin-bottom: 0.5rem; }
+.ad__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.375rem 1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.ad__line { font-size: var(--t-18); }
+.ad__who {
+  margin-left: auto;
+  font-family: var(--data);
+  font-size: var(--t-13);
+  color: var(--signal);
+  white-space: nowrap;
+}
+.ad__body:hover .ad__who,
+.ad__body:focus-visible .ad__who {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* The rail the slots run in. Desktop gives it a side of its own; the
+   fallbacks below lay it back into the page, because there is no side on a
+   phone and eight of anything stacked there is a different site. */
+.adrail { display: grid; gap: 0.75rem; align-content: start; }
+.adrail .ad { margin-top: 0; }
+
+/* Two columns: the content, and the rail beside it. The card grid gives up
+   one of its four columns to pay for the space. */
+@media (min-width: 1200px) {
+  .withrail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    gap: 2rem;
+  }
+  .withrail .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .withrail .adrail { padding-top: 2rem; }
+
+
+  /* The rail is as tall as what it sits beside, and the slots are spread down
+     it rather than stacked at the top. That is what keeps an ad next to the
+     reader all the way down a long entry, instead of the column running out a
+     screen and a half in. One page scroll moves both — no pinning, and no
+     scrollbar of its own, which is a scrollbar nobody looks for. */
+  .adrail { align-self: stretch; align-content: space-between; }
+  /* Narrower column, so the slot stops being a banner and starts being a line. */
+  .adrail .ad { padding: 0.875rem 1rem; }
+  .adrail .ad__body { display: block; }
+  .adrail .ad__line { font-size: var(--t-15); }
+  .adrail .ad__who { display: block; margin: 0.375rem 0 0; white-space: normal; }
+}
+
+/* ============================================================
    Entry page
    ============================================================ */
 
@@ -651,9 +717,18 @@ input {
    Responsive
    ============================================================ */
 
+@media (min-width: 1200px) {
+  /* Room for the rail: the entry grows into the shell it was already inside. */
+  .entry { max-width: 76rem; grid-template-columns: 240px minmax(0, 1fr) 200px; }
+}
+
 @media (max-width: 1199px) {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .entry { grid-template-columns: 200px minmax(0, 1fr); gap: 2rem; }
+
+  /* No side to sit on: the rail becomes the single slot it used to be. */
+  .adrail { margin-top: 2.5rem; grid-column: 1 / -1; }
+  .adrail .ad ~ .ad { display: none; }
 }
 
 @media (max-width: 767px) {

@@ -59,9 +59,11 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "Do you track me?",
     a: (
       <>
-        No account, no advertising, and no raw IP address stored anywhere. Reads and the
+        No account, no ad network, and no raw IP address stored anywhere. Reads and the
         "who is here now" count are kept against a one-way hash, which is enough to count
-        against and useless for identifying anybody. The{" "}
+        against and useless for identifying anybody. Every{" "}
+        <Link to="/advertise">ad slot</Link> is a line of text served from here, so
+        nothing in one can follow you either. The{" "}
         <Link to="/privacy">privacy page</Link> says exactly what is kept and for how
         long.
       </>
