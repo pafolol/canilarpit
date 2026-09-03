@@ -15,6 +15,9 @@ node_modules/
 frontend/dist/
 frontend/dist-ssr/
 *.local
+# The root package.json is scripts only, so npm's lockfile for it holds nothing.
+# Anchored, because frontend/package-lock.json is a real one and is committed.
+/package-lock.json
 
 # Environment
 .env
